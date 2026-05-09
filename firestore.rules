@@ -130,7 +130,7 @@ service cloud.firestore {
     // 3.1 Users
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
     // 4. Market Locks
