@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "Market": {
+      "title": "Market",
+      "description": "Details about a market location, its area, and operational hours.",
+      "type": "object",
+      "properties": {
+        "nama_pasar": { "type": "string" },
+        "wilayah": { "type": "string" },
+        "buka_harian": { "type": "boolean" },
+        "pasaran": { "type": "array", "items": { "type": "string" } },
+        "jam_buka": { "type": "string" },
+        "kategori": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nama_pasar", "wilayah", "buka_harian", "jam_buka", "kategori"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Mapping of a user to a specific market for a specific date.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "nama": { "type": "string" },
+        "email": { "type": "string" },
+        "foto": { "type": "string" },
+        "pendamping": { "type": "string" },
+        "pasarId": { "type": "string" },
+        "pasarNama": { "type": "string" },
+        "tanggal": { "type": "string", "format": "YYYY-MM-DD" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "nama", "email", "pasarId", "pasarNama", "tanggal", "createdAt"]
+    },
+    "MarketPlan": {
+      "title": "Market Plan",
+      "description": "Sales field operation market plan.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "city": { "type": "string" },
+        "marketType": { "type": "string" },
+        "marketName": { "type": "string" },
+        "marketJam": { "type": "string" },
+        "dayStart": { "type": "string", "format": "YYYY-MM-DD" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "city", "marketType", "marketName", "dayStart", "createdAt"]
+    }
+  },
+  "firestore": {
+    "markets/{marketId}": {
+      "schema": "Market",
+      "description": "Collection of all markets."
+    },
+    "assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Daily market assignments. ID is usually 'YYYY-MM-DD_uid' or similar."
+    },
+    "market_plans/{planId}": {
+      "schema": "MarketPlan",
+      "description": "Sales live market plans for field operations."
+    },
+    "admins/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" }
+        }
+      },
+      "description": "List of admin users."
+    },
+    "marketLocks/{lockId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "uid": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "description": "Locks for markets to prevent duplicate selection."
+    },
+    "users/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "uid": { "type": "string" },
+          "displayName": { "type": "string" },
+          "email": { "type": "string" },
+          "photoURL": { "type": "string" },
+          "lastLogin": { "type": "string", "format": "date-time" }
+        }
+      },
+      "description": "User profiles and registration details."
+    }
+  }
+}

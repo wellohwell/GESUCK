@@ -1,0 +1,148 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 0.1 Public Connectivity Check (Health Check)
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@gmail.com' || 
+        request.auth.token.email == 'wahyulaksanajayakusuma@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. Markets
+    match /markets/{marketId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isEmailVerified() && isValidMarket(incoming()) && 
+        incoming().created_at == request.time;
+      allow update: if isAdmin() && isEmailVerified() && isValidMarket(incoming());
+      allow delete: if isAdmin() && isEmailVerified();
+      
+      function isValidMarket(data) {
+        return data.nama_pasar is string && data.nama_pasar.size() > 0 && data.nama_pasar.size() <= 100 &&
+               data.wilayah is string && data.wilayah.size() > 0 && data.wilayah.size() <= 50 &&
+               data.buka_harian is bool &&
+               data.pasaran is list && data.pasaran.size() <= 7 &&
+               data.jam_buka is string && data.jam_buka.size() > 0 && data.jam_buka.size() <= 50 &&
+               data.kategori is string && data.kategori.size() > 0 && data.kategori.size() <= 50;
+      }
+    }
+
+    // 2. Assignments
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isEmailVerified() &&
+        isValidAssignment(incoming()) &&
+        assignmentId == incoming().tanggal + '_' + request.auth.uid &&
+        incoming().uid == request.auth.uid &&
+        incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isEmailVerified() &&
+        isValidAssignment(incoming()) &&
+        assignmentId == incoming().tanggal + '_' + request.auth.uid &&
+        incoming().uid == request.auth.uid &&
+        existing().uid == request.auth.uid &&
+        incoming().tanggal == existing().tanggal &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'pasarId', 'pasarNama', 'pendamping', 'nama', 'email', 'foto'
+        ]);
+      allow delete: if isSignedIn() && (existing().uid == request.auth.uid || isAdmin());
+
+      function isValidAssignment(data) {
+        return data.uid is string && data.uid == request.auth.uid &&
+               data.nama is string && data.nama.size() <= 100 &&
+               data.email is string && data.email.size() <= 100 &&
+               data.foto is string && data.foto.size() <= 500 &&
+               data.pendamping is string && data.pendamping.size() <= 100 &&
+               data.pasarId is string && data.pasarId.size() <= 50 &&
+               data.pasarNama is string && data.pasarNama.size() <= 100 &&
+               data.tanggal is string && data.tanggal.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+               data.createdAt == request.time;
+      }
+    }
+
+    // 2.1 Market Plans
+    match /market_plans/{planId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isEmailVerified() &&
+        isValidPlan(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isEmailVerified() && (
+        (existing().userId == request.auth.uid && 
+         isValidPlan(incoming()) &&
+         incoming().userId == request.auth.uid &&
+         incoming().createdAt == existing().createdAt &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
+         isAdmin()
+      );
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      function isValidPlan(data) {
+        return data.userId is string && data.userId == request.auth.uid &&
+               data.userName is string && data.userName.size() <= 100 &&
+               data.userPhoto is string && data.userPhoto.size() <= 500 &&
+               data.city is string && data.city.size() <= 100 &&
+               data.marketType is string && data.marketType.size() <= 50 &&
+               data.marketName is string && data.marketName.size() <= 100 &&
+               data.marketJam is string && data.marketJam.size() <= 50 &&
+               data.dayStart is string && data.dayStart.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+               data.status is string && data.status.size() <= 20;
+      }
+    }
+
+    // 3. Admins
+    match /admins/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 3.1 Users
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 4. Market Locks
+    match /marketLocks/{lockId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isEmailVerified() &&
+        incoming().uid == request.auth.uid;
+      allow update: if isSignedIn() && isEmailVerified() &&
+        incoming().uid == request.auth.uid &&
+        existing().uid == request.auth.uid;
+      allow delete: if isSignedIn() &&
+        (existing().uid == request.auth.uid || isAdmin());
+    }
+  }
+}
