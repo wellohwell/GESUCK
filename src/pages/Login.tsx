@@ -39,7 +39,7 @@ export default function Login() {
         <div className="p-3">
           <div className="w-full h-36 rounded-[24px] overflow-hidden bg-white flex items-center justify-center">
             <img 
-              src="/_404_.png" 
+              src="/login-illustration.png"" 
               alt="Team" 
               className="w-full h-full object-contain p-2"
             />
