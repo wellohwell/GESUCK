@@ -5,10 +5,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import { syncUser } from "./firebase/services";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from "./hooks/useTheme";
+import { ToastProvider } from "./components/ToastProvider";
 
-export default function App() {
+function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,7 +35,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#050505] flex items-center justify-center">
         <div className="relative">
           <div className="w-12 h-12 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin"></div>
         </div>
@@ -54,15 +54,18 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white">
       {renderPage()}
-      <ToastContainer 
-        position="bottom-center"
-        theme="dark"
-        hideProgressBar
-        autoClose={3000}
-        aria-label="Notifications"
-      />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

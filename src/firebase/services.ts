@@ -92,13 +92,28 @@ export async function syncUser() {
   if (!auth.currentUser) return;
   const userRef = doc(db, "users", auth.currentUser.uid);
   try {
-    await setDoc(userRef, {
-      uid: auth.currentUser.uid,
-      displayName: auth.currentUser.displayName,
-      email: auth.currentUser.email,
-      photoURL: auth.currentUser.photoURL,
-      lastLogin: serverTimestamp()
-    }, { merge: true });
+    // Check if user exists first to avoid overwriting custom labels/names from admin
+    const { getDoc } = await import("firebase/firestore");
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        uid: auth.currentUser.uid,
+        displayName: auth.currentUser.displayName,
+        email: auth.currentUser.email,
+        photoURL: auth.currentUser.photoURL,
+        role: "Penyelam",
+        status: "pending",
+        lastLogin: serverTimestamp()
+      });
+    } else {
+      // For existing users, only update lastLogin and maybe photo/email if changed
+      await setDoc(userRef, {
+        lastLogin: serverTimestamp(),
+        photoURL: auth.currentUser.photoURL, // Keep photo sync'd
+        email: auth.currentUser.email      // Keep email sync'd
+      }, { merge: true });
+    }
   } catch (error) {
     console.error("Error syncing user:", error);
   }
@@ -107,6 +122,14 @@ export async function syncUser() {
 export async function updateUser(userId: string, data: any) {
   try {
     await setDoc(doc(db, "users", userId), data, { merge: true });
+    
+    // If updating self, also update current auth profile for immediate UI response
+    if (auth.currentUser && auth.currentUser.uid === userId && data.displayName) {
+      const { updateProfile } = await import("firebase/auth");
+      await updateProfile(auth.currentUser, { 
+        displayName: data.displayName 
+      });
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
   }

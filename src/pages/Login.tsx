@@ -1,7 +1,6 @@
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/config";
 import { motion } from "motion/react";
-import { LogIn, ShoppingBag } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function Login() {
@@ -34,41 +33,39 @@ export default function Login() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-[340px] bg-white rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden"
+        className="relative z-10 w-full max-w-[280px] bg-white rounded-[32px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] overflow-hidden"
       >
-        {/* Card Header Image */}
-        <div className="p-4">
-          <div className="w-full h-48 rounded-[32px] overflow-hidden shadow-inner">
+        {/* Card Header Image - Dibuat lebih kecil */}
+        <div className="p-3">
+          <div className="w-full h-36 rounded-[24px] overflow-hidden bg-white flex items-center justify-center">
             <img 
               src="/_404_.png" 
               alt="Team" 
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain p-2"
             />
           </div>
         </div>
 
         {/* Card Content */}
-        <div className="px-8 pb-10 pt-4 flex flex-col items-center">
-          <h2 className="text-2xl font-black text-gray-800 mb-8 uppercase tracking-tight">Login</h2>
-
-          {/* Login Button Styled as Primary Action */}
+        <div className="px-6 pb-8 pt-2 flex flex-col items-center text-center">
+          {/* Login Button - Fit Content & Lebih Kecil */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleGoogleLogin}
-            className="w-full h-12 bg-brand-primary text-white flex items-center justify-center gap-3 rounded-full font-black text-sm shadow-[0_8px_20px_rgba(255,59,48,0.2)] hover:shadow-[0_10px_25px_rgba(255,59,48,0.3)] transition-all uppercase tracking-widest"
+            className="inline-flex items-center justify-center gap-2 px-6 h-10 bg-brand-primary text-white rounded-full font-semibold text-[11px] shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
           >
             <img 
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
               alt="Google" 
-              className="w-4.5 h-4.5 brightness-0 invert"
+              className="w-3.5 h-3.5 brightness-0 invert"
             />
             Login with Google
           </motion.button>
           
-          {/* Footer Text */}
-          <div className="mt-8 text-center">
-            <p className="text-[10px] text-gray-400 font-bold leading-relaxed uppercase tracking-wider">
+          {/* Footer Text - Dikecilkan */}
+          <div className="mt-6">
+            <p className="text-[9px] text-gray-400 font-bold leading-tight uppercase tracking-wider">
               By continuing, you agree to our<br />
               <span className="text-brand-primary/60 hover:text-brand-primary transition-colors cursor-pointer underline underline-offset-2">Terms</span> & <span className="text-brand-primary/60 hover:text-brand-primary transition-colors cursor-pointer underline underline-offset-2">Privacy</span>
             </p>
