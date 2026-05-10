@@ -51,10 +51,10 @@ export default function Login() {
 
         {/* App Title */}
         <div className="flex flex-col items-center justify-center mb-10 z-10 relative mt-1">
-          <h1 className="text-4xl font-display font-black tracking-widest text-white uppercase">
+          <h1 className="text-4xl font-display font-semibold tracking-tight text-white ">
             VORK
           </h1>
-          <p className="text-[9px] text-white/40 tracking-[0.2em] font-bold uppercase mt-1.5">
+          <p className="text-xs text-white/40 tracking-tight font-medium  mt-1.5">
             Field Operation System
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function Login() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleGoogleLogin}
-            className="w-[85%] max-w-[240px] inline-flex items-center justify-center gap-2.5 h-10 bg-white text-black rounded-full font-bold text-[10px] shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
+            className="w-[85%] max-w-[240px] inline-flex items-center justify-center gap-2.5 h-10 bg-white text-black rounded-full font-medium text-sm shadow-lg hover:shadow-xl transition-all  tracking-tight"
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -79,7 +79,7 @@ export default function Login() {
 
           {/* Footer */}
           <div className="mt-8">
-            <p className="text-[8px] text-white/30 font-bold leading-[1.6] uppercase tracking-widest">
+            <p className="text-xs text-white/30 font-medium leading-[1.6]  tracking-tight">
               Dengan melanjutkan, Anda menyetujui
               <br />
               <span className="text-white/50 hover:text-white transition-colors cursor-pointer underline underline-offset-[3px]">

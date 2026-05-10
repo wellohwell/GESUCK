@@ -1,6 +1,6 @@
 {
-  "name": "TeamRewang",
-  "short_name": "TeamRewang",
+  "name": "Vork",
+  "short_name": "Vork",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#fbfbfb",
+  "background_color": "#000000",
   "display": "standalone"
 }

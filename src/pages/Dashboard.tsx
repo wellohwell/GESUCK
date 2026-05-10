@@ -245,7 +245,7 @@ export default function Dashboard({
       <nav className="p-3 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-100 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <div className="flex flex-col justify-center">
-            <h4 className="text-xs font-black tracking-tight text-zinc-900 dark:text-white uppercase leading-none">
+            <h4 className="text-xs font-medium tracking-tight text-zinc-900 dark:text-white  leading-none">
               {auth.currentUser?.displayName || "Guest"}
             </h4>
           </div>
@@ -273,10 +273,10 @@ export default function Dashboard({
       <main className="max-w-2xl mx-auto px-4 pt-4 pb-10">
         {/* Header Hero */}
         <section className="mb-5 text-center pt-1">
-          <p className="text-[9px] text-zinc-400 dark:text-white/60 font-black uppercase tracking-[0.2em] mb-0.5">
+          <p className="text-xs text-zinc-400 dark:text-white/60 font-medium  tracking-tight mb-0.5">
             {activeDate.fullDate}
           </p>
-          <h1 className="text-xl font-display font-black leading-tight tracking-tighter text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-display font-medium leading-tight tracking-tighter text-zinc-900 dark:text-white">
             {activeDate.dayName}{" "}
             <span className="text-brand-primary">{activeDate.pasaran}</span>
           </h1>
@@ -287,11 +287,11 @@ export default function Dashboard({
           <div className="flex items-center justify-between mb-2 px-1">
             <div className="flex items-center gap-1.5">
               <Users className="w-3 h-3 text-brand-primary" />
-              <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-white/70">
+              <h2 className="text-sm font-medium  tracking-tight text-zinc-500 dark:text-white/70">
                 Rencana Kunjungan
               </h2>
             </div>
-            <span className="text-[8px] font-bold text-zinc-400 dark:text-white/50 tracking-wide uppercase">
+            <span className="text-xs font-medium text-zinc-400 dark:text-white/50 tracking-wide ">
               {plans.length} Sudah Memilih
             </span>
           </div>
@@ -303,7 +303,7 @@ export default function Dashboard({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[9px] uppercase tracking-[0.18em] shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-medium text-xs  tracking-tight shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
                 >
                   <Plus className="w-3 h-3" />
                   Tambah Rencana
@@ -336,7 +336,7 @@ export default function Dashboard({
                   exit={{ opacity: 0 }}
                   className="py-10 px-4 flex flex-col items-center justify-center text-center"
                 >
-                  <p className="text-[9px] text-zinc-300 dark:text-white/20 font-black uppercase tracking-[0.3em]">
+                  <p className="text-xs text-zinc-300 dark:text-white/20 font-medium  tracking-tight">
                     BELUM ADA RENCANA HARI INI
                   </p>
                 </motion.div>
@@ -365,7 +365,7 @@ export default function Dashboard({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-[11px] font-semibold text-zinc-900 dark:text-white uppercase tracking-tight truncate">
+                        <p className="text-sm font-medium text-zinc-900 dark:text-white tracking-tight truncate uppercase">
                           {plan.marketName}
                           <span className="opacity-50 ml-1">
                             • {plan.marketType?.replace("PASAR_", "").replace("_", " ")}
@@ -377,19 +377,19 @@ export default function Dashboard({
                       </div>
 
                       <div className="flex items-center gap-1 mt-0">
-                        <span className="text-[7.5px] font-bold text-brand-primary uppercase tracking-wider truncate max-w-[70px]">
+                        <span className="text-[7.5px] font-medium text-brand-primary  tracking-wider truncate max-w-[70px]">
                           {typeof plan.userName === "string"
                             ? plan.userName.split(" ")[0]
                             : "User"}
                         </span>
                         <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                        <span className="text-[7.5px] font-medium text-zinc-400 dark:text-white/40 uppercase tracking-tight truncate">
+                        <span className="text-[7.5px] font-medium text-zinc-400 dark:text-white/40  tracking-tight truncate">
                           {plan.city}
                         </span>
                         {plan.marketJam && (
                           <>
                             <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                            <span className="text-[7px] font-mono text-zinc-400 dark:text-white/30 uppercase tracking-tight">
+                            <span className="text-xs font-mono text-zinc-400 dark:text-white/30  tracking-tight">
                               {plan.marketJam}
                             </span>
                           </>
@@ -398,7 +398,7 @@ export default function Dashboard({
                     </div>
 
                     <div className="text-right flex items-center gap-1.5">
-                      <p className="text-[7px] text-zinc-300 dark:text-white/20 font-black tracking-tight whitespace-nowrap">
+                      <p className="text-xs text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap">
                         {dayjs(plan.createdAt?.toDate()).fromNow(true)}
                       </p>
                       {(plan.userId === auth.currentUser?.uid || isAdmin) && (
@@ -439,7 +439,7 @@ export default function Dashboard({
             >
               {/* Header */}
               <div className="sticky top-0 bg-white dark:bg-[#0a0a0a] px-4 py-4 z-20 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center">
-                <h2 className="text-[11px] font-display font-black tracking-widest text-zinc-900 dark:text-white uppercase underline-offset-4 decoration-brand-primary decoration-2 underline">
+                <h2 className="text-sm font-display font-medium tracking-tight text-zinc-900 dark:text-white  underline-offset-4 decoration-brand-primary decoration-2 underline">
                   RENCANA KUNJUNGAN
                 </h2>
                 <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function Dashboard({
                     placeholder="Cari pasar..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold outline-none focus:border-brand-primary dark:focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
+                    className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs font-medium outline-none focus:border-brand-primary dark:focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
                   />
                   {searchQuery && (
                     <button
@@ -480,7 +480,7 @@ export default function Dashboard({
                     <select
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[10px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
                     >
                       <option value="" className="bg-white dark:bg-[#0a0a0a]">Wilayah</option>
                       {WILAYAH_EXACT.map((w) => (
@@ -494,7 +494,7 @@ export default function Dashboard({
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[10px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
                     >
                       <option value="" className="bg-white dark:bg-[#0a0a0a]">Kategori</option>
                       {KATEGORI_TYPES.map((k) => (
@@ -508,7 +508,7 @@ export default function Dashboard({
                     <select
                       value={selectedPasaran || ""}
                       onChange={(e) => setSelectedPasaran(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[10px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
                     >
                       <option value="" className="bg-white dark:bg-[#0a0a0a]">Pasaran</option>
                       {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
@@ -522,10 +522,10 @@ export default function Dashboard({
               {/* Available Markets List */}
               <div className="relative">
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <label className="text-[9px] font-black text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] block">
+                  <label className="text-xs font-medium text-zinc-400 dark:text-white/60  tracking-tight block">
                     Pasar Tersedia
                   </label>
-                  <span className="text-[9px] font-black text-brand-primary bg-brand-primary/10 px-2.5 py-0.5 rounded-full border border-brand-primary/20">
+                  <span className="text-xs font-medium text-brand-primary bg-brand-primary/10 px-2.5 py-0.5 rounded-full border border-brand-primary/20">
                     {availableMarkets.length} TOTAL
                   </span>
                 </div>
@@ -539,7 +539,7 @@ export default function Dashboard({
                       className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
                     >
                       <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
-                      <p className="text-[10px] font-bold text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
+                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
                         {pasaranWarning}
                       </p>
                     </motion.div>
@@ -559,12 +559,12 @@ export default function Dashboard({
                         >
                           <div className="min-w-0 flex-1">
                             <h4 className={cn(
-                              "font-semibold text-[13px] leading-tight uppercase tracking-tight truncate transition-colors",
+                              "font-medium text-[13px] leading-tight tracking-tight truncate transition-colors uppercase",
                               selectedMarketName === m.nama_pasar ? "text-brand-primary" : "text-zinc-900 dark:text-white"
                             )}>
                               {m.nama_pasar}
                             </h4>
-                            <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-[9px] font-medium text-zinc-500 dark:text-white/40 uppercase tracking-wide">
+                            <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/40  tracking-wide">
                               <span>{m.wilayah}</span>
                               <span className="opacity-30">•</span>
                               <span>{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
@@ -603,7 +603,7 @@ export default function Dashboard({
                                         setSelectedSubCategory(String(katIdVal));
                                       }}
                                       className={cn(
-                                        "px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all",
+                                        "px-2.5 py-1 rounded-lg text-xs font-medium  tracking-tight transition-all",
                                         selectedSubCategory === String(katIdVal)
                                           ? "bg-brand-primary text-black"
                                           : "bg-zinc-200 dark:bg-white/10 text-zinc-500 dark:text-white/40 hover:bg-zinc-300 dark:hover:bg-white/20",
@@ -624,7 +624,7 @@ export default function Dashboard({
                         </div>
                       ))
                     ) : (
-                      <div className="py-12 text-center text-zinc-400 dark:text-white/10 italic text-[10px] font-black uppercase tracking-widest">
+                      <div className="py-12 text-center text-zinc-400 dark:text-white/10  text-sm font-medium  tracking-tight">
                         Data Tidak Ditemukan
                       </div>
                     )}
@@ -636,7 +636,7 @@ export default function Dashboard({
               <div className="sticky bottom-0 p-4 bg-white dark:bg-[#0a0a0a] border-t border-zinc-100 dark:border-white/5 flex justify-center z-20">
                 <button
                   onClick={handleAddPlan}
-                  className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-primary text-white dark:text-black rounded-full font-semibold uppercase tracking-[0.2em] text-[10px] shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 flex items-center justify-center relative overflow-hidden"
+                  className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-primary text-white dark:text-black rounded-full font-medium  tracking-tight text-sm shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 flex items-center justify-center relative overflow-hidden"
                 >
                   <span className="relative z-10">SIMPAN</span>
                 </button>

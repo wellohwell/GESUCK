@@ -183,7 +183,7 @@ export default function Admin({ onBack }: AdminProps) {
             <ArrowLeft className="w-3.5 h-3.5 text-zinc-600 dark:text-white" />
           </button>
           <div className="flex-1 overflow-hidden">
-            <h1 className="text-[10px] font-black tracking-[0.2em] uppercase text-zinc-400 dark:text-white/30 truncate">
+            <h1 className="text-sm font-medium tracking-tight  text-zinc-400 dark:text-white/30 truncate">
               Admin Panel
             </h1>
           </div>
@@ -193,7 +193,7 @@ export default function Admin({ onBack }: AdminProps) {
               <button
                 onClick={() => setActiveTab("users")}
                 className={cn(
-                  "px-3 py-0.5 rounded-md text-[9px] font-black transition-all uppercase tracking-wider",
+                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider",
                   activeTab === "users"
                     ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20"
                     : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
@@ -204,7 +204,7 @@ export default function Admin({ onBack }: AdminProps) {
               <button
                 onClick={() => setActiveTab("master")}
                 className={cn(
-                  "px-3 py-0.5 rounded-md text-[9px] font-black transition-all uppercase tracking-wider",
+                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider",
                   activeTab === "master"
                     ? "bg-brand-secondary text-black shadow-md shadow-brand-secondary/20"
                     : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
@@ -290,14 +290,14 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
          <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => onExport("pdf")}
-              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
+              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-xs font-medium  tracking-tight text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
             >
               <FileText className="w-3.5 h-3.5" />
               Export PDF
             </button>
             <button 
               onClick={() => onExport("jpg")}
-              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
+              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-xs font-medium  tracking-tight text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
             >
               <Download className="w-3.5 h-3.5" />
               JPG
@@ -311,8 +311,8 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
            <div className="flex items-center gap-3 mb-1">
               <div className="w-1.5 h-8 bg-brand-primary rounded-full shadow-[0_0_20px_rgba(0,255,255,0.3)]" />
               <div>
-                 <h2 className="text-xl font-display font-black tracking-tight text-white uppercase italic">#GJY2026</h2>
-                 <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">{activeDate.fullDate}</p>
+                 <h2 className="text-xl font-display font-medium tracking-tight text-white  ">#GJY2026</h2>
+                 <p className="text-sm text-white/30 font-medium  tracking-tight">{activeDate.fullDate}</p>
               </div>
            </div>
         </div>
@@ -321,8 +321,8 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
           {stats.map((s, i) => (
             <div key={i} className="glass p-3 rounded-xl border border-white/10 bg-white/[0.05]">
               <s.icon className={cn("w-4 h-4 mb-2.5", s.color)} />
-              <p className="text-[9px] text-white/50 uppercase tracking-[0.15em] mb-1 font-bold">{s.label}</p>
-              <p className="text-xl font-display font-black text-white">{s.value}</p>
+              <p className="text-xs text-white/50  tracking-tight mb-1 font-medium">{s.label}</p>
+              <p className="text-xl font-display font-medium text-white">{s.value}</p>
             </div>
           ))}
         </div>
@@ -331,24 +331,24 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
           <div className="p-3 border-b border-white/10 flex items-center justify-between bg-white/[0.05]">
             <div className="flex items-center gap-2">
               <Users className="w-3.5 h-3.5 text-brand-primary" />
-              <h3 className="text-[10px] font-black uppercase tracking-wider">Team Rewanx</h3>
+              <h3 className="text-sm font-medium  tracking-wider">Team Rewanx</h3>
             </div>
-            <span className="text-[9px] font-black text-brand-primary bg-brand-primary/20 border border-brand-primary/40 px-2 py-0.5 rounded-full uppercase tracking-widest">{filtered.length} Aktif</span>
+            <span className="text-xs font-medium text-brand-primary bg-brand-primary/20 border border-brand-primary/40 px-2 py-0.5 rounded-full  tracking-tight">{filtered.length} Aktif</span>
           </div>
           <div className="overflow-x-auto text-white">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white/[0.05] text-[9px] uppercase tracking-[0.2em] text-white/60">
-                  <th className="px-4 py-3 font-black">Personel</th>
-                  <th className="px-4 py-3 font-black">Pasar</th>
-                  <th className="px-4 py-3 font-black">Waktu</th>
-                  <th className="px-4 py-3 font-black sr-only">Action</th>
+                <tr className="bg-white/[0.05] text-xs  tracking-tight text-white/60">
+                  <th className="px-4 py-3 font-medium">Personel</th>
+                  <th className="px-4 py-3 font-medium">Pasar</th>
+                  <th className="px-4 py-3 font-medium">Waktu</th>
+                  <th className="px-4 py-3 font-medium sr-only">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-white/10 italic text-xs font-medium tracking-wide">Belum ada data masuk hari ini</td>
+                    <td colSpan={4} className="px-4 py-8 text-center text-white/10  text-xs font-medium tracking-wide">Belum ada data masuk hari ini</td>
                   </tr>
                 ) : (
                   filtered.map((a: any) => (
@@ -363,24 +363,24 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <p className="font-black text-[11px] text-white group-hover:text-brand-primary transition-colors">{a.nama}</p>
-                            <p className="text-[9px] text-white/20 font-medium tracking-tight mt-0.5">{a.email}</p>
+                            <p className="font-medium text-sm text-white group-hover:text-brand-primary transition-colors">{a.nama}</p>
+                            <p className="text-xs text-white/20 font-medium tracking-tight mt-0.5">{a.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-black text-xs text-white leading-tight">{a.pasarNama}</p>
+                        <p className="font-medium text-xs text-white leading-tight">{a.pasarNama}</p>
                         <div className="flex items-center gap-1.5 mt-1 opacity-40">
                            <MapPin className="w-2.5 h-2.5 text-brand-primary" />
-                           <span className="text-[9px] font-black uppercase tracking-widest">
+                           <span className="text-xs font-medium  tracking-tight">
                               {markets.find((m: any) => m.nama_pasar === a.pasarNama)?.wilayah || "DIY"}
                            </span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5 text-white/30 font-mono text-[10px]">
+                        <div className="flex items-center gap-1.5 text-white/30 font-mono text-sm">
                           <Clock className="w-3 h-3 opacity-20" />
-                          <span className="font-black">
+                          <span className="font-medium">
                             {a.createdAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                           </span>
                         </div>
@@ -403,8 +403,8 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
 
         {/* Export Footer */}
         <div className="mt-6 pt-4 border-t border-white/[0.03] flex justify-between items-center opacity-20">
-           <p className="text-[7px] font-black uppercase tracking-[0.3em]">Field Operation System</p>
-           <p className="text-[7px] font-mono">Generated at: {new Date().toLocaleString()}</p>
+           <p className="text-xs font-medium  tracking-tight">Field Operation System</p>
+           <p className="text-xs font-mono">Generated at: {new Date().toLocaleString()}</p>
         </div>
       </div>
     </motion.div>
@@ -440,10 +440,10 @@ function UserManagementView({ users, assignments }: any) {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-white/60">
-                <th className="px-6 py-4 font-black text-[10px]">User Detail</th>
-                <th className="px-6 py-4 font-black text-[10px]">Aktivitas</th>
-                <th className="px-6 py-4 font-black text-[10px]">Akses & Status</th>
+              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-sm  tracking-tight text-zinc-400 dark:text-white/60">
+                <th className="px-6 py-4 font-medium text-sm">User Detail</th>
+                <th className="px-6 py-4 font-medium text-sm">Aktivitas</th>
+                <th className="px-6 py-4 font-medium text-sm">Akses & Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-white/[0.05]">
@@ -462,7 +462,7 @@ function UserManagementView({ users, assignments }: any) {
                           {u.photoURL ? (
                             <img src={u.photoURL} alt="" className="w-full h-full rounded-full ring-1 ring-white/10" crossOrigin="anonymous" referrerPolicy="no-referrer" />
                           ) : (
-                            <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-[10px] font-black text-zinc-400">
+                            <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-sm font-medium text-zinc-400">
                               {u.displayName?.charAt(0)}
                             </div>
                           )}
@@ -471,22 +471,22 @@ function UserManagementView({ users, assignments }: any) {
                           <input
                             defaultValue={u.displayName}
                             onBlur={(e) => updateUserRoleAndStatus(u.id, u.role, u.status, e.target.value)}
-                            className="font-semibold text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
+                            className="font-medium text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
                           />
-                          <p className="text-[10px] font-medium text-zinc-500 dark:text-white/30 truncate mt-0.5">{u.email}</p>
+                          <p className="text-sm font-medium text-zinc-500 dark:text-white/30 truncate mt-0.5">{u.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-widest">Login:</span>
-                          <span className="text-[10px] font-semibold text-zinc-600 dark:text-white/60">{lastLogin}</span>
+                          <span className="text-xs font-medium text-zinc-400  tracking-tight">Login:</span>
+                          <span className="text-sm font-medium text-zinc-600 dark:text-white/60">{lastLogin}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-widest">Pasar:</span>
+                          <span className="text-xs font-medium text-zinc-400  tracking-tight">Pasar:</span>
                           <span className={cn(
-                            "text-[9px] font-black px-1.5 py-0.5 rounded-md",
+                            "text-xs font-medium px-1.5 py-0.5 rounded-md",
                             isSelected ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
                           )}>
                             {isSelected ? "SELESAI" : "BELUM"}
@@ -500,7 +500,7 @@ function UserManagementView({ users, assignments }: any) {
                           <select
                             value={u.role || "Penyelam"}
                             onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
-                            className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1.5 rounded-lg text-[10px] font-semibold outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                            className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
                           >
                             <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
                             <option value="Penyelam" className="bg-zinc-900 text-white">Penyelam</option>
@@ -513,7 +513,7 @@ function UserManagementView({ users, assignments }: any) {
                             value={u.status || "pending"}
                             onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
                             className={cn(
-                              "w-full px-2 py-1.5 rounded-lg text-[10px] font-semibold border outline-none appearance-none cursor-pointer transition-all",
+                              "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
                               u.status === "active"
                                 ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
                                 : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
@@ -545,7 +545,7 @@ function UserManagementView({ users, assignments }: any) {
                   {u.photoURL ? (
                     <img src={u.photoURL} alt="" className="w-full h-full rounded-full ring-1 ring-white/10" crossOrigin="anonymous" referrerPolicy="no-referrer" />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-[10px] font-black text-zinc-400">
+                    <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-sm font-medium text-zinc-400">
                       {u.displayName?.charAt(0)}
                     </div>
                   )}
@@ -556,16 +556,16 @@ function UserManagementView({ users, assignments }: any) {
                       <input
                         defaultValue={u.displayName}
                         onBlur={(e) => updateUserRoleAndStatus(u.id, u.role, u.status, e.target.value)}
-                        className="font-semibold text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
+                        className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
                       />
-                      <div className="flex items-center gap-1.5 mt-0.5 text-[8px] font-medium text-zinc-500 dark:text-white/30 truncate">
+                      <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/30 truncate">
                         <span>{u.email}</span>
                         <span className="opacity-30">•</span>
                         <span>{lastLogin !== '-' ? `Login: ${lastLogin}` : 'Belum Login'}</span>
                       </div>
                     </div>
                     <div className={cn(
-                      "text-[8px] font-black px-1.5 py-0.5 rounded-md shrink-0 ml-2 mt-0.5",
+                      "text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 ml-2 mt-0.5",
                       isSelected ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
                     )}>
                       {isSelected ? "SELESAI" : "BELUM"}
@@ -577,7 +577,7 @@ function UserManagementView({ users, assignments }: any) {
                         <select
                           value={u.role || "Penyelam"}
                           onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
-                          className="w-full bg-transparent border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-[9px] font-semibold outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                          className="w-full bg-transparent border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
                         >
                           <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
                           <option value="Penyelam" className="bg-zinc-900 text-white">Penyelam</option>
@@ -590,7 +590,7 @@ function UserManagementView({ users, assignments }: any) {
                           value={u.status || "pending"}
                           onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
                           className={cn(
-                            "w-full px-2 py-1.5 rounded-lg text-[10px] font-semibold border outline-none appearance-none cursor-pointer transition-all",
+                            "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
                             u.status === "active"
                               ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
                               : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
@@ -644,7 +644,7 @@ function MasterDataView({
         <div className="flex justify-center">
           <button
             onClick={onAdd}
-            className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[9px] uppercase tracking-[0.18em] shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
+            className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-medium text-xs  tracking-tight shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
           >
             <Plus className="w-3 h-3" />
             Tambah Pasar
@@ -657,7 +657,7 @@ function MasterDataView({
             <select
               value={filters.wilayah}
               onChange={(e) => filters.setWilayah(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[11px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
             >
               <option value="" className="bg-white dark:bg-black">WILAYAH</option>
               {WILAYAH_OPTIONS.map((w) => (
@@ -672,7 +672,7 @@ function MasterDataView({
             <select
               value={filters.kategori}
               onChange={(e) => filters.setKategori(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[11px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
             >
               <option value="" className="bg-white dark:bg-black">KATEGORI</option>
               {KATEGORI_OPTIONS.map((k) => (
@@ -687,7 +687,7 @@ function MasterDataView({
             <select
               value={filters.pasaran}
               onChange={(e) => filters.setPasaran(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-[11px] font-bold border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
             >
               <option value="" className="bg-white dark:bg-black">PASARAN</option>
               {PASARAN_OPTIONS.map((p) => (
@@ -706,7 +706,7 @@ function MasterDataView({
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-[10px] uppercase font-black tracking-widest text-zinc-400 dark:text-white/60">
+              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-sm  font-medium tracking-tight text-zinc-400 dark:text-white/60">
                 <th className="px-6 py-4">Informasi Pasar</th>
                 <th className="px-6 py-4">Wilayah</th>
                 <th className="px-6 py-4">Kategori Detail</th>
@@ -720,7 +720,7 @@ function MasterDataView({
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-6 py-20 text-center text-zinc-400 dark:text-white/10 italic text-sm font-black tracking-[0.2em] uppercase"
+                    className="px-6 py-20 text-center text-zinc-400 dark:text-white/10  text-sm font-medium tracking-tight "
                   >
                     Data Tidak Ditemukan
                   </td>
@@ -731,10 +731,10 @@ function MasterDataView({
                     key={m.id}
                     className="group hover:bg-zinc-50 dark:hover:bg-white/[0.04] transition-all"
                   >
-                    <td className="px-6 py-4 font-black text-sm tracking-tight text-zinc-900 dark:text-white">
+                    <td className="px-6 py-4 font-medium text-sm tracking-tight text-zinc-900 dark:text-white uppercase">
                       {m.nama_pasar}
                     </td>
-                    <td className="px-6 py-4 text-[11px] font-bold text-zinc-500 dark:text-white/60 uppercase">
+                    <td className="px-6 py-4 text-sm font-medium text-zinc-500 dark:text-white/60 ">
                       {m.wilayah}
                     </td>
                     <td className="px-6 py-4">
@@ -743,7 +743,7 @@ function MasterDataView({
                           .map((id: any, idx: number) => (
                             <span
                               key={typeof id === 'string' ? `${id}-${idx}` : `kat-${idx}`}
-                              className="px-2 py-0.5 rounded-md bg-brand-secondary/10 dark:bg-brand-secondary/20 text-brand-secondary/80 text-[9px] font-black uppercase"
+                              className="px-2 py-0.5 rounded-md bg-brand-secondary/10 dark:bg-brand-secondary/20 text-brand-secondary/80 text-xs font-medium "
                             >
                               {KATEGORI_OPTIONS.find((o) => (typeof id === 'object' ? o.id === id.id : o.id === id))
                                 ?.label.replace("Pasar ", "")
@@ -754,7 +754,7 @@ function MasterDataView({
                     </td>
                     <td className="px-6 py-4">
                       {m.buka_harian ? (
-                        <span className="text-[10px] text-emerald-600 dark:text-brand-primary font-black uppercase tracking-[0.1em] border border-emerald-200 dark:border-brand-primary/20 px-2 py-0.5 rounded-md">
+                        <span className="text-sm text-emerald-600 dark:text-brand-primary font-medium  tracking-tight border border-emerald-200 dark:border-brand-primary/20 px-2 py-0.5 rounded-md">
                           HARIAN
                         </span>
                       ) : (
@@ -762,7 +762,7 @@ function MasterDataView({
                           {m.pasaran?.map((p: string, pIdx: number) => (
                             <span
                               key={`${p}-${pIdx}`}
-                              className="text-[9px] px-2 py-0.5 bg-amber-50 dark:bg-yellow-500/10 text-amber-600 dark:text-yellow-400 rounded-md border border-amber-200 dark:border-yellow-500/20 font-black uppercase"
+                              className="text-xs px-2 py-0.5 bg-amber-50 dark:bg-yellow-500/10 text-amber-600 dark:text-yellow-400 rounded-md border border-amber-200 dark:border-yellow-500/20 font-medium "
                             >
                               {p}
                             </span>
@@ -785,9 +785,9 @@ function MasterDataView({
                               return (
                                 <div
                                   key={`${cat}-${jamIdx}`}
-                                  className="flex items-center gap-2 text-[10px]"
+                                  className="flex items-center gap-2 text-sm"
                                 >
-                                  <span className="text-zinc-400 dark:text-brand-primary/60 font-black uppercase">
+                                  <span className="text-zinc-400 dark:text-brand-primary/60 font-medium ">
                                     {label
                                       .replace("Pasar ", "")
                                       .substring(0, 5)
@@ -800,7 +800,7 @@ function MasterDataView({
                                 </div>
                               );
                             })
-                          : <span className="text-zinc-600 dark:text-white/40 font-mono text-[10px]">{String(m.jam_buka || "")}</span>}
+                          : <span className="text-zinc-600 dark:text-white/40 font-mono text-sm">{String(m.jam_buka || "")}</span>}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -829,7 +829,7 @@ function MasterDataView({
         {/* Mobile View */}
         <div className="lg:hidden px-3">
           {markets.length === 0 ? (
-            <div className="py-12 text-center text-zinc-400 dark:text-white/10 italic text-xs font-black uppercase tracking-widest">
+            <div className="py-12 text-center text-zinc-400 dark:text-white/10  text-xs font-medium  tracking-tight">
               Data Tidak Ditemukan
             </div>
           ) : (
@@ -841,10 +841,10 @@ function MasterDataView({
                   className="flex items-center justify-between py-3 px-0.5 border-b border-zinc-100 dark:border-white/[0.06] last:border-0 transition-all hover:bg-zinc-100/50 dark:hover:bg-white/[0.02] active:bg-zinc-200 dark:active:bg-white/[0.04] group cursor-pointer"
                 >
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-semibold text-[13px] leading-tight text-zinc-900 dark:text-white uppercase tracking-tight truncate transition-colors">
+                    <h4 className="font-medium text-[13px] leading-tight text-zinc-900 dark:text-white tracking-tight truncate transition-colors uppercase">
                       {m.nama_pasar}
                     </h4>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-[10px] font-medium text-zinc-500 dark:text-white/40 uppercase tracking-wide">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-sm font-medium text-zinc-500 dark:text-white/40  tracking-wide">
                       <span>{m.wilayah}</span>
                       <span className="opacity-30">•</span>
                       <span>{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
@@ -1012,7 +1012,7 @@ function MarketFormModal({ market, onClose }: any) {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <h2 className="text-sm font-display font-black tracking-widest text-zinc-900 dark:text-white uppercase italic">
+          <h2 className="text-sm font-display font-medium tracking-tight text-zinc-900 dark:text-white  ">
             {market ? "Edit Master Data" : "Tambah Master Data"}
           </h2>
         </div>
@@ -1023,7 +1023,7 @@ function MarketFormModal({ market, onClose }: any) {
         >
           <div className="p-5 space-y-6 pb-6">
             <div className="space-y-2">
-            <label className="text-[10px] text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] font-black block pl-1">
+            <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium block pl-1">
               Nama Pasar Target
             </label>
             <input
@@ -1033,13 +1033,13 @@ function MarketFormModal({ market, onClose }: any) {
                 setFormData({ ...formData, nama_pasar: e.target.value })
               }
               placeholder="Masukan nama lengkap pasar..."
-              className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
+              className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] font-black block pl-1">
+              <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium block pl-1">
                 Wilayah Kabupaten
               </label>
               <div className="relative">
@@ -1048,7 +1048,7 @@ function MarketFormModal({ market, onClose }: any) {
                   onChange={(e) =>
                     setFormData({ ...formData, wilayah: e.target.value })
                   }
-                  className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none appearance-none cursor-pointer text-sm font-bold text-zinc-900 dark:text-white"
+                  className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none appearance-none cursor-pointer text-sm font-medium text-zinc-900 dark:text-white"
                 >
                   {WILAYAH_OPTIONS.map((o) => (
                     <option key={o} value={o} className="bg-white dark:bg-black">
@@ -1060,7 +1060,7 @@ function MarketFormModal({ market, onClose }: any) {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] font-black block pl-1">
+              <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium block pl-1">
                 Kategori Operasi
               </label>
               <div className="flex flex-wrap gap-2">
@@ -1070,7 +1070,7 @@ function MarketFormModal({ market, onClose }: any) {
                     type="button"
                     onClick={() => toggleKategori(o.id)}
                     className={cn(
-                      "flex-1 min-w-[90px] h-10 rounded-xl border text-[10px] font-black uppercase tracking-tight transition-all",
+                      "flex-1 min-w-[90px] h-10 rounded-xl border text-sm font-medium  tracking-tight transition-all",
                       formData.kategori.includes(o.id)
                         ? "bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/10"
                         : "bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-white/40",
@@ -1085,7 +1085,7 @@ function MarketFormModal({ market, onClose }: any) {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] font-black">
+              <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium">
                 Konfigurasi Jam Buka
               </label>
               <button
@@ -1094,7 +1094,7 @@ function MarketFormModal({ market, onClose }: any) {
                   setFormData({ ...formData, buka_harian: !formData.buka_harian })
                 }
                 className={cn(
-                  "h-10 px-4 rounded-xl border flex items-center justify-center gap-2 font-black text-[10px] tracking-widest transition-all uppercase",
+                  "h-10 px-4 rounded-xl border flex items-center justify-center gap-2 font-medium text-sm tracking-tight transition-all ",
                   formData.buka_harian
                     ? "bg-brand-primary text-white border-brand-primary"
                     : "bg-zinc-50 dark:bg-white/10 border-zinc-200 dark:border-white/20 text-zinc-500 dark:text-white/60",
@@ -1114,7 +1114,7 @@ function MarketFormModal({ market, onClose }: any) {
                 <div key={`${cat}-${idx}`} className="space-y-1.5">
                   <div className="flex items-center gap-2 px-1">
                     <Layers className="w-3 h-3 text-brand-primary/60" />
-                    <span className="text-[10px] text-zinc-500 dark:text-white/80 font-black uppercase tracking-wider">
+                    <span className="text-sm text-zinc-500 dark:text-white/80 font-medium  tracking-wider">
                       {KATEGORI_OPTIONS.find((o) => o.id === cat)?.label}
                     </span>
                   </div>
@@ -1128,7 +1128,7 @@ function MarketFormModal({ market, onClose }: any) {
                       })
                     }
                     placeholder="Contoh: 02:00 - 10:00"
-                    className="w-full h-11 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 outline-none text-xs font-mono font-bold text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10 focus:border-brand-primary/40"
+                    className="w-full h-11 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 outline-none text-xs font-mono font-medium text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10 focus:border-brand-primary/40"
                   />
                 </div>
               ))}
@@ -1141,7 +1141,7 @@ function MarketFormModal({ market, onClose }: any) {
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-2"
             >
-              <label className="text-[10px] text-zinc-400 dark:text-white/60 uppercase tracking-[0.2em] font-black block pl-1">
+              <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium block pl-1">
                 Pilih Hari Pasaran
               </label>
               <div className="flex flex-wrap gap-2">
@@ -1151,7 +1151,7 @@ function MarketFormModal({ market, onClose }: any) {
                     type="button"
                     onClick={() => togglePasaran(p)}
                     className={cn(
-                      "flex-1 min-w-[80px] h-10 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all",
+                      "flex-1 min-w-[80px] h-10 rounded-xl border text-sm font-medium  tracking-tight transition-all",
                       formData.pasaran.includes(p.toUpperCase())
                         ? "bg-brand-secondary text-black border-brand-secondary shadow-lg shadow-brand-secondary/10"
                         : "bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-white/40",
@@ -1169,14 +1169,14 @@ function MarketFormModal({ market, onClose }: any) {
             <button
               type="button"
               onClick={onClose}
-              className="w-full max-w-[140px] h-12 bg-zinc-100 dark:bg-white/10 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-zinc-500 dark:text-white/60 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all"
+              className="w-full max-w-[140px] h-12 bg-zinc-100 dark:bg-white/10 rounded-2xl font-medium  tracking-tight text-sm text-zinc-500 dark:text-white/60 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-secondary text-white dark:text-black rounded-2xl font-semibold uppercase tracking-[0.2em] text-[10px] shadow-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
+              className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-secondary text-white dark:text-black rounded-2xl font-medium  tracking-tight text-sm shadow-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
             >
               {isSubmitting ? "Processing..." : "Simpan"}
             </button>
