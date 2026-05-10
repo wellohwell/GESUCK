@@ -25,11 +25,10 @@ import { toast } from "react-toastify";
 import { cn } from "../lib/utils";
 import { getActiveSystemDate } from "../utils/javaneseDate";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { toTitleCase } from "../utils/format";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/id";
 
-dayjs.extend(relativeTime);
 dayjs.locale("id");
 
 const WILAYAH_EXACT = [
@@ -51,11 +50,13 @@ const KATEGORI_TYPES = [
 
 interface DashboardProps {
   onNavigateAdmin: () => void;
+  onNavigateReport: () => void;
   isAdmin: boolean;
 }
 
 export default function Dashboard({
   onNavigateAdmin,
+  onNavigateReport,
   isAdmin,
 }: DashboardProps) {
   const [plans, setPlans] = useState<any[]>([]);
@@ -125,16 +126,23 @@ export default function Dashboard({
   );
 
   const pasaranWarning = useMemo(() => {
-    if (!selectedMarket || selectedMarket.kategori !== "PASARAN_JAWA")
-      return null;
+    if (!selectedMarket) return null;
 
     const todayPasaran = activeDate.pasaran.toUpperCase();
-    const marketPasarans = selectedMarket.pasaran || [];
+    const marketPasarans = Array.isArray(selectedMarket.pasaran)
+      ? selectedMarket.pasaran
+      : [];
 
-    if (selectedMarket.buka_harian) return null;
-    if (marketPasarans.includes(todayPasaran)) return null;
+    // Validation for markets with specific pasaran days that are not open daily
+    if (marketPasarans.length > 0 && !selectedMarket.buka_harian) {
+      if (
+        !marketPasarans.some((p: string) => p.toUpperCase() === todayPasaran)
+      ) {
+        return `Pasar ini hanya buka pada hari ${marketPasarans.join(", ")}, tidak sesuai dengan hari ini (${activeDate.pasaran}).`;
+      }
+    }
 
-    return `Pasar ini biasanya buka hari ${marketPasarans.join(", ")}, sedangkan hari ini adalah ${activeDate.pasaran}.`;
+    return null;
   }, [selectedMarket, activeDate.pasaran]);
 
   const resetForm = () => {
@@ -152,10 +160,8 @@ export default function Dashboard({
       return;
     }
 
-    if (
-      pasaranWarning &&
-      !window.confirm(`${pasaranWarning}\n\nTetap simpan rencana?`)
-    ) {
+    if (pasaranWarning) {
+      toast.error(pasaranWarning);
       return;
     }
 
@@ -195,10 +201,11 @@ export default function Dashboard({
       }
 
       await addMarketPlan({
-        city: selectedMarket?.wilayah || selectedCity,
+        city: toTitleCase(selectedMarket?.wilayah || selectedCity),
         marketType: finalCategory,
-        marketName: selectedMarketName,
+        marketName: toTitleCase(selectedMarketName),
         marketJam: String(jamBuka),
+        marketPasaran: selectedMarket?.pasaran || [],
         dayStart: activeDate.isoDate,
       });
       setShowModal(false);
@@ -261,6 +268,13 @@ export default function Dashboard({
               <Settings className="w-4 h-4 text-zinc-400 dark:text-white/40" />
             </button>
           )}
+          <button
+            onClick={onNavigateReport}
+            title="Export Report"
+            className="p-2 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
+          </button>
           <button
             onClick={() => auth.signOut()}
             className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border border-red-100 dark:border-transparent"
@@ -365,10 +379,14 @@ export default function Dashboard({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white tracking-tight truncate uppercase">
-                          {plan.marketName}
-                          <span className="opacity-50 ml-1">
-                            • {plan.marketType?.replace("PASAR_", "").replace("_", " ")}
+                        <p className="text-[10px] font-bold text-zinc-900 dark:text-white tracking-tight truncate leading-none mt-0.5">
+                          {toTitleCase(plan.marketName)}
+                          <span className="opacity-50 ml-1 font-medium">
+                            - {plan.marketType === 'PASARAN_JAWA' 
+                                ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
+                                    ? activeDate.pasaran.toUpperCase() 
+                                    : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
+                                : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ")}
                           </span>
                         </p>
                         {plan.userId === auth.currentUser?.uid && (
@@ -376,20 +394,20 @@ export default function Dashboard({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 mt-0">
-                        <span className="text-[7.5px] font-medium text-brand-primary  tracking-wider truncate max-w-[70px]">
-                          {typeof plan.userName === "string"
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-[8px] font-bold text-brand-primary tracking-widest truncate max-w-[70px]">
+                          {toTitleCase(typeof plan.userName === "string"
                             ? plan.userName.split(" ")[0]
-                            : "User"}
+                            : "User")}
                         </span>
                         <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                        <span className="text-[7.5px] font-medium text-zinc-400 dark:text-white/40  tracking-tight truncate">
-                          {plan.city}
+                        <span className="text-[8px] font-bold text-zinc-400 dark:text-white/40 tracking-widest truncate">
+                          {toTitleCase(plan.city)}
                         </span>
                         {plan.marketJam && (
                           <>
                             <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                            <span className="text-xs font-mono text-zinc-400 dark:text-white/30  tracking-tight">
+                            <span className="text-[8px] font-mono font-medium text-zinc-400 dark:text-white/30 tracking-tight">
                               {plan.marketJam}
                             </span>
                           </>
@@ -398,8 +416,8 @@ export default function Dashboard({
                     </div>
 
                     <div className="text-right flex items-center gap-1.5">
-                      <p className="text-xs text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap">
-                        {dayjs(plan.createdAt?.toDate()).fromNow(true)}
+                      <p className="text-[10px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap">
+                        {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
                       </p>
                       {(plan.userId === auth.currentUser?.uid || isAdmin) && (
                         <button
@@ -461,7 +479,7 @@ export default function Dashboard({
                     type="text"
                     placeholder="Cari pasar..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
                     className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs font-medium outline-none focus:border-brand-primary dark:focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
                   />
                   {searchQuery && (
@@ -559,13 +577,13 @@ export default function Dashboard({
                         >
                           <div className="min-w-0 flex-1">
                             <h4 className={cn(
-                              "font-medium text-[13px] leading-tight tracking-tight truncate transition-colors uppercase",
+                              "font-medium text-[13px] leading-tight tracking-tight truncate transition-colors",
                               selectedMarketName === m.nama_pasar ? "text-brand-primary" : "text-zinc-900 dark:text-white"
                             )}>
-                              {m.nama_pasar}
+                              {toTitleCase(m.nama_pasar)}
                             </h4>
                             <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/40  tracking-wide">
-                              <span>{m.wilayah}</span>
+                              <span>{toTitleCase(m.wilayah)}</span>
                               <span className="opacity-30">•</span>
                               <span>{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
                               <span className="opacity-30">•</span>

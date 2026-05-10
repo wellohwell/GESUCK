@@ -1,20 +1,30 @@
+import { useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/config";
 import { motion } from "motion/react";
 import { toast } from "react-toastify";
 
 export default function Login() {
+  const [loading, setLoading] = useState(false);
+
   const handleGoogleLogin = async () => {
+    if (loading) return;
     try {
+      setLoading(true);
       await signInWithPopup(auth, googleProvider);
       toast.success("Berhasil masuk!");
     } catch (error: any) {
-      if (error.code === "auth/user-cancelled") {
+      if (error.code === "auth/popup-closed-by-user") {
         return;
+      }
+      if (error.code === "auth/cancelled-popup-request") {
+        return; // Multiple popup requests
       }
 
       console.error(error);
       toast.error("Gagal masuk dengan Google.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,14 +77,19 @@ export default function Login() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleGoogleLogin}
-            className="w-[85%] max-w-[240px] inline-flex items-center justify-center gap-2.5 h-10 bg-white text-black rounded-full font-medium text-sm shadow-lg hover:shadow-xl transition-all  tracking-tight"
+            disabled={loading}
+            className="w-[85%] max-w-[240px] inline-flex items-center justify-center gap-2.5 h-10 bg-white text-black rounded-full font-medium text-sm shadow-lg hover:shadow-xl transition-all tracking-tight disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              className="w-3.5 h-3.5"
-            />
-            Masuk dengan Google
+            {loading ? (
+              <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></span>
+            ) : (
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google"
+                className="w-3.5 h-3.5"
+              />
+            )}
+            {loading ? "Memproses..." : "Masuk dengan Google"}
           </motion.button>
 
           {/* Footer */}

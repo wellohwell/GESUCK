@@ -11,6 +11,7 @@ import {
   runTransaction
 } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
+import { toTitleCase } from "../utils/format";
 
 export enum OperationType {
   CREATE = 'create',
@@ -61,8 +62,13 @@ export function subscribeMarkets(callback: (markets: any[]) => void) {
 
 export async function addMarket(marketData: any) {
   try {
-    await addDoc(collection(db, "markets"), {
+    const cleanedData = {
       ...marketData,
+      nama_pasar: toTitleCase(marketData.nama_pasar),
+      wilayah: toTitleCase(marketData.wilayah),
+    };
+    await addDoc(collection(db, "markets"), {
+      ...cleanedData,
       created_at: serverTimestamp()
     });
   } catch (error) {
@@ -73,7 +79,15 @@ export async function addMarket(marketData: any) {
 export async function updateMarket(marketId: string, marketData: any) {
   try {
     const { id, ...data } = marketData; // Remove ID if present
-    await setDoc(doc(db, "markets", marketId), data, { merge: true });
+    const cleanedData = {
+      ...data,
+      nama_pasar: marketData.nama_pasar ? toTitleCase(marketData.nama_pasar) : undefined,
+      wilayah: marketData.wilayah ? toTitleCase(marketData.wilayah) : undefined,
+    };
+    // Remove undefined
+    Object.keys(cleanedData).forEach(key => (cleanedData as any)[key] === undefined && delete (cleanedData as any)[key]);
+
+    await setDoc(doc(db, "markets", marketId), cleanedData, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `markets/${marketId}`);
   }
@@ -121,13 +135,16 @@ export async function syncUser() {
 
 export async function updateUser(userId: string, data: any) {
   try {
-    await setDoc(doc(db, "users", userId), data, { merge: true });
+    const cleanedData = { ...data };
+    if (data.displayName) cleanedData.displayName = toTitleCase(data.displayName);
+    
+    await setDoc(doc(db, "users", userId), cleanedData, { merge: true });
     
     // If updating self, also update current auth profile for immediate UI response
-    if (auth.currentUser && auth.currentUser.uid === userId && data.displayName) {
+    if (auth.currentUser && auth.currentUser.uid === userId && cleanedData.displayName) {
       const { updateProfile } = await import("firebase/auth");
       await updateProfile(auth.currentUser, { 
-        displayName: data.displayName 
+        displayName: cleanedData.displayName 
       });
     }
   } catch (error) {
@@ -173,7 +190,7 @@ export async function addMarketPlan(planData: any) {
     await addDoc(collection(db, "market_plans"), {
       ...planData,
       userId: auth.currentUser.uid,
-      userName: auth.currentUser.displayName || "User",
+      userName: toTitleCase(auth.currentUser.displayName || "User"),
       userPhoto: auth.currentUser.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${auth.currentUser.displayName}`,
       createdAt: serverTimestamp(),
       status: "active"

@@ -29,6 +29,7 @@ import {
 import { cn } from "../lib/utils";
 import { toast } from "react-toastify";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { toTitleCase } from "../utils/format";
 
 interface AdminProps {
   onBack: () => void;
@@ -363,17 +364,17 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <p className="font-medium text-sm text-white group-hover:text-brand-primary transition-colors">{a.nama}</p>
+                            <p className="font-medium text-sm text-white group-hover:text-brand-primary transition-colors">{toTitleCase(a.nama)}</p>
                             <p className="text-xs text-white/20 font-medium tracking-tight mt-0.5">{a.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-xs text-white leading-tight">{a.pasarNama}</p>
+                        <p className="font-medium text-xs text-white leading-tight">{toTitleCase(a.pasarNama)}</p>
                         <div className="flex items-center gap-1.5 mt-1 opacity-40">
                            <MapPin className="w-2.5 h-2.5 text-brand-primary" />
                            <span className="text-xs font-medium  tracking-tight">
-                              {markets.find((m: any) => m.nama_pasar === a.pasarNama)?.wilayah || "DIY"}
+                              {toTitleCase(markets.find((m: any) => m.nama_pasar === a.pasarNama)?.wilayah || "Diy")}
                            </span>
                         </div>
                       </td>
@@ -470,7 +471,11 @@ function UserManagementView({ users, assignments }: any) {
                         <div className="min-w-0">
                           <input
                             defaultValue={u.displayName}
-                            onBlur={(e) => updateUserRoleAndStatus(u.id, u.role, u.status, e.target.value)}
+                            onBlur={(e) => {
+                              const titleVal = toTitleCase(e.target.value);
+                              e.target.value = titleVal;
+                              updateUserRoleAndStatus(u.id, u.role, u.status, titleVal);
+                            }}
                             className="font-medium text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
                           />
                           <p className="text-sm font-medium text-zinc-500 dark:text-white/30 truncate mt-0.5">{u.email}</p>
@@ -555,7 +560,11 @@ function UserManagementView({ users, assignments }: any) {
                     <div className="min-w-0 flex-1">
                       <input
                         defaultValue={u.displayName}
-                        onBlur={(e) => updateUserRoleAndStatus(u.id, u.role, u.status, e.target.value)}
+                        onBlur={(e) => {
+                          const titleVal = toTitleCase(e.target.value);
+                          e.target.value = titleVal;
+                          updateUserRoleAndStatus(u.id, u.role, u.status, titleVal);
+                        }}
                         className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
                       />
                       <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/30 truncate">
@@ -635,7 +644,7 @@ function MasterDataView({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearch(toTitleCase(e.target.value))}
             placeholder="Cari berdasarkan nama pasar atau wilayah..."
             className="w-full h-11 bg-white dark:bg-white/5 pl-11 pr-4 rounded-xl border border-zinc-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-brand-primary/10 transition-all font-sans text-[13px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 shadow-sm"
           />
@@ -731,11 +740,11 @@ function MasterDataView({
                     key={m.id}
                     className="group hover:bg-zinc-50 dark:hover:bg-white/[0.04] transition-all"
                   >
-                    <td className="px-6 py-4 font-medium text-sm tracking-tight text-zinc-900 dark:text-white uppercase">
-                      {m.nama_pasar}
+                    <td className="px-6 py-4 font-medium text-sm tracking-tight text-zinc-900 dark:text-white">
+                      {toTitleCase(m.nama_pasar)}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-zinc-500 dark:text-white/60 ">
-                      {m.wilayah}
+                      {toTitleCase(m.wilayah)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
@@ -841,11 +850,11 @@ function MasterDataView({
                   className="flex items-center justify-between py-3 px-0.5 border-b border-zinc-100 dark:border-white/[0.06] last:border-0 transition-all hover:bg-zinc-100/50 dark:hover:bg-white/[0.02] active:bg-zinc-200 dark:active:bg-white/[0.04] group cursor-pointer"
                 >
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-medium text-[13px] leading-tight text-zinc-900 dark:text-white tracking-tight truncate transition-colors uppercase">
-                      {m.nama_pasar}
+                    <h4 className="font-medium text-[13px] leading-tight text-zinc-900 dark:text-white tracking-tight truncate transition-colors">
+                      {toTitleCase(m.nama_pasar)}
                     </h4>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-sm font-medium text-zinc-500 dark:text-white/40  tracking-wide">
-                      <span>{m.wilayah}</span>
+                      <span>{toTitleCase(m.wilayah)}</span>
                       <span className="opacity-30">•</span>
                       <span>{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
                       <span className="opacity-30">•</span>
@@ -1030,7 +1039,7 @@ function MarketFormModal({ market, onClose }: any) {
               type="text"
               value={formData.nama_pasar}
               onChange={(e) =>
-                setFormData({ ...formData, nama_pasar: e.target.value })
+                setFormData({ ...formData, nama_pasar: toTitleCase(e.target.value) })
               }
               placeholder="Masukan nama lengkap pasar..."
               className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
