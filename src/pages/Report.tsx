@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { subscribeMarketPlans, subscribeUsers } from "../lib/services";
 import { getActiveSystemDate } from "../utils/javaneseDate";
-import html2canvas from "html2canvas";
+import { domToJpeg, domToBlob } from "modern-screenshot";
 import toast from "react-hot-toast";
 import { ArrowLeft, Download, Share2, CheckCircle, Copy } from "lucide-react";
 import { toTitleCase } from "../utils/format";
@@ -52,14 +52,12 @@ export default function Report({ onBack }: ReportProps) {
   const handleDownload = async () => {
     if (!captureRef.current) return;
     try {
-      const canvas = await html2canvas(captureRef.current, {
+      const dataUrl = await domToJpeg(captureRef.current, {
         scale: 2,
-        useCORS: true,
         backgroundColor: "#ffffff",
       });
-      const image = canvas.toDataURL("image/jpeg", 0.9);
       const link = document.createElement("a");
-      link.href = image;
+      link.href = dataUrl;
       link.download = `Report_${activeDate.isoDate}.jpg`;
       link.click();
       toast.success("Berhasil mengunduh gambar!");
@@ -73,36 +71,34 @@ export default function Report({ onBack }: ReportProps) {
     if (!captureRef.current) return;
     const toastId = toast.loading("Menyiapkan gambar...");
     try {
-      const canvas = await html2canvas(captureRef.current, {
+      const blob = await domToBlob(captureRef.current, {
         scale: 2,
-        useCORS: true,
         backgroundColor: "#ffffff",
       });
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          toast.error("Gagal memproses gambar.", { id: toastId });
-          return;
-        }
-        const file = new File([blob], `Report_${activeDate.isoDate}.jpg`, { type: "image/jpeg" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: `Laporan Rencana Pasar ${activeDate.fullDate}`,
-              text: `Laporan kunjungan sales tanggal ${activeDate.fullDate}.`,
-              files: [file],
-            });
-            toast.success("Berhasil membagikan!", { id: toastId });
-          } catch (error: any) {
-            if (error.name !== 'AbortError') {
-              toast.error("Batal membagikan.", { id: toastId });
-            } else {
-              toast.dismiss(toastId);
-            }
+      
+      if (!blob) {
+        toast.error("Gagal memproses gambar.", { id: toastId });
+        return;
+      }
+      const file = new File([blob], `Report_${activeDate.isoDate}.jpg`, { type: "image/jpeg" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: `Laporan Rencana Pasar ${activeDate.fullDate}`,
+            text: `Laporan kunjungan sales tanggal ${activeDate.fullDate}.`,
+            files: [file],
+          });
+          toast.success("Berhasil membagikan!", { id: toastId });
+        } catch (error: any) {
+          if (error.name !== 'AbortError') {
+            toast.error("Batal membagikan.", { id: toastId });
+          } else {
+            toast.dismiss(toastId);
           }
-        } else {
-          toast.error("Perangkat ini belum mendukung fitur share File.", { id: toastId });
         }
-      }, "image/jpeg", 0.9);
+      } else {
+        toast.error("Perangkat ini belum mendukung fitur share File.", { id: toastId });
+      }
     } catch (error) {
       console.error(error);
       toast.error("Terjadi kesalahan.", { id: toastId });
@@ -186,113 +182,93 @@ export default function Report({ onBack }: ReportProps) {
       </div>
 
       <div className="flex-1 overflow-auto p-4 flex justify-center">
-        {/* CAPTURE CONTAINER */}
+        {/* CAPTURE CONTAINER: Movement Report Card Style */}
         <div 
           ref={captureRef}
-          className="w-full max-w-[420px] bg-[#ffffff] rounded-none md:rounded-3xl p-4 md:p-5 mx-auto"
+          className="w-full max-w-[420px] bg-white rounded-none flex flex-col mx-auto relative overflow-hidden"
+          style={{ minHeight: '600px' }}
         >
-          {/* TOP INFO BAR */}
-          <div className="flex flex-col gap-3 mb-4">
-            <div className="flex flex-col mb-2">
-              <h1 className="text-[15px] font-black tracking-tight leading-tight text-[#18181b] uppercase mb-1">
-                Rencana Kunjungan Pasar
+          {/* TOP ACCENT LINE */}
+          <div className="h-1 w-full bg-[#C6FF00]" />
+
+          {/* HEADER COMPACT */}
+          <div className="px-6 pt-8 pb-6">
+            <div className="mb-6">
+              <img 
+                src="/login-illustration.png" 
+                alt="Logo" 
+                className="h-10 object-contain" 
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <h1 className="text-[20px] font-black tracking-tighter leading-none text-black mb-1.5">
+                {toTitleCase("Rencana Kunjungan Pasar")}
               </h1>
-              <p className="text-[11px] font-bold text-[#a1a1aa] uppercase tracking-widest flex items-center gap-1">
-                <span className="text-[#18181b]">{activeDate.dayName},</span>
-                <span className="text-[#9FCC00]">{activeDate.pasaran}</span>
-                <span className="ml-0.5">{activeDate.fullDate}</span>
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-1.5">
-               <div className="px-2 py-1 bg-[#f4f4f5] rounded-md flex items-center gap-1.5 border border-[#f4f4f5]">
-                 <span className="text-[8px] font-bold text-[#71717a] uppercase tracking-widest">Sales</span>
-                 <span className="text-[10px] font-black text-[#18181b] leading-none">{activeSalesCount}</span>
-               </div>
-               <div className="px-2 py-1 bg-[#f4f4f5] rounded-md flex items-center gap-1.5 border border-[#f4f4f5]">
-                 <span className="text-[8px] font-bold text-[#71717a] uppercase tracking-widest">Titik</span>
-                 <span className="text-[10px] font-black text-[#18181b] leading-none">{targetMarketsCount}</span>
-               </div>
-               <div className="px-2 py-1 bg-[#f4f4f5] rounded-md flex items-center gap-1.5 border border-[#f4f4f5]">
-                 <span className="text-[8px] font-bold text-[#71717a] uppercase tracking-widest">Kota</span>
-                 <span className="text-[10px] font-black text-[#18181b] leading-none">{uniqueCitiesCount}</span>
-               </div>
-               <div className="px-2 py-1 bg-[#C6FF001A] border border-[#C6FF0033] rounded-md flex items-center gap-1.5">
-                 <span className="text-[8px] font-bold text-[#8CAB00] uppercase tracking-widest">Pending</span>
-                 <span className="text-[10px] font-black text-[#18181b] leading-none">{missingUsersCount}</span>
-               </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[12px] font-bold text-black/40 leading-none">
+                  {toTitleCase(`${activeDate.dayName} ${activeDate.pasaran}`)}
+                </span>
+                <div className="w-1 h-1 rounded-full bg-black/10" />
+                <span className="text-[12px] font-bold text-black/40 uppercase tracking-widest leading-none">
+                  {activeDate.fullDate}
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="h-px w-full bg-[#f4f4f5] mb-4" />
-
-          {/* LIST REPORT */}
-          <div className="space-y-2.5">
-            {plans.length === 0 && !loading && (
-              <div className="text-center py-6 text-[#a1a1aa] text-[11px] font-bold uppercase tracking-widest">
-                Belum ada data
-              </div>
-            )}
+          {/* LIST LOG STYLE */}
+          <div className="flex-1 px-6 pb-12">
+            <div className="h-px w-full bg-black/5 mb-6" />
             
-            {loading && (
-              <div className="text-center py-6 text-[#a1a1aa] text-[11px] font-bold uppercase tracking-widest">
-                Memuat...
-              </div>
-            )}
-
-            {plans.map((plan: any) => (
-              <div 
-                key={plan.id}
-                className="bg-[#ffffff] border border-[#e4e4e7] rounded-[14px] p-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] relative"
-              >
-                <div className="flex justify-between items-start mb-2">
-                   <h4 className="font-black text-[12px] text-[#18181b] tracking-tight leading-none max-w-[70%] truncate">
-                     {toTitleCase(plan.marketName)} - {plan.marketType === 'PASARAN_JAWA' 
-                       ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
-                           ? activeDate.pasaran.toUpperCase() 
-                           : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
-                       : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ")}
-                   </h4>
-                   <span className="text-[8px] font-bold text-[#a1a1aa] tracking-widest truncate max-w-[25%] text-right bg-[#f4f4f5] px-1.5 py-0.5 rounded-sm">
-                     {toTitleCase(plan.city)}
-                   </span>
+            <div className="space-y-4">
+              {plans.length === 0 && !loading && (
+                <div className="py-8 text-black/20 text-[11px] font-bold uppercase tracking-widest text-center">
+                  -- No active movement records --
                 </div>
+              )}
+              
+              {loading && (
+                <div className="py-8 text-black/20 text-[11px] font-bold uppercase tracking-widest text-center animate-pulse">
+                  Syncing logs...
+                </div>
+              )}
+
+              {plans.map((plan: any) => {
+                const categoryRaw = plan.marketType === 'PASARAN_JAWA' 
+                  ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
+                      ? activeDate.pasaran.toUpperCase() 
+                      : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
+                  : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
                 
-                <div className="flex items-center gap-1.5 mb-2.5">
-                  {plan.marketJam && (
-                    <span className="text-[9px] font-mono font-medium text-[#71717a] tracking-tight">
-                      {plan.marketJam}
-                    </span>
-                  )}
-                </div>
-
-                <div className="h-px w-full bg-[#f4f4f5] mb-2.5" />
-
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[10px] tracking-widest text-[#18181b]">
-                    {toTitleCase(plan.userName?.split(' ')[0] || "User")}
-                  </span>
-                  <div className="flex items-center gap-1 text-[#a1a1aa]">
-                    <span className="text-[9px] font-bold tracking-widest uppercase">
-                      {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
-                    </span>
+                return (
+                  <div key={plan.id} className="flex items-baseline justify-between group">
+                    <div className="flex flex-col min-w-0 pr-4">
+                      <span className="text-[13px] font-black text-black leading-tight tracking-tight uppercase truncate">
+                        {toTitleCase(plan.userName?.split(' ')[0] || "User")}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] font-bold text-black/40 tracking-tight truncate">
+                          {toTitleCase(plan.marketName)}
+                        </span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#C6FF00]/10 text-[#8CAB00] rounded-[4px] uppercase tracking-tighter">
+                          {toTitleCase(categoryRaw)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
 
-          {/* FOOTER */}
-          <div className="mt-5 pt-4 border-t border-[#f4f4f5] flex items-center justify-between">
-            <p className="text-[8px] font-bold text-[#a1a1aa] tracking-widest uppercase">
-              VIA GESUCK APP
+          {/* FOOTER BRANDING */}
+          <div className="px-6 py-8 flex flex-col items-center gap-2">
+            <div className="h-px w-12 bg-black/5" />
+            <p className="text-[10px] font-bold text-black/10 tracking-[0.2em] uppercase">
+              Rencana Kunjungan Pasar
             </p>
-            <div className="flex items-center gap-1 text-[#059669]">
-              <CheckCircle className="w-2.5 h-2.5 text-[#059669]" />
-              <span className="text-[8px] font-bold uppercase tracking-widest text-[#059669]">
-                VERIFIED
-              </span>
-            </div>
           </div>
         </div>
       </div>

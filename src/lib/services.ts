@@ -184,6 +184,15 @@ export function subscribeMarketPlans(date: string, callback: (plans: any[]) => v
   });
 }
 
+export function subscribeAllMarketPlans(callback: (plans: any[]) => void) {
+  const q = query(collection(db, "market_plans"));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, "market_plans");
+  });
+}
+
 export async function addMarketPlan(planData: any) {
   if (!auth.currentUser) throw new Error("Unauthorized");
   try {

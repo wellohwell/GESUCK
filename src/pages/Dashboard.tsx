@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
   subscribeMarketPlans,
+  subscribeAllMarketPlans,
   addMarketPlan,
   deleteMarketPlan,
   subscribeMarkets,
+  subscribeUsers,
 } from "../lib/services";
 import { auth } from "../firebase/config";
 import {
@@ -19,6 +21,7 @@ import {
   ChevronDown,
   Search,
   AlertTriangle,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "react-toastify";
@@ -27,8 +30,10 @@ import { getActiveSystemDate } from "../utils/javaneseDate";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { toTitleCase } from "../utils/format";
 import dayjs from "dayjs";
+import dayOfYear from "dayjs/plugin/dayOfYear";
 import "dayjs/locale/id";
 
+dayjs.extend(dayOfYear);
 dayjs.locale("id");
 
 const WILAYAH_EXACT = [
@@ -60,7 +65,9 @@ export default function Dashboard({
   isAdmin,
 }: DashboardProps) {
   const [plans, setPlans] = useState<any[]>([]);
+  const [allPlans, setAllPlans] = useState<any[]>([]);
   const [markets, setMarkets] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
@@ -84,10 +91,14 @@ export default function Dashboard({
     });
 
     const unsubMarkets = subscribeMarkets(setMarkets);
+    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans);
+    const unsubUsers = subscribeUsers(setUsers);
 
     return () => {
       unsubPlans();
       unsubMarkets();
+      unsubAllPlans();
+      unsubUsers();
     };
   }, [activeDate.isoDate]);
 
@@ -246,10 +257,74 @@ export default function Dashboard({
 
   const myPlan = plans.find((p) => p.userId === auth.currentUser?.uid);
 
+  const marketTemperature = useMemo(() => {
+    const mainWilayah = ["Sleman", "Bantul", "Kota Yogyakarta"];
+    const otherWilayah = [
+      "Kulon Progo",
+      "Magelang",
+      "Temanggung",
+      "Purworejo",
+      "Gunungkidul",
+    ];
+
+    // Seed data: start with 0 visits for all known combinations or at least placeholders
+    const visitCounts: Record<
+      string,
+      { count: number; name: string; wilayah: string }
+    > = {};
+
+    allPlans.forEach((plan) => {
+      const key = `${plan.marketName}-${plan.city}`;
+      if (!visitCounts[key]) {
+        visitCounts[key] = {
+          count: 0,
+          name: plan.marketName,
+          wilayah: plan.city,
+        };
+      }
+      visitCounts[key].count += 1;
+    });
+
+    const getTopForWilayah = (wilayah: string, type: "HOT" | "COLD") => {
+      const marketsInWilayah = Object.values(visitCounts).filter((v) =>
+        v.wilayah.toLowerCase().includes(wilayah.toLowerCase()),
+      );
+
+      if (marketsInWilayah.length === 0) return null;
+
+      const sorted = [...marketsInWilayah].sort((a, b) =>
+        type === "HOT" ? b.count - a.count : a.count - b.count,
+      );
+
+      return { ...sorted[0], temp: type };
+    };
+
+    // Rotation based on ISO date for consistent "daily" rotation
+    const dayOfYear = dayjs(activeDate.isoDate).dayOfYear();
+    const rotatedWilayahHot = otherWilayah[dayOfYear % otherWilayah.length];
+    const rotatedWilayahCold =
+      otherWilayah[(dayOfYear + 1) % otherWilayah.length];
+
+    const generateCategory = (
+      baseWilayahs: string[],
+      rotatedWilayah: string,
+      type: "HOT" | "COLD",
+    ) => {
+      const results = baseWilayahs.map((w) => getTopForWilayah(w, type));
+      results.push(getTopForWilayah(rotatedWilayah, type));
+      return results;
+    };
+
+    const hot = generateCategory(mainWilayah, rotatedWilayahHot, "HOT");
+    const cold = generateCategory(mainWilayah, rotatedWilayahCold, "COLD");
+
+    return { hot, cold };
+  }, [allPlans, activeDate.isoDate]);
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300">
       {/* Navbar Minimal */}
-      <nav className="p-3 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-100 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-40">
+      <nav className="p-2 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-100 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <div className="flex flex-col justify-center">
             <h4 className="text-xs font-medium tracking-tight text-zinc-900 dark:text-white  leading-none">
@@ -263,37 +338,92 @@ export default function Dashboard({
           {isAdmin && (
             <button
               onClick={onNavigateAdmin}
-              className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors border border-zinc-200 dark:border-transparent dark:hover:border-white/10"
+              className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors border border-zinc-200 dark:border-transparent dark:hover:border-white/10"
             >
-              <Settings className="w-4 h-4 text-zinc-400 dark:text-white/40" />
+              <Settings className="w-3.5 h-3.5 text-zinc-400 dark:text-white/40" />
             </button>
           )}
           <button
             onClick={onNavigateReport}
             title="Export Report"
-            className="p-2 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
+            className="p-1.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
           </button>
           <button
             onClick={() => auth.signOut()}
-            className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border border-red-100 dark:border-transparent"
+            className="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border border-red-100 dark:border-transparent"
           >
-            <LogOut className="w-4 h-4 text-red-500/40" />
+            <LogOut className="w-3.5 h-3.5 text-red-500/40" />
           </button>
         </div>
       </nav>
 
       <main className="max-w-2xl mx-auto px-4 pt-4 pb-10">
         {/* Header Hero */}
-        <section className="mb-5 text-center pt-1">
-          <p className="text-xs text-zinc-400 dark:text-white/60 font-medium  tracking-tight mb-0.5">
-            {activeDate.fullDate}
-          </p>
-          <h1 className="text-xl font-display font-medium leading-tight tracking-tighter text-zinc-900 dark:text-white">
+        <section className="mb-6 text-center pt-1">
+          <h1 className="text-xl font-display font-medium leading-tight tracking-tighter text-zinc-900 dark:text-white mb-0.5">
             {activeDate.dayName}{" "}
             <span className="text-brand-primary">{activeDate.pasaran}</span>
           </h1>
+          <p className="text-[10px] text-zinc-400 dark:text-white/40 font-bold uppercase tracking-[0.2em] mb-4">
+            {activeDate.fullDate}
+          </p>
+
+          <h2 className="text-[9px] font-semibold text-zinc-400 dark:text-white/30 uppercase tracking-widest mb-1">
+            Market Temperature
+          </h2>
+
+          {/* Ultra-Compact Market Temperature Indicator */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-[280px] grid grid-cols-2 gap-x-6">
+              {/* HOT COLUMN */}
+              <div className="text-left border-r border-zinc-100 dark:border-white/5 pr-4">
+                <span className="text-[9px] font-black tracking-tighter text-red-500/60 dark:text-red-500/40 uppercase block mb-1.5">
+                  🔥 HOT
+                </span>
+                <div className="space-y-1">
+                  {marketTemperature?.hot?.some((m: any) => m !== null) ? (
+                    marketTemperature.hot.map((m: any, idx: number) => (
+                      <p
+                        key={idx}
+                        className="text-[10px] font-medium text-zinc-900 dark:text-white/70 truncate leading-none"
+                      >
+                        {m ? toTitleCase(m.name) : "Belum Ada Data"}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-[9px] font-medium text-zinc-300 dark:text-white/10 italic">
+                      Belum Ada Data
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* COLD COLUMN */}
+              <div className="text-left pl-2">
+                <span className="text-[9px] font-black tracking-tighter text-blue-500/60 dark:text-blue-500/40 uppercase block mb-1.5">
+                  🧊 COLD
+                </span>
+                <div className="space-y-1">
+                  {marketTemperature?.cold?.some((m: any) => m !== null) ? (
+                    marketTemperature.cold.map((m: any, idx: number) => (
+                      <p
+                        key={idx}
+                        className="text-[10px] font-medium text-zinc-900 dark:text-white/70 truncate leading-none"
+                      >
+                        {m ? toTitleCase(m.name) : "Belum Ada Data"}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-[9px] font-medium text-zinc-300 dark:text-white/10 italic">
+                      Belum Ada Data
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Live List */}
@@ -305,9 +435,15 @@ export default function Dashboard({
                 Rencana Kunjungan
               </h2>
             </div>
-            <span className="text-xs font-medium text-zinc-400 dark:text-white/50 tracking-wide ">
-              {plans.length} Sudah Memilih
-            </span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-zinc-100 dark:bg-white/[0.03] rounded-full border border-zinc-200/50 dark:border-white/[0.05]">
+              <div className="relative">
+                <Users className="w-3.5 h-3.5 text-zinc-400 dark:text-white/30" />
+                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-[#C6FF00] rounded-full border border-white dark:border-[#050505]" />
+              </div>
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-white/50 tracking-tight">
+                {Math.max(0, users.length - plans.length)} <span className="opacity-60">Pending</span>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-0.5">

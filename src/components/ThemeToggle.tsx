@@ -18,11 +18,11 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative flex items-center h-7 w-12 rounded-full p-1 cursor-pointer transition-colors duration-300 bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-white/10"
+      className="relative flex items-center h-6 w-11 rounded-full p-0.5 cursor-pointer transition-colors duration-300 bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-white/10"
       title="Toggle Theme"
     >
       <motion.div
-        className="flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-brand-primary shadow-sm"
+        className="flex items-center justify-center w-4.5 h-4.5 rounded-full bg-white dark:bg-brand-primary shadow-sm"
         animate={{
           x: theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? 20 : 0,
         }}
