@@ -4,7 +4,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
-import { syncUser } from "./firebase/services";
+import { syncUser } from "./lib/services";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ToastProvider } from "./components/ToastProvider";
 

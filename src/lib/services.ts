@@ -10,7 +10,7 @@ import {
   serverTimestamp,
   runTransaction
 } from "firebase/firestore";
-import { auth, db } from "./config";
+import { auth, db } from "../firebase/config";
 
 export enum OperationType {
   CREATE = 'create',

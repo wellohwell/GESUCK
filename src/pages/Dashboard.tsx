@@ -4,7 +4,7 @@ import {
   addMarketPlan,
   deleteMarketPlan,
   subscribeMarkets,
-} from "../firebase/services";
+} from "../lib/services";
 import { auth } from "../firebase/config";
 import {
   Plus,

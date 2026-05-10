@@ -19,77 +19,75 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 bg-[#f8f9fa] overflow-hidden select-none">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 bg-[#050505] overflow-hidden select-none">
       
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 w-full h-[60%] bg-white" />
-
-        <div
-          className="absolute bottom-0 w-full h-[40%] bg-brand-primary"
-          style={{
-            clipPath: "ellipse(100% 100% at 50% 100%)",
-          }}
-        />
+      {/* Background - Minimalist Dark */}
+      <div className="absolute inset-0 z-0 bg-[#050505]">
+        {/* Subtle grid or abstract glow if wanted, but keeping it simple dark */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[100px] opacity-50" />
       </div>
 
-      {/* Login Card */}
+      {/* Login Section */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-[280px] bg-white rounded-[32px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] overflow-hidden"
+        className="relative z-10 w-full max-w-[320px] flex flex-col items-center"
       >
         
-        {/* Header Image */}
-        <div className="p-4">
-          <div className="w-full h-48 rounded-[24px] overflow-hidden bg-white flex items-center justify-center">
-            
+        {/* Header Image (Logo) */}
+        <div className="w-full flex items-center justify-center mb-6">
+          <div className="w-28 h-28 flex items-center justify-center">
             <img
               src="/login-illustration.png"
-              alt="Login Illustration"
+              alt="Vork Logo"
               loading="eager"
               decoding="async"
               draggable={false}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain drop-shadow-2xl"
             />
-
           </div>
         </div>
 
+        {/* App Title */}
+        <div className="flex flex-col items-center justify-center mb-12">
+          <h1 className="text-3xl font-display font-black tracking-widest text-white uppercase italic">
+            VORK
+          </h1>
+          <p className="text-[9px] text-white/40 tracking-[0.2em] font-bold uppercase mt-1.5">
+            Field Operation System
+          </p>
+        </div>
+
         {/* Content */}
-        <div className="px-6 pb-8 pt-2 flex flex-col items-center text-center">
+        <div className="w-full flex flex-col items-center text-center">
           
           {/* Login Button */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={handleGoogleLogin}
-            className="inline-flex items-center justify-center gap-2 px-6 h-10 bg-brand-primary text-white rounded-full font-semibold text-[11px] shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+            className="w-full inline-flex items-center justify-center gap-3 h-[46px] bg-white text-black rounded-full font-bold text-[11px] shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
               alt="Google"
-              className="w-3.5 h-3.5 brightness-0 invert"
+              className="w-4 h-4"
             />
-
-            Login with Google
+            Masuk dengan Google
           </motion.button>
 
           {/* Footer */}
-          <div className="mt-6">
-            <p className="text-[9px] text-gray-400 font-bold leading-tight uppercase tracking-wider">
-              By continuing, you agree to our
+          <div className="mt-8">
+            <p className="text-[8px] text-white/30 font-bold leading-[1.6] uppercase tracking-widest">
+              Dengan melanjutkan, Anda menyetujui
               <br />
-
-              <span className="text-brand-primary/60 hover:text-brand-primary transition-colors cursor-pointer underline underline-offset-2">
-                Terms
+              <span className="text-white/50 hover:text-white transition-colors cursor-pointer underline underline-offset-[3px]">
+                Syarat & Ketentuan
               </span>
-
-              {" & "}
-
-              <span className="text-brand-primary/60 hover:text-brand-primary transition-colors cursor-pointer underline underline-offset-2">
-                Privacy
+              <span className="mx-1.5 opacity-40">serta</span>
+              <span className="text-white/50 hover:text-white transition-colors cursor-pointer underline underline-offset-[3px]">
+                Privasi
               </span>
             </p>
           </div>

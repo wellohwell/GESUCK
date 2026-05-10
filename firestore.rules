@@ -53,8 +53,8 @@ service cloud.firestore {
                data.wilayah is string && data.wilayah.size() > 0 && data.wilayah.size() <= 50 &&
                data.buka_harian is bool &&
                data.pasaran is list && data.pasaran.size() <= 7 &&
-               data.jam_buka is string && data.jam_buka.size() > 0 && data.jam_buka.size() <= 50 &&
-               data.kategori is string && data.kategori.size() > 0 && data.kategori.size() <= 50;
+               (data.jam_buka is string || data.jam_buka is map) &&
+               (data.kategori is string || data.kategori is list);
       }
     }
 
