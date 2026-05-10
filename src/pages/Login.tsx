@@ -36,7 +36,7 @@ export default function Login() {
       >
         
         {/* Header Image (Logo) */}
-        <div className="w-full flex items-center justify-center mb-6">
+        <div className="w-full flex items-center justify-center">
           <div className="w-28 h-28 flex items-center justify-center">
             <img
               src="/login-illustration.png"
@@ -50,8 +50,8 @@ export default function Login() {
         </div>
 
         {/* App Title */}
-        <div className="flex flex-col items-center justify-center mb-12">
-          <h1 className="text-3xl font-display font-black tracking-widest text-white uppercase italic">
+        <div className="flex flex-col items-center justify-center mb-10 z-10 relative mt-1">
+          <h1 className="text-4xl font-display font-black tracking-widest text-white uppercase">
             VORK
           </h1>
           <p className="text-[9px] text-white/40 tracking-[0.2em] font-bold uppercase mt-1.5">
@@ -67,12 +67,12 @@ export default function Login() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleGoogleLogin}
-            className="w-full inline-flex items-center justify-center gap-3 h-[46px] bg-white text-black rounded-full font-bold text-[11px] shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
+            className="w-[85%] max-w-[240px] inline-flex items-center justify-center gap-2.5 h-10 bg-white text-black rounded-full font-bold text-[10px] shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
               alt="Google"
-              className="w-4 h-4"
+              className="w-3.5 h-3.5"
             />
             Masuk dengan Google
           </motion.button>
