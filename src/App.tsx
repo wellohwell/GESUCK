@@ -51,7 +51,7 @@ function AppContent() {
       return <Admin onBack={() => setCurrentPage("dashboard")} />;
     }
     
-    if (currentPage === "report") {
+    if (currentPage === "report" && isAdmin) {
       return <Report onBack={() => setCurrentPage("dashboard")} />;
     }
     

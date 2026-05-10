@@ -343,13 +343,15 @@ export default function Dashboard({
               <Settings className="w-3.5 h-3.5 text-zinc-400 dark:text-white/40" />
             </button>
           )}
-          <button
-            onClick={onNavigateReport}
-            title="Export Report"
-            className="p-1.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={onNavigateReport}
+              title="Export Report"
+              className="p-1.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
+            </button>
+          )}
           <button
             onClick={() => auth.signOut()}
             className="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border border-red-100 dark:border-transparent"
