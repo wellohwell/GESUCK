@@ -1,37 +1,61 @@
 import { useEffect, useState } from "react";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Report from "./pages/Report";
-import { syncUser } from "./lib/services";
+import PendingApproval from "./pages/PendingApproval";
+import Blocked from "./pages/Blocked";
+import { syncUser, subscribeCurrentUser } from "./lib/services";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ToastProvider } from "./components/ToastProvider";
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentPage, setCurrentPage] = useState<"dashboard" | "admin" | "report">("dashboard");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       setUser(u);
-      setLoading(false);
       
       if (u) {
         await syncUser();
-        const admins = ["admin@gmail.com", "wahyulaksanajayakusuma@gmail.com"];
-        if (admins.includes(u.email || "")) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        
+        // Subscribe to user profile for role and status
+        unsubscribeProfile = subscribeCurrentUser(u.uid, (profile) => {
+          setUserProfile(profile);
+          
+          if (profile) {
+            const isAdm = profile.role === "Admin" || 
+                         ["admin@gmail.com", "wahyulaksanajayakusuma@gmail.com"].includes(u.email || "");
+            setIsAdmin(isAdm);
+          }
+          setLoading(false);
+        });
+      } else {
+        setUserProfile(null);
+        setIsAdmin(false);
+        setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) (unsubscribeProfile as any)();
+    };
   }, []);
 
   if (loading) {
@@ -44,33 +68,52 @@ function AppContent() {
     );
   }
 
-  const renderPage = () => {
-    if (!user) return <Login />;
-    
-    if (currentPage === "admin" && isAdmin) {
-      return <Admin onBack={() => setCurrentPage("dashboard")} />;
-    }
-    
-    if (currentPage === "report" && isAdmin) {
-      return <Report onBack={() => setCurrentPage("dashboard")} />;
-    }
-    
-    return <Dashboard onNavigateAdmin={() => setCurrentPage("admin")} onNavigateReport={() => setCurrentPage("report")} isAdmin={isAdmin} />;
-  };
+  // Auth Guard
+  if (!user) {
+    return <Login />;
+  }
+
+  // Status Guard
+  if (userProfile?.status === "pending" && location.pathname !== "/pending-approval") {
+    return <Navigate to="/pending-approval" replace />;
+  }
+  
+  if (userProfile?.status === "rejected" && location.pathname !== "/blocked") {
+    return <Navigate to="/blocked" replace />;
+  }
+
+  // Prevent approved users from seeing blocked/pending pages
+  if (userProfile?.status === "approved" && (location.pathname === "/pending-approval" || location.pathname === "/blocked")) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Fallback while profile is loading (it shouldn't happen because of loading state, but for safety)
+  if (!userProfile && user) {
+     return <PendingApproval />;
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white">
-      {renderPage()}
+      <Routes>
+        <Route path="/pending-approval" element={<PendingApproval />} />
+        <Route path="/blocked" element={<Blocked />} />
+        <Route path="/" element={<Dashboard onNavigateAdmin={() => navigate("/admin")} onNavigateReport={() => navigate("/report")} isAdmin={isAdmin} />} />
+        <Route path="/admin" element={isAdmin ? <Admin onBack={() => navigate("/")} /> : <Navigate to="/" replace />} />
+        <Route path="/report" element={(isAdmin) ? <Report onBack={() => navigate("/")} /> : <Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="dark">
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark">
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }

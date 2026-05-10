@@ -161,6 +161,18 @@ export function subscribeUsers(callback: (users: any[]) => void) {
   });
 }
 
+export function subscribeCurrentUser(uid: string, callback: (user: any) => void) {
+  return onSnapshot(doc(db, "users", uid), (snapshot) => {
+    if (snapshot.exists()) {
+      callback({ id: snapshot.id, ...snapshot.data() });
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+  });
+}
+
 // Assignment Service
 export function subscribeAssignments(date: string, callback: (assignments: any[]) => void) {
   const q = query(collection(db, "assignments"), where("tanggal", "==", date));

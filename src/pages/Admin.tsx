@@ -519,13 +519,16 @@ function UserManagementView({ users, assignments }: any) {
                             onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
                             className={cn(
                               "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
-                              u.status === "active"
+                              u.status === "approved"
                                 ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                                : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
+                                : u.status === "rejected"
+                                  ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400"
+                                  : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
                             )}
                           >
-                            <option value="active" className="bg-zinc-900 text-emerald-400">Active</option>
+                            <option value="approved" className="bg-zinc-900 text-emerald-400">Approved</option>
                             <option value="pending" className="bg-zinc-900 text-amber-500">Pending</option>
+                            <option value="rejected" className="bg-zinc-900 text-red-500">Rejected</option>
                           </select>
                           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 opacity-40 pointer-events-none" />
                         </div>
@@ -567,7 +570,7 @@ function UserManagementView({ users, assignments }: any) {
                         }}
                         className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
                       />
-                      <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/30 truncate">
+                      <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/30 truncate text-left">
                         <span>{u.email}</span>
                         <span className="opacity-30">•</span>
                         <span>{lastLogin !== '-' ? `Login: ${lastLogin}` : 'Belum Login'}</span>
@@ -585,8 +588,8 @@ function UserManagementView({ users, assignments }: any) {
                     <div className="relative flex-1">
                         <select
                           value={u.role || "Penyelam"}
-                          onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
-                          className="w-full bg-transparent border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                          onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "approved")}
+                          className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
                         >
                           <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
                           <option value="Penyelam" className="bg-zinc-900 text-white">Penyelam</option>
@@ -599,14 +602,17 @@ function UserManagementView({ users, assignments }: any) {
                           value={u.status || "pending"}
                           onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
                           className={cn(
-                            "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
-                            u.status === "active"
+                            "w-full px-1 py-1 rounded-md text-xs font-medium border outline-none appearance-none cursor-pointer transition-all",
+                            u.status === "approved"
                               ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                              : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
+                              : u.status === "rejected"
+                                ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400"
+                                : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
                           )}
                         >
-                          <option value="active" className="bg-zinc-900 text-emerald-400">Active</option>
+                          <option value="approved" className="bg-zinc-900 text-emerald-400">Approved</option>
                           <option value="pending" className="bg-zinc-900 text-amber-500">Pending</option>
+                          <option value="rejected" className="bg-zinc-900 text-red-500">Rejected</option>
                         </select>
                       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 opacity-40 pointer-events-none" />
                     </div>

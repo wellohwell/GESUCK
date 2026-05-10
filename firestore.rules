@@ -24,7 +24,15 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email == 'admin@gmail.com' || 
         request.auth.token.email == 'wahyulaksanajayakusuma@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isApproved() {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved' ||
+        isAdmin()
       );
     }
 
@@ -42,7 +50,7 @@ service cloud.firestore {
 
     // 1. Markets
     match /markets/{marketId} {
-      allow read: if isSignedIn();
+      allow read: if isApproved();
       allow create: if isAdmin() && isEmailVerified() && isValidMarket(incoming()) && 
         incoming().created_at == request.time;
       allow update: if isAdmin() && isEmailVerified() && isValidMarket(incoming());
@@ -60,13 +68,13 @@ service cloud.firestore {
 
     // 2. Assignments
     match /assignments/{assignmentId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isEmailVerified() &&
+      allow read: if isApproved();
+      allow create: if isApproved() && isEmailVerified() &&
         isValidAssignment(incoming()) &&
         assignmentId == incoming().tanggal + '_' + request.auth.uid &&
         incoming().uid == request.auth.uid &&
         incoming().createdAt == request.time;
-      allow update: if isSignedIn() && isEmailVerified() &&
+      allow update: if isApproved() && isEmailVerified() &&
         isValidAssignment(incoming()) &&
         assignmentId == incoming().tanggal + '_' + request.auth.uid &&
         incoming().uid == request.auth.uid &&
@@ -76,7 +84,7 @@ service cloud.firestore {
         incoming().diff(existing()).affectedKeys().hasOnly([
           'pasarId', 'pasarNama', 'pendamping', 'nama', 'email', 'foto'
         ]);
-      allow delete: if isSignedIn() && (existing().uid == request.auth.uid || isAdmin());
+      allow delete: if isApproved() && (existing().uid == request.auth.uid || isAdmin());
 
       function isValidAssignment(data) {
         return data.uid is string && data.uid == request.auth.uid &&
@@ -93,12 +101,12 @@ service cloud.firestore {
 
     // 2.1 Market Plans
     match /market_plans/{planId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isEmailVerified() &&
+      allow read: if isApproved();
+      allow create: if isApproved() && isEmailVerified() &&
         isValidPlan(incoming()) &&
         incoming().userId == request.auth.uid &&
         incoming().createdAt == request.time;
-      allow update: if isSignedIn() && isEmailVerified() && (
+      allow update: if isApproved() && isEmailVerified() && (
         (existing().userId == request.auth.uid && 
          isValidPlan(incoming()) &&
          incoming().userId == request.auth.uid &&
@@ -106,7 +114,7 @@ service cloud.firestore {
          incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
          isAdmin()
       );
-      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow delete: if isApproved() && (existing().userId == request.auth.uid || isAdmin());
 
       function isValidPlan(data) {
         return data.userId is string && data.userId == request.auth.uid &&
@@ -123,25 +131,31 @@ service cloud.firestore {
 
     // 3. Admins
     match /admins/{userId} {
-      allow read: if isSignedIn();
+      allow read: if isApproved();
       allow write: if isAdmin();
     }
 
     // 3.1 Users
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && 
+        incoming().role == 'Penyelam' && 
+        incoming().status == 'pending';
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['lastLogin', 'photoURL', 'email', 'displayName'])) ||
+        isAdmin()
+      );
     }
 
     // 4. Market Locks
     match /marketLocks/{lockId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isEmailVerified() &&
+      allow read: if isApproved();
+      allow create: if isApproved() && isEmailVerified() &&
         incoming().uid == request.auth.uid;
-      allow update: if isSignedIn() && isEmailVerified() &&
+      allow update: if isApproved() && isEmailVerified() &&
         incoming().uid == request.auth.uid &&
         existing().uid == request.auth.uid;
-      allow delete: if isSignedIn() &&
+      allow delete: if isApproved() &&
         (existing().uid == request.auth.uid || isAdmin());
     }
   }
