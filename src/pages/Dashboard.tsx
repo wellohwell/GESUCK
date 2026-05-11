@@ -84,7 +84,7 @@ export default function Dashboard({
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
       setPlans(
         data.sort(
-          (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
+          (a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0),
         ),
       );
       setLoading(false);
@@ -101,6 +101,19 @@ export default function Dashboard({
       unsubUsers();
     };
   }, [activeDate.isoDate]);
+
+  const userMap = useMemo(() => {
+    const map: Record<string, { name: string; photoURL?: string }> = {};
+    users.forEach((u) => {
+      if (u.id) {
+        map[u.id] = {
+          name: u.displayName || u.name || "User",
+          photoURL: u.photoURL || u.photoUrl,
+        };
+      }
+    });
+    return map;
+  }, [users]);
 
   const availableMarkets = useMemo(() => {
     const takenMarketNames = new Set(plans.map((p) => p.marketName));
@@ -507,7 +520,7 @@ export default function Dashboard({
                   >
                     <div className="w-7 h-7 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-white/5 overflow-hidden p-0.5 border border-zinc-200 dark:border-white/10 group-hover:border-brand-primary/30 transition-colors">
                       <img
-                        src={plan.userPhoto}
+                        src={userMap[plan.userId]?.photoURL || plan.userPhoto}
                         className="w-full h-full rounded-full object-cover transition-all duration-500"
                         alt=""
                         crossOrigin="anonymous"
@@ -519,13 +532,19 @@ export default function Dashboard({
                       <div className="flex items-center gap-1.5">
                         <p className="text-[10px] font-bold text-zinc-900 dark:text-white tracking-tight truncate leading-none mt-0.5">
                           {toTitleCase(plan.marketName)}
-                          <span className="opacity-50 ml-1 font-medium">
-                            - {plan.marketType === 'PASARAN_JAWA' 
-                                ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
-                                    ? activeDate.pasaran.toUpperCase() 
-                                    : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
-                                : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ")}
-                          </span>
+                          {(() => {
+                            const raw = plan.marketType === 'PASARAN_JAWA' 
+                              ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
+                                  ? activeDate.pasaran.toUpperCase() 
+                                  : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
+                              : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
+                            const category = toTitleCase(raw);
+                            return category !== "Umum" ? (
+                              <span className="opacity-50 ml-1 font-medium">
+                                - {category}
+                              </span>
+                            ) : null;
+                          })()}
                         </p>
                         {plan.userId === auth.currentUser?.uid && (
                           <div className="w-1 h-1 rounded-full bg-brand-primary" />
@@ -534,9 +553,7 @@ export default function Dashboard({
 
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-[8px] font-bold text-brand-primary tracking-widest truncate max-w-[70px]">
-                          {toTitleCase(typeof plan.userName === "string"
-                            ? plan.userName.split(" ")[0]
-                            : "User")}
+                          {toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(" ")[0])}
                         </span>
                         <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
                         <span className="text-[8px] font-bold text-zinc-400 dark:text-white/40 tracking-widest truncate">
