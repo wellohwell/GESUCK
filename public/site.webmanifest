@@ -1,21 +1,23 @@
 {
-  "name": "Vork",
-  "short_name": "Vork",
+  "name": "TeamRewang Market Visit",
+  "short_name": "TeamRewang",
+  "description": "Rencana Kunjungan Pasar TeamRewang",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
-  "theme_color": "#fbfbfb",
-  "background_color": "#000000",
+  "theme_color": "#C6FF00",
+  "background_color": "#050505",
   "display": "standalone"
 }

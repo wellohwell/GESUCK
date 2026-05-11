@@ -11,6 +11,7 @@ import Blocked from "./pages/Blocked";
 import { syncUser, subscribeCurrentUser } from "./lib/services";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ToastProvider } from "./components/ToastProvider";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
@@ -102,6 +103,7 @@ function AppContent() {
         <Route path="/report" element={(isAdmin) ? <Report onBack={() => navigate("/")} /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PWAInstallPrompt />
     </div>
   );
 }
