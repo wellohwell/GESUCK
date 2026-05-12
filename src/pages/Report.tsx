@@ -127,23 +127,27 @@ export default function Report({ onBack }: ReportProps) {
     const divider = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
     const header = `*Rencana Kunjungan Pasar*\n*${activeDate.dayName} ${activeDate.pasaran}, ${activeDate.fullDate}*`;
     
-    const body = plans.map((plan: any) => {
+      const body = plans.map((plan: any) => {
       const userName = toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(' ')[0]);
       const marketName = toTitleCase(plan.marketName);
       
-      const categoryRaw = plan.marketType === 'PASARAN_JAWA' 
-        ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
-            ? activeDate.pasaran.toUpperCase() 
-            : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
-        : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
+      let displayCategory = "";
+      if (plan.marketType === 'PASARAN_JAWA') {
+        displayCategory = toTitleCase(activeDate.pasaran);
+      } else if (plan.marketType === 'PASAR_PAGI') {
+        displayCategory = "Pasar Pagi";
+      } else if (plan.marketType === 'PASAR_UMUM') {
+        displayCategory = "";
+      } else {
+        displayCategory = toTitleCase(plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ") || "");
+      }
       
-      const category = toTitleCase(categoryRaw);
-      const categoryText = category === "Umum" ? "" : ` ${category}`;
+      const categoryText = displayCategory ? ` - ${displayCategory}` : "";
         
       return `• ${userName} - ${marketName}${categoryText}`;
     }).join("\n");
 
-    const footer = `_Auto generate by_ *Vork*`;
+    const footer = `_Auto generate by_ *VorkTeam*`;
     
     const fullText = `${divider}\n${header}\n${divider}\n\n${body}\n\n${divider}\n${footer}\n${divider}`;
 
@@ -175,7 +179,6 @@ export default function Report({ onBack }: ReportProps) {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <h1 className="font-bold text-sm tracking-tight dark:text-white">Export Report</h1>
         </div>
         <div className="flex items-center gap-1.5">
           <button
@@ -204,57 +207,60 @@ export default function Report({ onBack }: ReportProps) {
         {/* THE CANVAS: Targeted directly for exact 9:16 portrait export */}
         <div 
           ref={captureRef}
-          className="w-[380px] h-[675px] flex items-center justify-center relative overflow-hidden flex-shrink-0"
+          className="w-[360px] aspect-[9/16] flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#F5F5F3]"
         >
           {/* Ambient Premium SaaS Background Effects - INSIDE CANVAS */}
-          <div className="absolute inset-0 bg-[#fdfdfe]" />
-          <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#C6FF00]/10 blur-[100px] rounded-full pointer-events-none opacity-50 mix-blend-multiply" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-[#18181b]/5 blur-[100px] rounded-full pointer-events-none opacity-40 mix-blend-multiply" />
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
+          <div className="absolute inset-0 bg-[#F5F5F3]" />
+          <div className="absolute top-[-15%] left-[-10%] w-[80%] h-[80%] bg-white blur-[120px] rounded-full pointer-events-none opacity-60" />
+          <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-br from-[#C6FF00]/5 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
           
-          {/* THE CARD: Premium Floating Card */}
-          <div className="w-[340px] h-[610px] bg-white flex flex-col items-stretch relative rounded-[40px] border border-white shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] overflow-hidden z-20">
+          {/* THE CONTENT: Integrated with Canvas Layout */}
+          <div className="flex-1 flex flex-col items-stretch relative overflow-hidden z-20 px-4">
             {/* Subtle Surface Texture & Light */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-zinc-50/20 pointer-events-none" />
-            <div className="absolute inset-x-0 top-0 h-[80px] bg-gradient-to-b from-white/60 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-zinc-50/10 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
             
             {/* HEADER */}
-            <div className="px-6 pt-6 pb-0 relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-zinc-50 rounded-[10px] flex items-center justify-center border border-zinc-100 shadow-sm">
+            <div className="px-6 pt-10 pb-0 relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 flex items-center justify-center">
                     <img 
                       src="/login-illustration.png" 
                       alt="Logo" 
-                      className="w-4 h-4 object-contain" 
+                      className="w-9 h-9 object-contain" 
                       referrerPolicy="no-referrer"
                     />
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1 mb-0.5">
-                      <div className="w-0.5 h-0.5 rounded-full bg-[#C6FF00]" />
-                      <span className="text-[6px] font-bold tracking-[0.3em] text-zinc-400 uppercase leading-none">OFFICIAL REPORT</span>
+                      <div className="w-1 h-1 rounded-full bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.8)]" />
+                      <span className="text-[7.5px] font-bold tracking-[0.3em] text-black uppercase leading-none">LAPORAN HARIAN</span>
                     </div>
-                    <span className="text-[7.5px] font-bold text-zinc-900/30 uppercase tracking-[0.05em] leading-none">VORK.SNAPSHOT</span>
+
                   </div>
                 </div>
-                <div className="px-1.5 py-0.5 bg-zinc-900 rounded-full flex items-center gap-1 shadow-sm">
-                  <div className="w-0.5 h-0.5 rounded-full bg-[#C6FF00]" />
-                  <span className="text-[5px] font-extrabold text-white uppercase tracking-widest leading-none">Secure</span>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="px-1.5 py-0.5 bg-zinc-900 rounded-full flex items-center gap-1 shadow-sm">
+                    <div className="w-0.5 h-0.5 rounded-full bg-[#C6FF00] animate-pulse" />
+                    <span className="text-[5px] font-extrabold text-white uppercase tracking-widest leading-none">Secure</span>
+                  </div>
+
                 </div>
               </div>
   
               <div className="space-y-0.5">
-                <h1 className="text-[16px] font-black tracking-[-0.03em] text-zinc-900 leading-[1.1]">
+                <h1 className="text-[18px] font-bold tracking-[-0.03em] text-zinc-900 leading-[1.1]">
                   Rencana Kunjungan
                 </h1>
                 <div className="flex items-center gap-1.5 py-0.5">
-                  <span className="text-[8.5px] font-bold tracking-tight text-zinc-400">
-                    {activeDate.fullDate}
-                  </span>
-                  <div className="px-1.5 py-0.5 rounded-full bg-[#C6FF00] text-[7px] font-black tracking-tight text-black uppercase leading-none">
+                  <div className="px-1.5 py-0.5 rounded-full bg-[#C6FF00] text-[7px] font-black tracking-tight text-black uppercase leading-none shadow-[0_2px_4px_rgba(198,255,0,0.2)]">
                     {activeDate.dayName} {activeDate.pasaran}
                   </div>
+                  <span className="text-[8.5px] font-bold tracking-tight text-zinc-500">
+                    {activeDate.fullDate}
+                  </span>
                 </div>
               </div>
             </div>
@@ -262,13 +268,20 @@ export default function Report({ onBack }: ReportProps) {
             {/* MAIN CONTENT AREA */}
             <div className="flex-1 px-6 flex flex-col justify-start overflow-hidden py-2 relative z-10">
               <div className="flex items-center justify-between mb-2 px-1">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[7px] font-black text-zinc-900 uppercase tracking-widest">TIM OPERASIONAL</span>
-                  <div className="h-0.5 w-3 bg-[#C6FF00] rounded-full" />
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[7px] font-black text-zinc-900 uppercase tracking-widest leading-none">MEMBER LIST</span>
+                    <div className="h-0.5 w-4 bg-[#C6FF00] rounded-full" />
+                  </div>
+                  <div className="h-px bg-zinc-200/50 flex-1" />
+                </div>
+                <div className="px-1.5 py-0.5 bg-white/40 border border-white/60 backdrop-blur-sm rounded-[4px] flex items-center gap-1">
+                  <div className="w-1 h-1 rounded-full bg-[#C6FF00] animate-pulse" />
+                  <span className="text-[5.5px] font-bold text-zinc-500 uppercase tracking-widest">LIVE SYNC</span>
                 </div>
               </div>
   
-              <div className="space-y-0 relative">
+              <div className="space-y-0 relative bg-white/20 rounded-[20px] border border-white/30 backdrop-blur-[2px] p-1 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.02)]">
                 {plans.length === 0 && !loading && (
                   <div className="py-20 flex flex-col items-center gap-3 opacity-10">
                     <div className="w-8 h-8 rounded-full border-2 border-zinc-900 flex items-center justify-center">
@@ -286,30 +299,37 @@ export default function Report({ onBack }: ReportProps) {
                 )}
   
                 {plans.map((plan: any) => {
-                  const categoryRaw = plan.marketType === 'PASARAN_JAWA' 
-                    ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
-                        ? activeDate.pasaran.toUpperCase() 
-                        : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
-                    : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
+                  const isPasaranJawa = plan.marketType === 'PASARAN_JAWA';
+                  const pasaranDay = isPasaranJawa ? toTitleCase(activeDate.pasaran) : null;
                   
-                  const category = toTitleCase(categoryRaw);
+                  let displayCategory = "";
+                  if (plan.marketType === 'PASARAN_JAWA') {
+                    displayCategory = ""; 
+                  } else if (plan.marketType === 'PASAR_PAGI') {
+                    displayCategory = "PASAR PAGI";
+                  } else if (plan.marketType === 'PASAR_UMUM') {
+                    displayCategory = ""; 
+                  } else {
+                    displayCategory = plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ") || "";
+                  }
+                  
                   const userName = toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(' ')[0]);
   
                   return (
-                    <div key={plan.id} className="py-1.5 px-1 flex items-center gap-2.5 group relative transition-all duration-300">
-                      <div className="absolute inset-0 bg-zinc-50/0 rounded-[10px] group-hover:bg-zinc-50/40 transition-all duration-300 -mx-1" />
+                    <div key={plan.id} className="py-2 px-2 flex items-center gap-2.5 group relative transition-all duration-300 border-b border-zinc-100/30 last:border-0">
+                      <div className="absolute inset-0 bg-white/0 rounded-[12px] group-hover:bg-white/40 transition-all duration-300" />
                       
-                      <div className="w-8 h-8 flex-shrink-0 rounded-full bg-white relative overflow-hidden p-0.5 border border-zinc-100 shadow-sm z-10 transition-transform">
+                      <div className="w-8 h-8 flex-shrink-0 rounded-full bg-white relative overflow-hidden p-0.5 border border-zinc-200 shadow-sm z-10 transition-transform ring-2 ring-white/50">
                         {userMap[plan.userId]?.photoURL ? (
                           <img 
                             src={userMap[plan.userId].photoURL} 
                             alt="" 
-                            className="w-full h-full rounded-full object-cover grayscale-[10%] group-hover:grayscale-0"
+                            className="w-full h-full rounded-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
                             referrerPolicy="no-referrer"
                             crossOrigin="anonymous"
                           />
                         ) : (
-                          <div className="w-full h-full rounded-full bg-zinc-100 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
+                          <div className="w-full h-full rounded-full bg-zinc-50 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
                             {userName.charAt(0)}
                           </div>
                         )}
@@ -317,25 +337,36 @@ export default function Report({ onBack }: ReportProps) {
   
                       <div className="flex-1 min-w-0 relative z-10">
                         <div className="flex items-center justify-between mb-0">
-                          <p className="text-[10px] font-extrabold text-zinc-900 tracking-tight truncate leading-tight">
-                            {toTitleCase(plan.marketName)}
-                          </p>
-                          <span className="text-[7px] font-bold text-zinc-300 tabular-nums">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <p className="text-[10px] font-[650] text-zinc-900 tracking-tight truncate leading-tight">
+                              {toTitleCase(plan.marketName)}
+                            </p>
+                            {isPasaranJawa && (
+                              <span className="text-[8.5px] font-bold text-zinc-400 shrink-0 leading-tight">
+                                • {pasaranDay}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[7.5px] font-medium text-zinc-500 tabular-nums font-mono">
                             {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "00:00"}
                           </span>
                         </div>
   
-                        <div className="flex items-center gap-1 leading-none">
-                          <span className="text-[7.5px] font-black text-[#C6FF00] bg-zinc-900 px-1 py-0.5 rounded-[3px] tracking-tight truncate uppercase">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center text-[7.5px] font-black text-[#C6FF00] bg-zinc-900 px-1.5 py-0.5 rounded-[4px] tracking-tight truncate uppercase leading-none shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
                             {userName}
                           </span>
-                          <span className="text-[8px] font-bold text-zinc-400 tracking-tight truncate opacity-50">
+                          <span className="text-[8px] font-[450] text-zinc-400 tracking-tight truncate opacity-70">
                             {toTitleCase(plan.city)}
                           </span>
-                          <div className="w-0.5 h-0.5 rounded-full bg-zinc-200 shrink-0" />
-                          <span className="text-[7.5px] font-bold text-zinc-400/60 uppercase tracking-tighter">
-                            {category === "Umum" ? "REGULER" : category}
-                          </span>
+                          {displayCategory && (
+                            <>
+                              <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 shrink-0" />
+                              <span className="text-[7.5px] font-bold text-zinc-400/80 uppercase tracking-tighter">
+                                {displayCategory}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -345,35 +376,34 @@ export default function Report({ onBack }: ReportProps) {
             </div>
   
             {/* FOOTER */}
-            <div className="px-6 pt-2 pb-6 mt-auto relative z-10">
-              <div className="border-t border-zinc-100/50 pt-3">
+            <div className="px-6 pt-2 pb-8 mt-auto relative z-10">
+              <div className="border-t border-zinc-200/50 pt-5">
                 <div className="flex items-start justify-between">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3.5 h-3.5 bg-zinc-900 rounded-md flex items-center justify-center">
-                        <span className="text-[#C6FF00] text-[5px] font-black">V</span>
-                      </div>
-                      <span className="text-[8px] font-black text-zinc-900 uppercase tracking-[0.2em] leading-none">
-                        VORK OS
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src="/login-illustration.png" 
+                        alt="Logo" 
+                        className="w-4 h-4 object-contain opacity-80" 
+                        referrerPolicy="no-referrer"
+                      />
+                      <span className="text-[8px] font-black text-zinc-900 uppercase tracking-[0.25em] leading-none">
+                        VORKTEAM
                       </span>
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[6.5px] font-bold text-zinc-400 uppercase tracking-widest opacity-60">
-                        OPR.SNAPSHOT . {activeDate.isoDate.replace(/-/g, '.')}
-                      </span>
-                    </div>
+
                   </div>
   
-                  <div className="flex flex-col items-end gap-1.5">
-                    <div className="flex gap-0.5">
-                      {[1,2,3].map(i => (
-                        <div key={i} className={`h-1 w-1 rounded-full ${i === 1 ? 'bg-[#C6FF00]' : 'bg-zinc-200'}`} />
-                      ))}
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[6px] font-[600] text-zinc-400 uppercase tracking-widest leading-none">
+                        SYNCED {dayjs().format("HH:mm")} WIB
+                      </span>
+                      <span className="text-[5.5px] font-bold text-zinc-300 uppercase leading-none tracking-tighter">
+                        {activeSalesCount} ACTIVE MEMBERS ONLINE
+                      </span>
                     </div>
-                    <div className="px-1.5 py-0.5 bg-zinc-50 border border-zinc-100 rounded-md flex flex-col items-end gap-0.5">
-                      <span className="text-[5px] font-bold text-zinc-300 uppercase leading-none tracking-widest">SYSTEM</span>
-                      <span className="text-[7px] font-black text-zinc-900 leading-none">OPTIMIZED</span>
-                    </div>
+
                   </div>
                 </div>
               </div>

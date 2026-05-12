@@ -335,104 +335,128 @@ export default function Dashboard({
   }, [allPlans, activeDate.isoDate]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[#F3F4F1] dark:bg-[#090909] text-zinc-900 dark:text-white font-sans transition-colors duration-300 relative overflow-x-hidden">
+      {/* Background Polish */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#B7E800]/[0.02] dark:bg-[#C6FF00]/[0.01] blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150" />
+      </div>
+      
       {/* Navbar Minimal */}
-      <nav className="p-2 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-100 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-40">
-        <div className="flex items-center gap-2">
+      <nav className="p-2 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-200/30 dark:border-white/5 bg-white/40 dark:bg-black/20 backdrop-blur-xl sticky top-0 z-40 transition-none">
+        <div className="flex items-center gap-2.5">
           <div className="flex flex-col justify-center">
-            <h4 className="text-xs font-medium tracking-tight text-zinc-900 dark:text-white  leading-none">
-              {auth.currentUser?.displayName || "Guest"}
+            <h4 className="text-[10px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-none uppercase">
+              HALLO {auth.currentUser?.displayName?.split(' ')[0] || "USER"}!
             </h4>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/5 dark:bg-white/5 rounded-full border border-zinc-200/50 dark:border-white/[0.05] mr-1">
+              <span className="text-[7.5px] font-bold text-zinc-400 dark:text-white/30 uppercase tracking-widest">{markets.length} PASAR</span>
+              <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/20" />
+              <span className="text-[7.5px] font-bold text-[#B7E800] dark:text-[#C6FF00] uppercase tracking-widest leading-none">LIVE</span>
+            </div>
+          )}
           <ThemeToggle />
-          <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-1" />
+          <div className="w-px h-3 bg-zinc-200 dark:bg-white/10 mx-0.5" />
           {isAdmin && (
             <button
               onClick={onNavigateAdmin}
-              className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors border border-zinc-200 dark:border-transparent dark:hover:border-white/10"
+              className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-zinc-300/50 dark:hover:border-white/10"
             >
-              <Settings className="w-3.5 h-3.5 text-zinc-400 dark:text-white/40" />
+              <Settings className="w-3 h-3 text-zinc-400 dark:text-white/40" />
             </button>
           )}
           {isAdmin && (
             <button
               onClick={onNavigateReport}
               title="Export Report"
-              className="p-1.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-brand-primary/10 transition-colors border border-emerald-100 dark:border-transparent dark:text-brand-primary/60 text-emerald-600"
+              className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-zinc-300/50 dark:hover:border-white/10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 dark:text-white/40"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
             </button>
           )}
           <button
             onClick={() => auth.signOut()}
-            className="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border border-red-100 dark:border-transparent"
+            className="p-1 rounded-lg hover:bg-red-500/10 transition-colors border border-transparent"
           >
-            <LogOut className="w-3.5 h-3.5 text-red-500/40" />
+            <LogOut className="w-3 h-3 text-red-500/30" />
           </button>
         </div>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-4 pt-4 pb-10">
+      <main className="max-w-2xl mx-auto px-4 pt-3 pb-8 relative z-10">
         {/* Header Hero */}
-        <section className="mb-6 text-center pt-1">
-          <h1 className="text-xl font-display font-medium leading-tight tracking-tighter text-zinc-900 dark:text-white mb-0.5">
+        <section className="mb-4 text-center pt-2 relative">
+          <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 w-[200px] h-[80px] bg-[#B7E800]/5 dark:bg-[#C6FF00]/5 blur-[60px] rounded-full pointer-events-none" />
+          
+          <h1 className="text-xl font-bold leading-none tracking-[-0.04em] text-zinc-900 dark:text-white mb-1.5">
             {activeDate.dayName}{" "}
-            <span className="text-brand-primary">{activeDate.pasaran}</span>
+            <span className="text-[#B7E800] dark:text-[#C6FF00] drop-shadow-[0_0_10px_rgba(198,255,0,0.2)]">{activeDate.pasaran}</span>
           </h1>
-          <p className="text-[10px] text-zinc-400 dark:text-white/40 font-bold uppercase tracking-[0.2em] mb-4">
+          <p className="text-[9px] text-zinc-400 dark:text-white/30 font-bold uppercase tracking-[0.3em] mb-4">
             {activeDate.fullDate}
           </p>
 
-          <h2 className="text-[9px] font-semibold text-zinc-400 dark:text-white/30 uppercase tracking-widest mb-1">
-            Market Temperature
-          </h2>
+          <div className="flex flex-col items-center gap-1 mb-2">
+             <div className="h-px w-6 bg-zinc-200 dark:bg-white/10" />
+             <h2 className="text-[7.5px] font-black text-zinc-400 dark:text-white/20 uppercase tracking-[0.3em]">
+               MARKET TEMPERATURE
+             </h2>
+          </div>
 
           {/* Ultra-Compact Market Temperature Indicator */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[280px] grid grid-cols-2 gap-x-6">
+            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 bg-[#FAFAF8] dark:bg-[#111111] border border-zinc-900/5 dark:border-white/[0.05] p-2.5 rounded-[16px] backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all duration-500">
               {/* HOT COLUMN */}
-              <div className="text-left border-r border-zinc-100 dark:border-white/5 pr-4">
-                <span className="text-[9px] font-black tracking-tighter text-red-500/60 dark:text-red-500/40 uppercase block mb-1.5">
-                  🔥 HOT
-                </span>
+              <div className="text-left border-r border-zinc-200/50 dark:border-white/5 pr-3 group cursor-default">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-[8px] font-black tracking-[0.1em] text-red-500 uppercase leading-none px-1 bg-red-500/5 rounded-[2px]">
+                    HOT
+                  </span>
+                  <div className="h-[1px] flex-1 bg-red-500/5" />
+                </div>
                 <div className="space-y-1">
                   {marketTemperature?.hot?.some((m: any) => m !== null) ? (
                     marketTemperature.hot.map((m: any, idx: number) => (
-                      <p
-                        key={idx}
-                        className="text-[10px] font-medium text-zinc-900 dark:text-white/70 truncate leading-none"
-                      >
-                        {m ? toTitleCase(m.name) : "Belum Ada Data"}
-                      </p>
+                      <div key={idx} className="flex items-center gap-1.5 overflow-hidden">
+                        <div className="w-[1.5px] h-[1.5px] rounded-full bg-red-500/40 shrink-0" />
+                        <p className="text-[9.5px] font-[600] text-zinc-700 dark:text-zinc-400 truncate leading-none transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                          {m ? toTitleCase(m.name) : "—"}
+                        </p>
+                      </div>
                     ))
                   ) : (
-                    <p className="text-[9px] font-medium text-zinc-300 dark:text-white/10 italic">
-                      Belum Ada Data
+                    <p className="text-[8px] font-medium text-zinc-300 dark:text-white/10 italic">
+                      No Data
                     </p>
                   )}
                 </div>
               </div>
 
               {/* COLD COLUMN */}
-              <div className="text-left pl-2">
-                <span className="text-[9px] font-black tracking-tighter text-blue-500/60 dark:text-blue-500/40 uppercase block mb-1.5">
-                  🧊 COLD
-                </span>
+              <div className="text-left pl-3 group cursor-default">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-[8px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1 bg-blue-500/5 rounded-[2px]">
+                    COLD
+                  </span>
+                  <div className="h-[1px] flex-1 bg-blue-500/5" />
+                </div>
                 <div className="space-y-1">
                   {marketTemperature?.cold?.some((m: any) => m !== null) ? (
                     marketTemperature.cold.map((m: any, idx: number) => (
-                      <p
-                        key={idx}
-                        className="text-[10px] font-medium text-zinc-900 dark:text-white/70 truncate leading-none"
-                      >
-                        {m ? toTitleCase(m.name) : "Belum Ada Data"}
-                      </p>
+                      <div key={idx} className="flex items-center gap-1.5 overflow-hidden">
+                        <div className="w-[1.5px] h-[1.5px] rounded-full bg-blue-500/40 shrink-0" />
+                        <p className="text-[9.5px] font-[600] text-zinc-700 dark:text-zinc-400 truncate leading-none transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                          {m ? toTitleCase(m.name) : "—"}
+                        </p>
+                      </div>
                     ))
                   ) : (
-                    <p className="text-[9px] font-medium text-zinc-300 dark:text-white/10 italic">
-                      Belum Ada Data
+                    <p className="text-[8px] font-medium text-zinc-300 dark:text-white/10 italic">
+                      No Data
                     </p>
                   )}
                 </div>
@@ -442,54 +466,62 @@ export default function Dashboard({
         </section>
 
         {/* Live List */}
-        <section className="mb-6">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3 h-3 text-brand-primary" />
-              <h2 className="text-sm font-medium  tracking-tight text-zinc-500 dark:text-white/70">
-                Rencana Kunjungan
-              </h2>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-zinc-100 dark:bg-white/[0.03] rounded-full border border-zinc-200/50 dark:border-white/[0.05]">
-              <div className="relative">
-                <Users className="w-3.5 h-3.5 text-zinc-400 dark:text-white/30" />
-                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-[#C6FF00] rounded-full border border-white dark:border-[#050505]" />
+        <section className="mb-4">
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#B7E800] dark:bg-[#C6FF00] rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(183,232,0,0.3)] dark:shadow-[0_2px_10px_rgba(198,255,0,0.4)]">
+                 <Users className="w-2.5 h-2.5 text-black" />
               </div>
-              <span className="text-[10px] font-bold text-zinc-500 dark:text-white/50 tracking-tight">
-                {Math.max(0, users.length - plans.length)} <span className="opacity-60">Pending</span>
-              </span>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-[12px] font-bold tracking-tight text-zinc-800 dark:text-white/90">
+                  Rencana Kunjungan
+                  {users.length - plans.length > 0 && (
+                    <>
+                      <span className="opacity-20 mx-1.5 font-normal">•</span>
+                      <span className="text-[9px] font-black text-[#B7E800] dark:text-[#C6FF00] uppercase tracking-wider">
+                        {Math.max(0, users.length - plans.length)} PENDING
+                      </span>
+                    </>
+                  )}
+                </h2>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <div className="w-1 h-1 rounded-full bg-[#B7E800] dark:bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.6)] animate-pulse" />
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest">LIVE</span>
             </div>
           </div>
 
-          <div className="space-y-0.5">
+          <div className="space-y-1 bg-[#FAFAF8] dark:bg-[#111111] rounded-[20px] border border-zinc-900/5 dark:border-white/[0.05] p-1 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] backdrop-blur-sm">
             {!myPlan && !loading && (
-              <div className="flex justify-center mt-8 mb-8">
+              <div className="flex justify-center pt-3 pb-4">
                 <motion.button
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-medium text-xs  tracking-tight shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
+                  className="inline-flex items-center justify-center px-6 py-2 rounded-xl bg-zinc-900 dark:bg-[#C6FF00] text-white dark:text-black font-bold text-[10px]  uppercase tracking-widest shadow-lg hover:translate-y-[-1px] hover:shadow-xl transition-all duration-300 active:scale-95 gap-2 group"
                 >
-                  <Plus className="w-3 h-3" />
-                  Tambah Rencana
+                  <Plus className="w-3 h-3 group-hover:rotate-90 transition-transform duration-300" />
+                  TAMBAH RENCANA
                 </motion.button>
               </div>
             )}
 
             <AnimatePresence mode="popLayout" initial={false}>
               {loading ? (
-                [...Array(3)].map((_, i) => (
+                [...Array(6)].map((_, i) => (
                   <motion.div
                     key={`skeleton-${i}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="h-10 border-b border-zinc-100 dark:border-white/[0.03] animate-pulse flex items-center gap-2 px-1"
+                    className="h-12 bg-white/20 dark:bg-white/[0.02] rounded-[16px] border border-white dark:border-white/[0.05] animate-pulse flex items-center gap-3 px-3 mx-0.5"
                   >
-                    <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-white/[0.02]" />
-                    <div className="flex-1 space-y-1">
-                      <div className="h-2 w-14 bg-zinc-100 dark:bg-white/[0.02] rounded" />
-                      <div className="h-1.5 w-18 bg-zinc-100 dark:bg-white/[0.02] rounded" />
+                    <div className="w-7 h-7 rounded-full bg-zinc-200/50 dark:bg-white/[0.05]" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-2 w-20 bg-zinc-200/50 dark:bg-white/[0.05] rounded-[2px]" />
+                      <div className="h-1.5 w-28 bg-zinc-200/50 dark:bg-white/[0.05] rounded-[2px]" />
                     </div>
                   </motion.div>
                 ))
@@ -499,10 +531,13 @@ export default function Dashboard({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="py-10 px-4 flex flex-col items-center justify-center text-center"
+                  className="py-16 px-4 flex flex-col items-center justify-center text-center"
                 >
-                  <p className="text-xs text-zinc-300 dark:text-white/20 font-medium  tracking-tight">
-                    BELUM ADA RENCANA HARI INI
+                  <div className="w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/[0.05] flex items-center justify-center mb-3">
+                     <Users className="w-4 h-4 text-zinc-300 dark:text-white/10" />
+                  </div>
+                  <p className="text-[10px] text-zinc-400 dark:text-white/20 font-black uppercase tracking-[0.3em]">
+                    SISTEM BELUM MENERIMA DATA
                   </p>
                 </motion.div>
               ) : (
@@ -512,25 +547,44 @@ export default function Dashboard({
                     key={plan.id}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
+                    exit={{ opacity: 0, scale: 0.99 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
                     className={cn(
-                      "group py-2 px-1.5 flex items-center gap-2 border-b border-zinc-100 dark:border-white/[0.03] last:border-0 transition-all duration-300",
-                      plan.userId === auth.currentUser?.uid && "bg-brand-primary/[0.03] dark:bg-brand-primary/[0.01]"
+                      "group py-1.5 px-2.5 flex items-center gap-2.5 bg-transparent hover:bg-white dark:hover:bg-white/[0.03] rounded-[14px] transition-all duration-300 border border-transparent hover:border-zinc-200 dark:hover:border-white/[0.05]",
+                      plan.userId === auth.currentUser?.uid && "bg-white dark:bg-white/[0.04] shadow-sm border-zinc-200 dark:border-white/[0.08] relative overflow-hidden"
                     )}
                   >
-                    <div className="w-7 h-7 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-white/5 overflow-hidden p-0.5 border border-zinc-200 dark:border-white/10 group-hover:border-brand-primary/30 transition-colors">
-                      <img
-                        src={userMap[plan.userId]?.photoURL || plan.userPhoto}
-                        className="w-full h-full rounded-full object-cover transition-all duration-500"
-                        alt=""
-                        crossOrigin="anonymous"
-                        referrerPolicy="no-referrer"
-                      />
+                    {plan.userId === auth.currentUser?.uid && (
+                       <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[#B7E800]/10 dark:from-[#C6FF00]/10 to-transparent pointer-events-none" />
+                    )}
+
+                    <div className="relative shrink-0">
+                      <div className={cn(
+                        "w-7 h-7 rounded-full bg-zinc-100 dark:bg-white/5 overflow-hidden p-[1.5px] border border-zinc-200 dark:border-white/10 transition-all duration-500 ring-2 ring-transparent",
+                        plan.userId === auth.currentUser?.uid ? "ring-[#B7E800]/40 dark:ring-[#C6FF00]/40 border-[#B7E800]/20 dark:border-[#C6FF00]/20" : "group-hover:border-zinc-300 dark:group-hover:border-white/20"
+                      )}>
+                        {userMap[plan.userId]?.photoURL || plan.userPhoto ? (
+                          <img
+                            src={userMap[plan.userId]?.photoURL || plan.userPhoto}
+                            className="w-full h-full rounded-full object-cover transition-all duration-700 grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110"
+                            alt=""
+                            crossOrigin="anonymous"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-full h-full rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-[9px] font-black text-zinc-400 uppercase">
+                            {toTitleCase((userMap[plan.userId]?.name || plan.userName || "U")).charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      {plan.userId === auth.currentUser?.uid && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#B7E800] dark:bg-[#C6FF00] rounded-full border border-white dark:border-[#080808] z-10" />
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-[10px] font-bold text-zinc-900 dark:text-white tracking-tight truncate leading-none mt-0.5">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <p className="text-[10.5px] font-[650] text-zinc-900 dark:text-white tracking-tight truncate leading-tight">
                           {toTitleCase(plan.marketName)}
                           {(() => {
                             const raw = plan.marketType === 'PASARAN_JAWA' 
@@ -540,46 +594,43 @@ export default function Dashboard({
                               : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
                             const category = toTitleCase(raw);
                             return category !== "Umum" ? (
-                              <span className="opacity-50 ml-1 font-medium">
-                                - {category}
+                              <span className="opacity-40 ml-1 font-bold text-[8px] tracking-tight">
+                                • {category}
                               </span>
                             ) : null;
                           })()}
                         </p>
-                        {plan.userId === auth.currentUser?.uid && (
-                          <div className="w-1 h-1 rounded-full bg-brand-primary" />
-                        )}
                       </div>
 
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-[8px] font-bold text-brand-primary tracking-widest truncate max-w-[70px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[8px] font-black text-[#B7E800] dark:text-[#C6FF00] tracking-[0.05em] truncate uppercase leading-none">
                           {toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(" ")[0])}
                         </span>
-                        <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                        <span className="text-[8px] font-bold text-zinc-400 dark:text-white/40 tracking-widest truncate">
+                        <div className="w-[1px] h-[1px] rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
+                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 tracking-tight truncate">
                           {toTitleCase(plan.city)}
                         </span>
                         {plan.marketJam && (
                           <>
-                            <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                            <span className="text-[8px] font-mono font-medium text-zinc-400 dark:text-white/30 tracking-tight">
-                              {plan.marketJam}
+                            <div className="w-[1px] h-[1px] rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
+                            <span className="text-[8px] font-mono font-bold text-zinc-400 dark:text-white/20 tracking-tighter tabular-nums">
+                              {plan.marketJam.replace(' ', '')}
                             </span>
                           </>
                         )}
                       </div>
                     </div>
 
-                    <div className="text-right flex items-center gap-1.5">
-                      <p className="text-[10px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap">
+                    <div className="text-right flex flex-col items-end gap-0.5">
+                      <p className="text-[9px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono opacity-80">
                         {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
                       </p>
                       {(plan.userId === auth.currentUser?.uid || isAdmin) && (
                         <button
                           onClick={(e) => handleDelete(e, plan.id)}
-                          className="p-1 rounded-lg text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                          className="p-0.5 rounded-md text-red-500/0 group-hover:text-red-500/30 hover:!text-red-500 hover:bg-red-500/5 transition-all duration-300 transform group-hover:translate-x-0 translate-x-3 opacity-0 group-hover:opacity-100"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -589,6 +640,31 @@ export default function Dashboard({
             </AnimatePresence>
           </div>
         </section>
+
+        {/* Tactical Footer */}
+        <footer className="mt-8 px-2">
+           <div className="h-px bg-gradient-to-r from-transparent via-zinc-200/30 dark:via-white/5 to-transparent mb-4" />
+           <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                 <div className="flex items-center gap-1.5">
+                    <div className="w-1 h-1 rounded-full bg-[#B7E800] dark:bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.3)]" />
+                    <span className="text-[7.5px] font-black text-zinc-900/80 dark:text-white/80 uppercase tracking-[0.25em] leading-none mb-[1px]">VORKTEAM</span>
+                 </div>
+                 <span className="text-[6px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest">OPS DASHBOARD v.2.0</span>
+              </div>
+
+              <div className="flex flex-col items-end">
+                 <span className="text-[7px] font-bold text-zinc-400 dark:text-white/30 tracking-tight uppercase leading-none mb-1">
+                    SYNCED {dayjs().format("HH:mm")} WIB
+                 </span>
+                 <div className="flex items-center gap-1 opacity-20">
+                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-[#B7E800] dark:bg-[#C6FF00]" />
+                 </div>
+              </div>
+           </div>
+        </footer>
       </main>
 
       {/* Modal - Improved Minimal Feel */}
