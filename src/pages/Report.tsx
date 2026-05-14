@@ -66,8 +66,8 @@ export default function Report({ onBack }: ReportProps) {
     if (!captureRef.current) return;
     try {
       const dataUrl = await domToJpeg(captureRef.current, {
-        scale: 2,
-        backgroundColor: "#ffffff",
+        scale: 4,
+        backgroundColor: "#F5F5F3",
       });
       const link = document.createElement("a");
       link.href = dataUrl;
@@ -211,7 +211,6 @@ export default function Report({ onBack }: ReportProps) {
         >
           {/* Ambient Premium SaaS Background Effects - INSIDE CANVAS */}
           <div className="absolute inset-0 bg-[#F5F5F3]" />
-          <div className="absolute top-[-15%] left-[-10%] w-[80%] h-[80%] bg-white blur-[120px] rounded-full pointer-events-none opacity-60" />
           <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-br from-[#C6FF00]/5 to-transparent pointer-events-none" />
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
           
@@ -275,13 +274,13 @@ export default function Report({ onBack }: ReportProps) {
                   </div>
                   <div className="h-px bg-zinc-200/50 flex-1" />
                 </div>
-                <div className="px-1.5 py-0.5 bg-white/40 border border-white/60 backdrop-blur-sm rounded-[4px] flex items-center gap-1">
+                <div className="px-1.5 py-0.5 bg-white/80 border border-white/60 rounded-[4px] flex items-center gap-1">
                   <div className="w-1 h-1 rounded-full bg-[#C6FF00] animate-pulse" />
                   <span className="text-[5.5px] font-bold text-zinc-500 uppercase tracking-widest">LIVE SYNC</span>
                 </div>
               </div>
   
-              <div className="space-y-0 relative bg-white/20 rounded-[20px] border border-white/30 backdrop-blur-[2px] p-1 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.02)]">
+              <div className="space-y-0 relative bg-white/40 rounded-[20px] border border-white/30 p-1 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.02)]">
                 {plans.length === 0 && !loading && (
                   <div className="py-20 flex flex-col items-center gap-3 opacity-10">
                     <div className="w-8 h-8 rounded-full border-2 border-zinc-900 flex items-center justify-center">
