@@ -152,6 +152,14 @@ export async function updateUser(userId: string, data: any) {
   }
 }
 
+export async function removeUser(userId: string) {
+  try {
+    await deleteDoc(doc(db, "users", userId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `users/${userId}`);
+  }
+}
+
 export function subscribeUsers(callback: (users: any[]) => void) {
   const q = query(collection(db, "users"));
   return onSnapshot(q, (snapshot) => {

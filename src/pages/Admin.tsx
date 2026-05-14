@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { subscribeMarkets, subscribeAssignments, addMarket, updateMarket, removeMarket, adminRemoveAssignment, subscribeUsers, updateUser } from "../lib/services";
+import { subscribeMarkets, subscribeMarketPlans, subscribeAssignments, addMarket, updateMarket, removeMarket, adminRemoveAssignment, subscribeUsers, updateUser } from "../lib/services";
 import { db, auth } from "../firebase/config";
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getActiveSystemDate } from "../utils/javaneseDate";
@@ -76,7 +76,7 @@ export default function Admin({ onBack }: AdminProps) {
 
   useEffect(() => {
     const unsubMarkets = subscribeMarkets(setMarkets);
-    const unsubAssignments = subscribeAssignments(activeDate.isoDate, setAssignments);
+    const unsubAssignments = subscribeMarketPlans(activeDate.isoDate, setAssignments);
     const unsubUsers = subscribeUsers(setUsers);
     return () => {
       unsubMarkets();
@@ -445,12 +445,16 @@ function UserManagementView({ users, assignments }: any) {
                 <th className="px-6 py-4 font-medium text-sm">User Detail</th>
                 <th className="px-6 py-4 font-medium text-sm">Aktivitas</th>
                 <th className="px-6 py-4 font-medium text-sm">Akses & Status</th>
+                <th className="px-6 py-4 font-medium text-sm w-12 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-white/[0.05]">
               {users.map((u: any) => {
-                const isSelected = assignments.some((a: any) => a.uid === u.id);
-                const lastLogin = u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-";
+                const userPlans = assignments.filter((a: any) => a.userId === u.id);
+                const isSelected = userPlans.length > 0;
+                const lastLogin = u.lastLogin?.toDate 
+                  ? u.lastLogin.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                  : "-";
                 
                 return (
                   <tr
@@ -488,14 +492,21 @@ function UserManagementView({ users, assignments }: any) {
                           <span className="text-xs font-medium text-zinc-400  tracking-tight">Login:</span>
                           <span className="text-sm font-medium text-zinc-600 dark:text-white/60">{lastLogin}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-zinc-400  tracking-tight">Pasar:</span>
-                          <span className={cn(
-                            "text-xs font-medium px-1.5 py-0.5 rounded-md",
-                            isSelected ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
-                          )}>
-                            {isSelected ? "SELESAI" : "BELUM"}
-                          </span>
+                        <div className="flex items-start gap-2">
+                          <span className="text-xs font-medium text-zinc-400 mt-0.5 tracking-tight">Pasar:</span>
+                          <div className="flex flex-col gap-1">
+                            {isSelected ? (
+                              userPlans.map((plan: any) => (
+                                <span key={plan.id} className="text-xs font-medium px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">
+                                  {plan.marketName}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs font-medium px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 w-fit">
+                                BELUM
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -534,6 +545,20 @@ function UserManagementView({ users, assignments }: any) {
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={async () => {
+                          if (window.confirm('Yakin ingin menghapus user ini?')) {
+                            const { removeUser } = await import("../lib/services");
+                            await removeUser(u.id);
+                          }
+                        }}
+                        className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Hapus User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -544,8 +569,11 @@ function UserManagementView({ users, assignments }: any) {
         {/* Mobile View */}
         <div className="md:hidden divide-y divide-zinc-100 dark:divide-white/[0.05] px-1">
           {users.map((u: any) => {
-            const isSelected = assignments.some((a: any) => a.uid === u.id);
-            const lastLogin = u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-";
+            const userPlans = assignments.filter((a: any) => a.userId === u.id);
+            const isSelected = userPlans.length > 0;
+            const lastLogin = u.lastLogin?.toDate 
+              ? u.lastLogin.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+              : "-";
 
             return (
               <div key={u.id} className="py-2 flex gap-3 items-center hover:bg-zinc-50 dark:hover:bg-white/[0.01] active:bg-zinc-100 dark:active:bg-white/[0.02] transition-colors px-2">
@@ -576,11 +604,18 @@ function UserManagementView({ users, assignments }: any) {
                         <span>{lastLogin !== '-' ? `Login: ${lastLogin}` : 'Belum Login'}</span>
                       </div>
                     </div>
-                    <div className={cn(
-                      "text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 ml-2 mt-0.5",
-                      isSelected ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
-                    )}>
-                      {isSelected ? "SELESAI" : "BELUM"}
+                    <div className="flex flex-col items-end gap-1 shrink-0 ml-2 mt-0.5">
+                      {isSelected ? (
+                        userPlans.map((plan: any) => (
+                          <div key={plan.id} className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">
+                            {plan.marketName}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500">
+                          BELUM
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -616,6 +651,20 @@ function UserManagementView({ users, assignments }: any) {
                         </select>
                       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 opacity-40 pointer-events-none" />
                     </div>
+                    
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Yakin ingin menghapus user ini?')) {
+                          const { removeUser } = await import("../lib/services");
+                          await removeUser(u.id);
+                        }
+                      }}
+                      className="p-1 px-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors flex-shrink-0"
+                      title="Hapus User"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    
                   </div>
                 </div>
               </div>
