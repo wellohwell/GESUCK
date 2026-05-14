@@ -198,7 +198,7 @@ export default function Report({ onBack }: ReportProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-[#fdfdfe] relative overflow-hidden">
+      <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-[#fdfdfe] relative">
         {/* Ambient Premium SaaS Background Effects */}
         <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#C6FF00]/10 blur-[160px] rounded-full pointer-events-none opacity-40 mix-blend-multiply" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-[#18181b]/5 blur-[140px] rounded-full pointer-events-none opacity-30 mix-blend-multiply" />
@@ -207,7 +207,7 @@ export default function Report({ onBack }: ReportProps) {
         {/* THE CANVAS: Targeted directly for exact 9:16 portrait export */}
         <div 
           ref={captureRef}
-          className="w-[360px] aspect-[9/16] flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#F5F5F3]"
+          className="w-[360px] min-h-[640px] h-fit flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#F5F5F3]"
         >
           {/* Ambient Premium SaaS Background Effects - INSIDE CANVAS */}
           <div className="absolute inset-0 bg-[#F5F5F3]" />
@@ -216,7 +216,7 @@ export default function Report({ onBack }: ReportProps) {
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
           
           {/* THE CONTENT: Integrated with Canvas Layout */}
-          <div className="flex-1 flex flex-col items-stretch relative overflow-hidden z-20 px-4">
+          <div className="flex-1 flex flex-col items-stretch relative z-20 px-4">
             {/* Subtle Surface Texture & Light */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-zinc-50/10 pointer-events-none" />
             <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
@@ -266,7 +266,7 @@ export default function Report({ onBack }: ReportProps) {
             </div>
   
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 px-6 flex flex-col justify-start overflow-hidden py-2 relative z-10">
+            <div className="flex-1 px-6 flex flex-col justify-start py-2 relative z-10">
               <div className="flex items-center justify-between mb-2 px-1">
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-0.5">

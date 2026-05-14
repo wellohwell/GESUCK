@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Report from "./pages/Report";
 import PendingApproval from "./pages/PendingApproval";
 import Blocked from "./pages/Blocked";
+import ExplorePage from "./pages/explore/ExplorePage";
 import { syncUser, subscribeCurrentUser } from "./lib/services";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ToastProvider } from "./components/ToastProvider";
@@ -98,6 +99,7 @@ function AppContent() {
       <Routes>
         <Route path="/pending-approval" element={<PendingApproval />} />
         <Route path="/blocked" element={<Blocked />} />
+        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/" element={<Dashboard onNavigateAdmin={() => navigate("/admin")} onNavigateReport={() => navigate("/report")} isAdmin={isAdmin} />} />
         <Route path="/admin" element={isAdmin ? <Admin onBack={() => navigate("/")} /> : <Navigate to="/" replace />} />
         <Route path="/report" element={(isAdmin) ? <Report onBack={() => navigate("/")} /> : <Navigate to="/" replace />} />
