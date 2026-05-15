@@ -335,15 +335,15 @@ export default function Dashboard({
   }, [allPlans, activeDate.isoDate]);
 
   return (
-    <div className="min-h-screen bg-[#F3F4F1] dark:bg-[#090909] text-zinc-900 dark:text-white font-sans transition-colors duration-300 relative overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground font-sans transition-colors duration-300 relative overflow-x-hidden">
       {/* Background Polish */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#B7E800]/[0.02] dark:bg-[#C6FF00]/[0.01] blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/[0.03] blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150" />
       </div>
       
       {/* Navbar Minimal */}
-      <nav className="p-2 flex items-center justify-between max-w-2xl mx-auto border-b border-zinc-200/30 dark:border-white/5 bg-white/40 dark:bg-black/20 backdrop-blur-xl sticky top-0 z-40 transition-none">
+      <nav className="p-2 flex items-center justify-between max-w-2xl mx-auto border-b border-border/40 bg-background/60 backdrop-blur-xl sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
           <div className="flex flex-col justify-center">
             <h4 className="text-[10px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-none uppercase">
@@ -392,11 +392,11 @@ export default function Dashboard({
         <section className="mb-4 text-center pt-2 relative">
           <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 w-[200px] h-[80px] bg-[#B7E800]/5 dark:bg-[#C6FF00]/5 blur-[60px] rounded-full pointer-events-none" />
           
-          <h1 className="text-xl font-bold leading-none tracking-[-0.04em] text-zinc-900 dark:text-white mb-1.5">
+          <h1 className="text-2xl font-black leading-none tracking-tight text-foreground mb-1.5 uppercase">
             {activeDate.dayName}{" "}
-            <span className="text-[#B7E800] dark:text-[#C6FF00] drop-shadow-[0_0_10px_rgba(198,255,0,0.2)]">{activeDate.pasaran}</span>
+            <span className="text-primary drop-shadow-[0_0_15px_rgba(198,255,0,0.3)]">{activeDate.pasaran}</span>
           </h1>
-          <p className="text-[9px] text-zinc-400 dark:text-white/30 font-bold uppercase tracking-[0.3em] mb-4">
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em] mb-4 opacity-70">
             {activeDate.fullDate}
           </p>
 
@@ -409,27 +409,27 @@ export default function Dashboard({
 
           {/* Ultra-Compact Market Temperature Indicator */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 bg-[#FAFAF8] dark:bg-[#111111] border border-zinc-900/5 dark:border-white/[0.05] p-2.5 rounded-[16px] backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all duration-500">
+            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 card-base p-3 shadow-soft divide-x divide-border/20">
               {/* HOT COLUMN */}
-              <div className="text-left border-r border-zinc-200/50 dark:border-white/5 pr-3 group cursor-default">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-[8px] font-black tracking-[0.1em] text-red-500 uppercase leading-none px-1 bg-red-500/5 rounded-[2px]">
+              <div className="text-left pr-3 group cursor-default">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-[9px] font-black tracking-[0.1em] text-red-500 uppercase leading-none px-1.5 py-0.5 bg-red-500/5 rounded-sm">
                     HOT
                   </span>
                   <div className="h-[1px] flex-1 bg-red-500/5" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {marketTemperature?.hot?.some((m: any) => m !== null) ? (
                     marketTemperature.hot.map((m: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1.5 overflow-hidden">
-                        <div className="w-[1.5px] h-[1.5px] rounded-full bg-red-500/40 shrink-0" />
-                        <p className="text-[9.5px] font-[600] text-zinc-700 dark:text-zinc-400 truncate leading-none transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                      <div key={idx} className="flex items-center gap-2 overflow-hidden">
+                        <div className="w-1 h-1 rounded-full bg-red-500/30 shrink-0" />
+                        <p className="text-[10px] font-semibold text-foreground/80 truncate leading-none transition-colors group-hover:text-foreground">
                           {m ? toTitleCase(m.name) : "—"}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[8px] font-medium text-zinc-300 dark:text-white/10 italic">
+                    <p className="text-[9px] font-medium text-muted-foreground/30 italic">
                       No Data
                     </p>
                   )}
@@ -438,24 +438,24 @@ export default function Dashboard({
 
               {/* COLD COLUMN */}
               <div className="text-left pl-3 group cursor-default">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-[8px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1 bg-blue-500/5 rounded-[2px]">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-[9px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1.5 py-0.5 bg-blue-500/5 rounded-sm">
                     COLD
                   </span>
                   <div className="h-[1px] flex-1 bg-blue-500/5" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {marketTemperature?.cold?.some((m: any) => m !== null) ? (
                     marketTemperature.cold.map((m: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1.5 overflow-hidden">
-                        <div className="w-[1.5px] h-[1.5px] rounded-full bg-blue-500/40 shrink-0" />
-                        <p className="text-[9.5px] font-[600] text-zinc-700 dark:text-zinc-400 truncate leading-none transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">
+                      <div key={idx} className="flex items-center gap-2 overflow-hidden">
+                        <div className="w-1 h-1 rounded-full bg-blue-500/30 shrink-0" />
+                        <p className="text-[10px] font-semibold text-foreground/80 truncate leading-none transition-colors group-hover:text-foreground">
                           {m ? toTitleCase(m.name) : "—"}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[8px] font-medium text-zinc-300 dark:text-white/10 italic">
+                    <p className="text-[9px] font-medium text-muted-foreground/30 italic">
                       No Data
                     </p>
                   )}
@@ -493,16 +493,18 @@ export default function Dashboard({
             </div>
           </div>
 
-          <div className="space-y-1 bg-[#FAFAF8] dark:bg-[#111111] rounded-[20px] border border-zinc-900/5 dark:border-white/[0.05] p-1 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] backdrop-blur-sm">
+          <div className="card-base p-1.5 shadow-soft">
             {!myPlan && !loading && (
               <div className="flex justify-center pt-3 pb-4">
                 <motion.button
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center justify-center px-6 py-2 rounded-xl bg-zinc-900 dark:bg-[#C6FF00] text-white dark:text-black font-bold text-[10px]  uppercase tracking-widest shadow-lg hover:translate-y-[-1px] hover:shadow-xl transition-all duration-300 active:scale-95 gap-2 group"
+                  className="inline-flex items-center justify-center px-6 h-10 rounded-xl bg-foreground text-background font-black text-[10px] uppercase tracking-widest shadow-lg gap-2 group transition-all"
                 >
-                  <Plus className="w-3 h-3 group-hover:rotate-90 transition-transform duration-300" />
+                  <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" />
                   TAMBAH RENCANA
                 </motion.button>
               </div>
@@ -516,12 +518,12 @@ export default function Dashboard({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="h-12 bg-white/20 dark:bg-white/[0.02] rounded-[16px] border border-white dark:border-white/[0.05] animate-pulse flex items-center gap-3 px-3 mx-0.5"
+                    className="h-12 skeleton my-1 flex items-center gap-3 px-3 mx-0.5"
                   >
-                    <div className="w-7 h-7 rounded-full bg-zinc-200/50 dark:bg-white/[0.05]" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-2 w-20 bg-zinc-200/50 dark:bg-white/[0.05] rounded-[2px]" />
-                      <div className="h-1.5 w-28 bg-zinc-200/50 dark:bg-white/[0.05] rounded-[2px]" />
+                    <div className="w-7 h-7 rounded-full bg-foreground/5 shadow-inner" />
+                    <div className="flex-1 space-y-2">
+                       <div className="h-2 w-24 bg-foreground/5 rounded-full" />
+                       <div className="h-1.5 w-16 bg-foreground/5 rounded-full" />
                     </div>
                   </motion.div>
                 ))
@@ -550,41 +552,41 @@ export default function Dashboard({
                     exit={{ opacity: 0, scale: 0.99 }}
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
                     className={cn(
-                      "group py-1.5 px-2.5 flex items-center gap-2.5 bg-transparent hover:bg-white dark:hover:bg-white/[0.03] rounded-[14px] transition-all duration-300 border border-transparent hover:border-zinc-200 dark:hover:border-white/[0.05]",
-                      plan.userId === auth.currentUser?.uid && "bg-white dark:bg-white/[0.04] shadow-sm border-zinc-200 dark:border-white/[0.08] relative overflow-hidden"
+                      "group py-2 px-3 flex items-center gap-3 bg-transparent hover:bg-muted/50 rounded-2xl transition-all duration-300 border border-transparent shadow-none",
+                      plan.userId === auth.currentUser?.uid && "bg-background shadow-md border-border/60 relative overflow-hidden ring-1 ring-primary/10"
                     )}
                   >
                     {plan.userId === auth.currentUser?.uid && (
-                       <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[#B7E800]/10 dark:from-[#C6FF00]/10 to-transparent pointer-events-none" />
+                       <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-primary/10 to-transparent pointer-events-none" />
                     )}
 
                     <div className="relative shrink-0">
                       <div className={cn(
-                        "w-7 h-7 rounded-full bg-zinc-100 dark:bg-white/5 overflow-hidden p-[1.5px] border border-zinc-200 dark:border-white/10 transition-all duration-500 ring-2 ring-transparent",
-                        plan.userId === auth.currentUser?.uid ? "ring-[#B7E800]/40 dark:ring-[#C6FF00]/40 border-[#B7E800]/20 dark:border-[#C6FF00]/20" : "group-hover:border-zinc-300 dark:group-hover:border-white/20"
+                        "w-8 h-8 rounded-full bg-muted overflow-hidden p-[1.5px] border border-border transition-all duration-500 ring-2 ring-transparent",
+                        plan.userId === auth.currentUser?.uid ? "ring-primary/40 border-primary/20 scale-105" : "group-hover:border-primary/20"
                       )}>
                         {userMap[plan.userId]?.photoURL || plan.userPhoto ? (
                           <img
                             src={userMap[plan.userId]?.photoURL || plan.userPhoto}
-                            className="w-full h-full rounded-full object-cover transition-all duration-700 grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110"
+                            className="w-full h-full rounded-full object-cover transition-all duration-700 group-hover:scale-110"
                             alt=""
                             crossOrigin="anonymous"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="w-full h-full rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-[9px] font-black text-zinc-400 uppercase">
+                          <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-[10px] font-black text-muted-foreground uppercase">
                             {toTitleCase((userMap[plan.userId]?.name || plan.userName || "U")).charAt(0)}
                           </div>
                         )}
                       </div>
                       {plan.userId === auth.currentUser?.uid && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#B7E800] dark:bg-[#C6FF00] rounded-full border border-white dark:border-[#080808] z-10" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background z-10" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-[10.5px] font-[650] text-zinc-900 dark:text-white tracking-tight truncate leading-tight">
+                        <p className="text-xs font-semibold text-foreground tracking-tight truncate leading-tight">
                           {toTitleCase(plan.marketName)}
                           {(() => {
                             const raw = plan.marketType === 'PASARAN_JAWA' 
@@ -594,7 +596,7 @@ export default function Dashboard({
                               : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
                             const category = toTitleCase(raw);
                             return category !== "Umum" ? (
-                              <span className="opacity-40 ml-1 font-bold text-[8px] tracking-tight">
+                              <span className="opacity-50 ml-1 font-bold text-[9px] tracking-tight text-primary">
                                 • {category}
                               </span>
                             ) : null;
@@ -603,17 +605,17 @@ export default function Dashboard({
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[8px] font-black text-[#B7E800] dark:text-[#C6FF00] tracking-[0.05em] truncate uppercase leading-none">
+                        <span className="text-[9px] font-black text-primary tracking-widest truncate uppercase leading-none">
                           {toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(" ")[0])}
                         </span>
-                        <div className="w-[1px] h-[1px] rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 tracking-tight truncate">
+                        <div className="w-[2px] h-[2px] rounded-full bg-muted-foreground/30 shrink-0" />
+                        <span className="text-[9px] font-semibold text-muted-foreground tracking-tight truncate">
                           {toTitleCase(plan.city)}
                         </span>
                         {plan.marketJam && (
                           <>
-                            <div className="w-[1px] h-[1px] rounded-full bg-zinc-300 dark:bg-white/10 shrink-0" />
-                            <span className="text-[8px] font-mono font-bold text-zinc-400 dark:text-white/20 tracking-tighter tabular-nums">
+                            <div className="w-[1px] h-[1px] rounded-full bg-muted-foreground/30 shrink-0" />
+                            <span className="text-[9px] font-mono font-bold text-muted-foreground/60 tracking-tighter tabular-nums">
                               {plan.marketJam.replace(' ', '')}
                             </span>
                           </>
@@ -621,16 +623,16 @@ export default function Dashboard({
                       </div>
                     </div>
 
-                    <div className="text-right flex flex-col items-end gap-0.5">
+                    <div className="text-right flex flex-col items-end gap-1 relative z-10">
                       <p className="text-[9px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono opacity-80">
                         {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
                       </p>
                       {(plan.userId === auth.currentUser?.uid || isAdmin) && (
                         <button
                           onClick={(e) => handleDelete(e, plan.id)}
-                          className="p-0.5 rounded-md text-red-500/0 group-hover:text-red-500/30 hover:!text-red-500 hover:bg-red-500/5 transition-all duration-300 transform group-hover:translate-x-0 translate-x-3 opacity-0 group-hover:opacity-100"
+                          className="p-1 rounded-md text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all duration-200 cursor-pointer relative z-20 pointer-events-auto relative"
                         >
-                          <Trash2 className="w-2.5 h-2.5" />
+                          <Trash2 className="w-3 h-3 pointer-events-none" />
                         </button>
                       )}
                     </div>
@@ -684,41 +686,38 @@ export default function Dashboard({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full h-full bg-white dark:bg-[#0a0a0a] flex flex-col relative"
+              className="w-full h-full bg-background flex flex-col relative sm:rounded-t-3xl overflow-hidden shadow-premium"
             >
               {/* Header */}
-              <div className="sticky top-0 bg-white dark:bg-[#0a0a0a] px-4 py-4 z-20 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center">
-                <h2 className="text-sm font-display font-medium tracking-tight text-zinc-900 dark:text-white  underline-offset-4 decoration-brand-primary decoration-2 underline">
-                  RENCANA KUNJUNGAN
-                </h2>
+              <div className="sticky top-0 bg-background/80 backdrop-blur-xl px-6 py-5 z-20 border-b border-border/40 flex justify-end items-center">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center border border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                    className="tap-target rounded-full bg-muted flex items-center justify-center border border-border text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
-                <div className="space-y-3 mb-4">
+              <div className="p-6 flex-1 overflow-y-auto no-scrollbar">
+                <div className="space-y-4 mb-6">
                 {/* Search Box */}
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-white/30" />
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
                   <input
                     type="text"
-                    placeholder="Cari pasar..."
+                    placeholder="Cari pasar yang ingin dikunjungi..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
-                    className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs font-medium outline-none focus:border-brand-primary dark:focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
+                    className="w-full bg-muted/50 border border-border/60 rounded-2xl pl-12 pr-4 h-14 text-sm font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/40"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
                     >
-                      <X className="w-3.5 h-3.5 text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white" />
+                      <X className="w-4 h-4 text-muted-foreground" />
                     </button>
                   )}
                 </div>
@@ -729,11 +728,11 @@ export default function Dashboard({
                     <select
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
-                      <option value="" className="bg-white dark:bg-[#0a0a0a]">Wilayah</option>
+                      <option value="" className="bg-background">Wilayah</option>
                       {WILAYAH_EXACT.map((w) => (
-                        <option key={w} value={w} className="bg-white dark:bg-[#0a0a0a]">{w}</option>
+                        <option key={w} value={w} className="bg-background">{w}</option>
                       ))}
                     </select>
                   </div>
@@ -743,11 +742,11 @@ export default function Dashboard({
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
-                      <option value="" className="bg-white dark:bg-[#0a0a0a]">Kategori</option>
+                      <option value="" className="bg-background">Kategori</option>
                       {KATEGORI_TYPES.map((k) => (
-                        <option key={k.id} value={k.id} className="bg-white dark:bg-[#0a0a0a]">{k.label}</option>
+                        <option key={k.id} value={k.id} className="bg-background">{k.label}</option>
                       ))}
                     </select>
                   </div>
@@ -757,11 +756,11 @@ export default function Dashboard({
                     <select
                       value={selectedPasaran || ""}
                       onChange={(e) => setSelectedPasaran(e.target.value)}
-                      className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
-                      <option value="" className="bg-white dark:bg-[#0a0a0a]">Pasaran</option>
+                      <option value="" className="bg-background">Pasaran</option>
                       {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
-                        <option key={p} value={p} className="bg-white dark:bg-[#0a0a0a]">{p}</option>
+                        <option key={p} value={p} className="bg-background">{p}</option>
                       ))}
                     </select>
                   </div>
@@ -770,11 +769,11 @@ export default function Dashboard({
 
               {/* Available Markets List */}
               <div className="relative">
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <label className="text-xs font-medium text-zinc-400 dark:text-white/60  tracking-tight block">
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                     Pasar Tersedia
                   </label>
-                  <span className="text-xs font-medium text-brand-primary bg-brand-primary/10 px-2.5 py-0.5 rounded-full border border-brand-primary/20">
+                  <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
                     {availableMarkets.length} TOTAL
                   </span>
                 </div>
@@ -795,30 +794,30 @@ export default function Dashboard({
                   )}
                 </AnimatePresence>
 
-                <div className="divide-y divide-zinc-100 dark:divide-white/[0.06] max-h-[350px] overflow-y-auto no-scrollbar">
+                <div className="max-h-[450px] overflow-y-auto no-scrollbar">
                     {availableMarkets.length > 0 ? (
                       availableMarkets.map((m) => (
                         <div
                           key={m.id}
                           onClick={() => handleMarketClick(m)}
                           className={cn(
-                            "flex items-center justify-between py-2 px-0.5 border-b border-zinc-100 dark:border-white/[0.06] last:border-0 transition-all hover:bg-zinc-100/50 dark:hover:bg-white/[0.02] active:bg-zinc-200 dark:active:bg-white/[0.04] group cursor-pointer",
-                            selectedMarketName === m.nama_pasar && "bg-brand-primary/[0.03] dark:bg-brand-primary/[0.01]"
+                            "flex items-center justify-between py-3 px-0.5 transition-all hover:bg-muted/30 active:bg-muted group cursor-pointer",
+                            selectedMarketName === m.nama_pasar && "bg-primary/5 shadow-inner"
                           )}
                         >
                           <div className="min-w-0 flex-1">
                             <h4 className={cn(
-                              "font-medium text-[13px] leading-tight tracking-tight truncate transition-colors",
-                              selectedMarketName === m.nama_pasar ? "text-brand-primary" : "text-zinc-900 dark:text-white"
+                              "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
+                              selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
                             )}>
                               {toTitleCase(m.nama_pasar)}
                             </h4>
-                            <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/40  tracking-wide">
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                               <span>{toTitleCase(m.wilayah)}</span>
                               <span className="opacity-30">•</span>
-                              <span>{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
+                              <span className="text-primary/60">{m.buka_harian ? "SETIAP HARI" : m.pasaran?.join(", ")}</span>
                               <span className="opacity-30">•</span>
-                              <span className="text-brand-primary/60">
+                              <span className="text-foreground/40 tabular-nums">
                                 {(() => {
                                   if (selectedMarketName === m.nama_pasar && selectedSubCategory) {
                                     const mKats = Array.isArray(m.kategori) ? m.kategori : [m.kategori];
@@ -839,7 +838,7 @@ export default function Dashboard({
 
                             {/* Sub Category Selection */}
                             {selectedMarketName === m.nama_pasar && Array.isArray(m.kategori) && m.kategori.length > 1 && (
-                              <div className="mt-2.5 flex flex-wrap gap-1.5 p-1 bg-zinc-100/50 dark:bg-black/20 rounded-xl w-fit">
+                              <div className="mt-3 flex flex-wrap gap-2 p-1.5 bg-background/50 rounded-2xl w-fit border border-border shadow-soft">
                                 {m.kategori.map((kat: any, katIdx: number) => {
                                   const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
                                   const label = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
@@ -852,10 +851,10 @@ export default function Dashboard({
                                         setSelectedSubCategory(String(katIdVal));
                                       }}
                                       className={cn(
-                                        "px-2.5 py-1 rounded-lg text-xs font-medium  tracking-tight transition-all",
+                                        "px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all",
                                         selectedSubCategory === String(katIdVal)
-                                          ? "bg-brand-primary text-black"
-                                          : "bg-zinc-200 dark:bg-white/10 text-zinc-500 dark:text-white/40 hover:bg-zinc-300 dark:hover:bg-white/20",
+                                          ? "bg-primary text-black shadow-glow-lime scale-105"
+                                          : "bg-muted text-muted-foreground hover:bg-muted-foreground/10",
                                       )}
                                     >
                                       {labelStr.replace("Pasar ", "")}
@@ -866,14 +865,14 @@ export default function Dashboard({
                             )}
                           </div>
                           {selectedMarketName === m.nama_pasar && (
-                            <div className="bg-brand-primary text-black p-1 rounded-full shadow-lg shadow-brand-primary/20 ml-4 shrink-0">
-                              <CheckCircle2 className="w-3 h-3" />
+                            <div className="bg-primary text-black p-1.5 rounded-full shadow-glow-lime ml-4 shrink-0 transition-all scale-110">
+                              <CheckCircle2 className="w-4 h-4" />
                             </div>
                           )}
                         </div>
                       ))
                     ) : (
-                      <div className="py-12 text-center text-zinc-400 dark:text-white/10  text-sm font-medium  tracking-tight">
+                      <div className="py-20 text-center text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] opacity-30">
                         Data Tidak Ditemukan
                       </div>
                     )}
@@ -882,13 +881,15 @@ export default function Dashboard({
               </div>
 
               {/* Sticky Footer */}
-              <div className="sticky bottom-0 p-4 bg-white dark:bg-[#0a0a0a] border-t border-zinc-100 dark:border-white/5 flex justify-center z-20">
-                <button
+              <div className="sticky bottom-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 flex justify-center z-20">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleAddPlan}
-                  className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-primary text-white dark:text-black rounded-full font-medium  tracking-tight text-sm shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 flex items-center justify-center relative overflow-hidden"
+                  className="w-full max-w-xs h-11 bg-foreground text-background rounded-xl font-black tracking-[0.1em] text-[10px] shadow-premium hover:shadow-glow-lime transition-all duration-300 flex items-center justify-center relative overflow-hidden"
                 >
-                  <span className="relative z-10">SIMPAN</span>
-                </button>
+                  <span className="relative z-10">SIMPAN RENCANA</span>
+                </motion.button>
               </div>
             </motion.div>
           </div>
@@ -896,5 +897,4 @@ export default function Dashboard({
       </AnimatePresence>
     </div>
   );
-
 }

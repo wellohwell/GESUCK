@@ -291,14 +291,14 @@ function ReportView({ assignments, activeDate, search, setSearch, onDelete, tota
          <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => onExport("pdf")}
-              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-xs font-medium  tracking-tight text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
+              className="flex-1 sm:flex-none h-10 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border border-white/10"
             >
               <FileText className="w-3.5 h-3.5" />
               Export PDF
             </button>
             <button 
               onClick={() => onExport("jpg")}
-              className="flex-1 sm:flex-none h-11 px-6 glass rounded-xl flex items-center justify-center gap-2 text-xs font-medium  tracking-tight text-white/60 hover:text-white transition-all bg-white/10 border-white/10"
+              className="flex-1 sm:flex-none h-10 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border border-white/10"
             >
               <Download className="w-3.5 h-3.5" />
               JPG
@@ -489,11 +489,10 @@ function UserManagementView({ users, assignments }: any) {
                     <td className="px-6 py-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-zinc-400  tracking-tight">Login:</span>
-                          <span className="text-sm font-medium text-zinc-600 dark:text-white/60">{lastLogin}</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-medium text-zinc-400 mt-0.5 tracking-tight">Pasar:</span>
+                        <span className="text-sm font-medium text-zinc-600 dark:text-white/60">{lastLogin}</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-[10px] font-black text-zinc-400 mt-0.5 tracking-[0.2em] uppercase">Pasar:</span>
                           <div className="flex flex-col gap-1">
                             {isSelected ? (
                               userPlans.map((plan: any) => (
@@ -548,9 +547,12 @@ function UserManagementView({ users, assignments }: any) {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={async () => {
-                          if (window.confirm('Yakin ingin menghapus user ini?')) {
-                            const { removeUser } = await import("../lib/services");
+                          const { removeUser } = await import("../lib/services");
+                          try {
                             await removeUser(u.id);
+                            toast.success("User deleted successfully.");
+                          } catch (error) {
+                            toast.error("Failed to delete user.");
                           }
                         }}
                         className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
@@ -598,10 +600,10 @@ function UserManagementView({ users, assignments }: any) {
                         }}
                         className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
                       />
-                      <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-zinc-500 dark:text-white/30 truncate text-left">
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-muted-foreground/50 truncate text-left uppercase tracking-tight">
                         <span>{u.email}</span>
                         <span className="opacity-30">•</span>
-                        <span>{lastLogin !== '-' ? `Login: ${lastLogin}` : 'Belum Login'}</span>
+                        <span className="text-primary/60 font-mono tracking-tighter">{lastLogin !== '-' ? lastLogin : '—'}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0 ml-2 mt-0.5">
@@ -654,9 +656,12 @@ function UserManagementView({ users, assignments }: any) {
                     
                     <button
                       onClick={async () => {
-                        if (window.confirm('Yakin ingin menghapus user ini?')) {
-                          const { removeUser } = await import("../lib/services");
+                        const { removeUser } = await import("../lib/services");
+                        try {
                           await removeUser(u.id);
+                          toast.success("User deleted successfully.");
+                        } catch (error) {
+                          toast.error("Failed to delete user.");
                         }
                       }}
                       className="p-1 px-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors flex-shrink-0"
@@ -708,9 +713,9 @@ function MasterDataView({
         <div className="flex justify-center">
           <button
             onClick={onAdd}
-            className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-black font-medium text-xs  tracking-tight shadow-sm hover:translate-y-[-1px] hover:shadow-md transition-all duration-200 active:scale-95 gap-1.5"
+            className="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest shadow-md hover:translate-y-[-1px] hover:shadow-lg transition-all duration-200 active:scale-95 gap-2"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3.5 h-3.5" />
             Tambah Pasar
           </button>
         </div>
@@ -1233,14 +1238,14 @@ function MarketFormModal({ market, onClose }: any) {
             <button
               type="button"
               onClick={onClose}
-              className="w-full max-w-[140px] h-12 bg-zinc-100 dark:bg-white/10 rounded-2xl font-medium  tracking-tight text-sm text-zinc-500 dark:text-white/60 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all"
+              className="w-full max-w-[140px] h-11 bg-zinc-100 dark:bg-white/10 rounded-xl font-black tracking-widest text-[10px] uppercase text-zinc-500 dark:text-white/60 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full max-w-[200px] h-12 bg-zinc-900 dark:bg-brand-secondary text-white dark:text-black rounded-2xl font-medium  tracking-tight text-sm shadow-xl transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
+              className="w-full max-w-[200px] h-11 bg-zinc-900 dark:bg-brand-secondary text-white dark:text-black rounded-xl font-black tracking-widest text-[10px] uppercase shadow-lg transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
             >
               {isSubmitting ? "Processing..." : "Simpan"}
             </button>

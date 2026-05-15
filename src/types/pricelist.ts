@@ -3,9 +3,16 @@ export interface Product {
   nama: string;
   kategori: string;
   harga: number;
-  marginRate: number; // contoh: 0.3 untuk margin 30% pada hutang
-  gambarUrl: string;
+  marginRate: number;
+  gambarUrl?: string;
   deskripsi?: string;
+  // User provided fields
+  merk?: string;
+  type?: string;
+  model?: string;
+  fitur?: string;
+  jual?: string;
+  caption?: string;
 }
 
 export interface SimulationConfig {

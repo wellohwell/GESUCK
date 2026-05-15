@@ -8,7 +8,7 @@ interface Props {
   onOpenSimulator: (product: Product) => void;
 }
 
-export function PricelistCard({ product, onOpenSimulator }: Props) {
+export const PricelistCard: React.FC<Props> = ({ product, onOpenSimulator }) => {
   return (
     <div 
       className="group bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 rounded-[24px] overflow-hidden hover:border-zinc-300 dark:hover:border-white/20 transition-all flex flex-col h-full hover:shadow-xl dark:hover:shadow-black/50"

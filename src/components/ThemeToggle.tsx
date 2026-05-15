@@ -18,40 +18,34 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative flex items-center h-6 w-11 rounded-full p-0.5 cursor-pointer transition-colors duration-300 bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-white/10"
+      className="tap-target rounded-xl flex items-center justify-center bg-muted/50 border border-border/40 text-muted-foreground hover:text-foreground transition-all active:scale-95"
       title="Toggle Theme"
     >
-      <motion.div
-        className="flex items-center justify-center w-4.5 h-4.5 rounded-full bg-white dark:bg-brand-primary shadow-sm"
-        animate={{
-          x: theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? 20 : 0,
-        }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      >
+      <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
-          {theme === "dark" ? (
+          {theme === "dark" || (theme === "system" && typeof window !== 'undefined' && window.matchMedia("(prefers-color-scheme: dark)").matches) ? (
             <motion.div
               key="moon"
-              initial={{ scale: 0, rotate: 90 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: -90 }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Moon className="w-3 h-3 text-black" />
+              <Moon className="w-4 h-4" />
             </motion.div>
           ) : (
             <motion.div
               key="sun"
-              initial={{ scale: 0, rotate: -90 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 90 }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Sun className="w-3 h-3 text-brand-primary" />
+              <Sun className="w-4 h-4" />
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </button>
   );
 }

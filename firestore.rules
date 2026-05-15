@@ -145,6 +145,7 @@ service cloud.firestore {
         (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['lastLogin', 'photoURL', 'email', 'displayName'])) ||
         isAdmin()
       );
+      allow delete: if isAdmin();
     }
 
     // 4. Market Locks
