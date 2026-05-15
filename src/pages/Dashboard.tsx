@@ -271,68 +271,74 @@ export default function Dashboard({
   const myPlan = plans.find((p) => p.userId === auth.currentUser?.uid);
 
   const marketTemperature = useMemo(() => {
-    const mainWilayah = ["Sleman", "Bantul", "Kota Yogyakarta"];
-    const otherWilayah = [
-      "Kulon Progo",
-      "Magelang",
-      "Temanggung",
-      "Purworejo",
-      "Gunungkidul",
-    ];
+    if (allPlans.length < 5) return { hot: [], cold: [], isLowData: true };
 
-    // Seed data: start with 0 visits for all known combinations or at least placeholders
-    const visitCounts: Record<
-      string,
-      { count: number; name: string; wilayah: string }
-    > = {};
+    const now = dayjs();
+    const scores: Record<string, { 
+      score: number; 
+      name: string; 
+      city: string; 
+      currentWeekVisits: number; 
+      prevWeekVisits: number;
+      totalVisits: number;
+    }> = {};
 
     allPlans.forEach((plan) => {
-      const key = `${plan.marketName}-${plan.city}`;
-      if (!visitCounts[key]) {
-        visitCounts[key] = {
-          count: 0,
-          name: plan.marketName,
-          wilayah: plan.city,
+      const planDate = dayjs(plan.dayStart);
+      const diffDays = Math.abs(now.diff(planDate, 'day'));
+      
+      let weight = 0.2;
+      if (diffDays === 0) weight = 1.0;
+      else if (diffDays <= 7) weight = 0.8;
+      else if (diffDays <= 30) weight = 0.5;
+
+      const key = plan.marketName;
+      if (!scores[key]) {
+        scores[key] = { 
+          score: 0, 
+          name: plan.marketName, 
+          city: plan.city, 
+          currentWeekVisits: 0, 
+          prevWeekVisits: 0,
+          totalVisits: 0 
         };
       }
-      visitCounts[key].count += 1;
+      
+      scores[key].score += weight;
+      scores[key].totalVisits += 1;
+
+      // For trends: compare this week (0-7 days) with last week (8-14 days)
+      if (diffDays <= 7) {
+        scores[key].currentWeekVisits += 1;
+      } else if (diffDays > 7 && diffDays <= 14) {
+        scores[key].prevWeekVisits += 1;
+      }
     });
 
-    const getTopForWilayah = (wilayah: string, type: "HOT" | "COLD") => {
-      const marketsInWilayah = Object.values(visitCounts).filter((v) =>
-        v.wilayah.toLowerCase().includes(wilayah.toLowerCase()),
-      );
+    const sortedByScore = Object.values(scores).sort((a, b) => b.score - a.score);
+    const hot = sortedByScore.slice(0, 4).map(m => ({
+      ...m,
+      trend: m.currentWeekVisits > m.prevWeekVisits ? 'up' : m.currentWeekVisits < m.prevWeekVisits ? 'down' : 'stable'
+    }));
 
-      if (marketsInWilayah.length === 0) return null;
+    const hotNames = new Set(hot.map(h => h.name));
+    
+    const allKnownMarketNames = markets.map(m => m.nama_pasar);
+    const visitedMarketNames = new Set(Object.keys(scores));
+    
+    const unvisitedMarkets = allKnownMarketNames
+      .filter(name => !visitedMarketNames.has(name) && !hotNames.has(name))
+      .map(name => ({ name, score: 0, totalVisits: 0, status: 'NO ACTIVITY' }));
 
-      const sorted = [...marketsInWilayah].sort((a, b) =>
-        type === "HOT" ? b.count - a.count : a.count - b.count,
-      );
+    const visitedButNotHot = sortedByScore
+      .filter(m => !hotNames.has(m.name))
+      .sort((a, b) => a.score - b.score)
+      .map(m => ({ ...m, status: 'LOW ACTIVITY' }));
 
-      return { ...sorted[0], temp: type };
-    };
+    const cold = [...visitedButNotHot, ...unvisitedMarkets].slice(0, 4);
 
-    // Rotation based on ISO date for consistent "daily" rotation
-    const dayOfYear = dayjs(activeDate.isoDate).dayOfYear();
-    const rotatedWilayahHot = otherWilayah[dayOfYear % otherWilayah.length];
-    const rotatedWilayahCold =
-      otherWilayah[(dayOfYear + 1) % otherWilayah.length];
-
-    const generateCategory = (
-      baseWilayahs: string[],
-      rotatedWilayah: string,
-      type: "HOT" | "COLD",
-    ) => {
-      const results = baseWilayahs.map((w) => getTopForWilayah(w, type));
-      results.push(getTopForWilayah(rotatedWilayah, type));
-      return results;
-    };
-
-    const hot = generateCategory(mainWilayah, rotatedWilayahHot, "HOT");
-    const cold = generateCategory(mainWilayah, rotatedWilayahCold, "COLD");
-
-    return { hot, cold };
-  }, [allPlans, activeDate.isoDate]);
+    return { hot, cold, isLowData: false };
+  }, [allPlans, markets]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans transition-colors duration-300 relative overflow-x-hidden">
@@ -409,58 +415,72 @@ export default function Dashboard({
 
           {/* Ultra-Compact Market Temperature Indicator */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 card-base p-3 shadow-soft divide-x divide-border/20">
-              {/* HOT COLUMN */}
-              <div className="text-left pr-3 group cursor-default">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-[9px] font-black tracking-[0.1em] text-red-500 uppercase leading-none px-1.5 py-0.5 bg-red-500/5 rounded-sm">
-                    HOT
-                  </span>
-                  <div className="h-[1px] flex-1 bg-red-500/5" />
+            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 card-base p-3 shadow-soft divide-x divide-border/20 relative overflow-hidden group">
+              {marketTemperature.isLowData ? (
+                <div className="col-span-2 py-4 flex flex-col items-center justify-center">
+                  <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-1">
+                    Waiting for more activity
+                  </p>
+                  <p className="text-[7px] font-bold text-muted-foreground/20 uppercase tracking-widest">
+                    Not enough visit data to rank
+                  </p>
                 </div>
-                <div className="space-y-1.5">
-                  {marketTemperature?.hot?.some((m: any) => m !== null) ? (
-                    marketTemperature.hot.map((m: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-1 h-1 rounded-full bg-red-500/30 shrink-0" />
-                        <p className="text-[10px] font-semibold text-foreground/80 truncate leading-none transition-colors group-hover:text-foreground">
-                          {m ? toTitleCase(m.name) : "—"}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-[9px] font-medium text-muted-foreground/30 italic">
-                      No Data
-                    </p>
-                  )}
-                </div>
-              </div>
+              ) : (
+                <>
+                  {/* HOT COLUMN */}
+                  <div className="text-left pr-3 group cursor-default">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="text-[8px] font-black tracking-[0.1em] text-red-500 uppercase leading-none px-1.5 py-0.5 bg-red-500/5 rounded-sm shadow-[0_0_10px_-2px_rgba(239,68,68,0.2)]">
+                        HOT
+                      </span>
+                      <div className="h-[1px] flex-1 bg-red-500/5" />
+                    </div>
+                    <div className="space-y-1.5">
+                      {marketTemperature.hot.map((m: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between gap-2 overflow-hidden">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="w-1 h-1 rounded-full bg-red-500/40 shrink-0" />
+                            <p className="text-[9px] font-semibold text-foreground/80 truncate leading-none">
+                              {toTitleCase(m.name)}
+                            </p>
+                          </div>
+                          <span className={cn(
+                            "text-[8px] font-bold shrink-0",
+                            m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-muted-foreground/40"
+                          )}>
+                            {m.trend === 'up' ? "↑" : m.trend === 'down' ? "↓" : "→"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* COLD COLUMN */}
-              <div className="text-left pl-3 group cursor-default">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-[9px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1.5 py-0.5 bg-blue-500/5 rounded-sm">
-                    COLD
-                  </span>
-                  <div className="h-[1px] flex-1 bg-blue-500/5" />
-                </div>
-                <div className="space-y-1.5">
-                  {marketTemperature?.cold?.some((m: any) => m !== null) ? (
-                    marketTemperature.cold.map((m: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-1 h-1 rounded-full bg-blue-500/30 shrink-0" />
-                        <p className="text-[10px] font-semibold text-foreground/80 truncate leading-none transition-colors group-hover:text-foreground">
-                          {m ? toTitleCase(m.name) : "—"}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-[9px] font-medium text-muted-foreground/30 italic">
-                      No Data
-                    </p>
-                  )}
-                </div>
-              </div>
+                  {/* COLD COLUMN */}
+                  <div className="text-left pl-3 group cursor-default">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="text-[8px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1.5 py-0.5 bg-blue-500/5 rounded-sm shadow-[0_0_10px_-2px_rgba(59,130,246,0.2)]">
+                        COLD
+                      </span>
+                      <div className="h-[1px] flex-1 bg-blue-500/5" />
+                    </div>
+                    <div className="space-y-1.5">
+                      {marketTemperature.cold.map((m: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between gap-2 overflow-hidden">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="w-1 h-1 rounded-full bg-blue-500/40 shrink-0" />
+                            <p className="text-[9px] font-semibold text-foreground/80 truncate leading-none">
+                              {toTitleCase(m.name)}
+                            </p>
+                          </div>
+                          <span className="text-[6px] font-black text-muted-foreground/30 shrink-0 uppercase tracking-tighter">
+                            {m.status === 'LOW ACTIVITY' ? 'LOW' : 'NONE'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
