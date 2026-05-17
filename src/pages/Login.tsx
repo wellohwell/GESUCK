@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/config";
 import { motion } from "motion/react";
@@ -6,6 +6,14 @@ import { toast } from "react-toastify";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleGoogleLogin = async () => {
     if (loading) return;
@@ -29,26 +37,30 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 bg-background dark overflow-hidden select-none">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 bg-black dark overflow-hidden select-none">
       
       {/* Background - Minimalist Dark */}
-      <div className="absolute inset-0 z-0 bg-[#050505]">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] opacity-40 animate-pulse" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150" />
+      <div className="absolute inset-0 z-0 bg-black">
+        {!isMobile && (
+          <>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] opacity-40 animate-pulse" />
+            <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150" />
+          </>
+        )}
       </div>
 
       {/* Login Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={isMobile ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        transition={isMobile ? { duration: 0 } : { duration: 1, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full max-w-[340px] flex flex-col items-center"
       >
         
         {/* Header Image (Logo) */}
         <div className="w-full flex items-center justify-center mb-6">
           <div className="w-20 h-20 flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-75 animate-pulse" />
+            {!isMobile && <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-75 animate-pulse" />}
             <img
               src="/login-illustration.png"
               alt="Vork Logo"
@@ -75,13 +87,13 @@ export default function Login() {
           
           {/* Login Button */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={isMobile ? {} : { scale: 1.02 }}
+            whileTap={isMobile ? {} : { scale: 0.98 }}
             onClick={handleGoogleLogin}
             disabled={loading}
             className="w-full max-w-[260px] inline-flex items-center justify-center gap-3 h-11 bg-white text-black rounded-xl font-black text-[10px] shadow-premium hover:shadow-glow-lime transition-all tracking-[0.1em] uppercase disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/[0.03] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            {!isMobile && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/[0.03] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />}
             {loading ? (
               <span className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></span>
             ) : (
