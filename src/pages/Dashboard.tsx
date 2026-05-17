@@ -36,6 +36,117 @@ import "dayjs/locale/id";
 dayjs.extend(dayOfYear);
 dayjs.locale("id");
 
+const PlanItem = React.memo(({ 
+  plan, 
+  user, 
+  activeDate, 
+  isAdmin, 
+  onDelete 
+}: { 
+  plan: any; 
+  user: any; 
+  activeDate: any; 
+  isAdmin: boolean; 
+  onDelete: (e: React.MouseEvent, id: string) => void;
+}) => {
+  const iscurrentUser = plan.userId === auth.currentUser?.uid;
+  
+  return (
+    <motion.div
+      layout
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className={cn(
+        "group py-1.5 px-2.5 flex items-center gap-3 bg-transparent hover:bg-muted/30 rounded-2xl transition-all duration-200 border border-transparent",
+        iscurrentUser && "bg-background shadow-md border-border/60 ring-1 ring-primary/10 relative overflow-hidden"
+      )}
+    >
+      {iscurrentUser && (
+         <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
+      )}
+
+      <div className="relative shrink-0">
+        <div className={cn(
+          "w-7 h-7 rounded-full bg-muted overflow-hidden p-[1px] border border-border transition-all duration-300 ring-2 ring-transparent",
+          iscurrentUser ? "ring-primary/30 border-primary/20 scale-105" : "group-hover:border-primary/20"
+        )}>
+          {user?.photoURL || plan.userPhoto ? (
+            <img
+              src={user?.photoURL || plan.userPhoto}
+              className="w-full h-full rounded-full object-cover"
+              alt=""
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-[9px] font-black text-muted-foreground uppercase">
+              {toTitleCase((user?.name || plan.userName || "U")).charAt(0)}
+            </div>
+          )}
+        </div>
+        {iscurrentUser && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full border-2 border-background z-10" />
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <p className="text-xs font-semibold text-foreground tracking-tight truncate leading-tight">
+            {toTitleCase(plan.marketName)}
+            {(() => {
+              const raw = plan.marketType === 'PASARAN_JAWA' 
+                ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
+                    ? activeDate.pasaran.toUpperCase() 
+                    : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
+                : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
+              const category = toTitleCase(raw);
+              return category !== "Umum" ? (
+                <span className="opacity-50 ml-1 font-bold text-[8px] tracking-tight text-primary uppercase">
+                  • {category}
+                </span>
+              ) : null;
+            })()}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-[8px] font-black text-primary tracking-widest truncate uppercase leading-none">
+            {toTitleCase((user?.name || plan.userName || "User").split(" ")[0])}
+          </span>
+          <div className="w-[1.5px] h-[1.5px] rounded-full bg-muted-foreground/30 shrink-0" />
+          <span className="text-[8px] font-semibold text-muted-foreground tracking-tight truncate uppercase">
+            {toTitleCase(plan.city)}
+          </span>
+          {plan.marketJam && (
+            <>
+              <div className="w-[1px] h-[1px] rounded-full bg-muted-foreground/30 shrink-0" />
+              <span className="text-[8px] font-mono font-bold text-muted-foreground/60 tracking-tighter tabular-nums">
+                {plan.marketJam.replace(' ', '')}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="text-right flex flex-col items-end gap-1 relative z-10">
+        <p className="text-[8px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
+          {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
+        </p>
+        {(iscurrentUser || isAdmin) && (
+          <button
+            onClick={(e) => onDelete(e, plan.id)}
+            className="p-1 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-2.5 h-2.5" />
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
+PlanItem.displayName = "PlanItem";
+
 const WILAYAH_EXACT = [
   "Kota Yogyakarta",
   "Sleman",
@@ -344,12 +455,12 @@ export default function Dashboard({
     <div className="min-h-screen bg-background text-foreground font-sans transition-colors duration-300 relative overflow-x-hidden">
       {/* Background Polish */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/[0.03] blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150" />
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/[0.02] blur-[80px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.035] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-125" />
       </div>
       
       {/* Navbar Minimal */}
-      <nav className="p-1 flex items-center justify-between max-w-2xl mx-auto border-b border-border/40 bg-background/60 backdrop-blur-xl sticky top-0 z-40">
+      <nav className="p-1 flex items-center justify-between max-w-2xl mx-auto border-b border-border/20 bg-background/60 backdrop-blur-lg sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
           <div className="flex flex-col justify-center">
             <h4 className="text-[10px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-none uppercase">
@@ -396,11 +507,11 @@ export default function Dashboard({
       <main className="max-w-2xl mx-auto px-4 pt-0.5 pb-8 relative z-10">
         {/* Header Hero */}
         <section className="mb-1 text-center pt-0.5 relative">
-          <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 w-[200px] h-[80px] bg-[#B7E800]/5 dark:bg-[#C6FF00]/5 blur-[60px] rounded-full pointer-events-none" />
+          <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-[180px] h-[60px] bg-[#B7E800]/3 dark:bg-[#C6FF00]/3 blur-[40px] rounded-full pointer-events-none" />
           
           <h1 className="text-lg font-black leading-none tracking-tight text-foreground mb-0.5 uppercase">
             {activeDate.dayName}{" "}
-            <span className="text-primary drop-shadow-[0_0_15px_rgba(198,255,0,0.3)]">{activeDate.pasaran}</span>
+            <span className="text-primary">{activeDate.pasaran}</span>
           </h1>
           <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.3em] mb-1 opacity-70">
             {activeDate.fullDate}
@@ -504,8 +615,8 @@ export default function Dashboard({
                   Rencana Kunjungan
                   {users.length - plans.length > 0 && (
                     <>
-                      <span className="opacity-20 mx-1 font-normal">•</span>
-                      <span className="text-[8.5px] font-black text-[#B7E800] dark:text-[#C6FF00] uppercase tracking-wider">
+                      <span className="opacity-10 mx-1 font-normal">•</span>
+                      <span className="text-[8.5px] font-black text-primary uppercase tracking-wider">
                         {Math.max(0, users.length - plans.length)} PENDING
                       </span>
                     </>
@@ -515,8 +626,8 @@ export default function Dashboard({
             </div>
             
             <div className="flex items-center gap-1">
-              <div className="w-1 h-1 rounded-full bg-[#B7E800] dark:bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.6)] animate-pulse" />
-              <span className="text-[8px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest">LIVE</span>
+              <div className="w-1 h-1 rounded-full bg-primary/40" />
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest leading-none">LIVE</span>
             </div>
           </div>
 
@@ -524,8 +635,6 @@ export default function Dashboard({
             {!myPlan && !loading && (
               <div className="flex justify-center pt-2 pb-3">
                 <motion.button
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowModal(true)}
@@ -542,8 +651,6 @@ export default function Dashboard({
                 [...Array(6)].map((_, i) => (
                   <motion.div
                     key={`skeleton-${i}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="h-12 skeleton my-1 flex items-center gap-3 px-3 mx-0.5"
                   >
@@ -557,8 +664,6 @@ export default function Dashboard({
               ) : plans.length === 0 ? (
                 <motion.div
                   key="no-plans"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="py-16 px-4 flex flex-col items-center justify-center text-center"
                 >
@@ -571,99 +676,14 @@ export default function Dashboard({
                 </motion.div>
               ) : (
                 plans.map((plan) => (
-                  <motion.div
-                    layout
+                  <PlanItem
                     key={plan.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.99 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className={cn(
-                      "group py-1.5 px-2.5 flex items-center gap-3 bg-transparent hover:bg-muted/50 rounded-2xl transition-all duration-300 border border-transparent shadow-none",
-                      plan.userId === auth.currentUser?.uid && "bg-background shadow-md border-border/60 relative overflow-hidden ring-1 ring-primary/10"
-                    )}
-                  >
-                    {plan.userId === auth.currentUser?.uid && (
-                       <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-primary/10 to-transparent pointer-events-none" />
-                    )}
-
-                    <div className="relative shrink-0">
-                      <div className={cn(
-                        "w-7 h-7 rounded-full bg-muted overflow-hidden p-[1.5px] border border-border transition-all duration-500 ring-2 ring-transparent",
-                        plan.userId === auth.currentUser?.uid ? "ring-primary/40 border-primary/20 scale-105" : "group-hover:border-primary/20"
-                      )}>
-                        {userMap[plan.userId]?.photoURL || plan.userPhoto ? (
-                          <img
-                            src={userMap[plan.userId]?.photoURL || plan.userPhoto}
-                            className="w-full h-full rounded-full object-cover transition-all duration-700 group-hover:scale-110"
-                            alt=""
-                            crossOrigin="anonymous"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-[10px] font-black text-muted-foreground uppercase">
-                            {toTitleCase((userMap[plan.userId]?.name || plan.userName || "U")).charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      {plan.userId === auth.currentUser?.uid && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background z-10" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-xs font-semibold text-foreground tracking-tight truncate leading-tight">
-                          {toTitleCase(plan.marketName)}
-                          {(() => {
-                            const raw = plan.marketType === 'PASARAN_JAWA' 
-                              ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
-                                  ? activeDate.pasaran.toUpperCase() 
-                                  : plan.marketPasaran?.join(", ") || activeDate.pasaran.toUpperCase())
-                              : plan.marketType?.replace("PASARAN_", "").replace("PASAR_", "").replace("_", " ");
-                            const category = toTitleCase(raw);
-                            return category !== "Umum" ? (
-                              <span className="opacity-50 ml-1 font-bold text-[9px] tracking-tight text-primary">
-                                • {category}
-                              </span>
-                            ) : null;
-                          })()}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] font-black text-primary tracking-widest truncate uppercase leading-none">
-                          {toTitleCase((userMap[plan.userId]?.name || plan.userName || "User").split(" ")[0])}
-                        </span>
-                        <div className="w-[2px] h-[2px] rounded-full bg-muted-foreground/30 shrink-0" />
-                        <span className="text-[9px] font-semibold text-muted-foreground tracking-tight truncate">
-                          {toTitleCase(plan.city)}
-                        </span>
-                        {plan.marketJam && (
-                          <>
-                            <div className="w-[1px] h-[1px] rounded-full bg-muted-foreground/30 shrink-0" />
-                            <span className="text-[9px] font-mono font-bold text-muted-foreground/60 tracking-tighter tabular-nums">
-                              {plan.marketJam.replace(' ', '')}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-right flex flex-col items-end gap-1 relative z-10">
-                      <p className="text-[9px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono opacity-80">
-                        {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
-                      </p>
-                      {(plan.userId === auth.currentUser?.uid || isAdmin) && (
-                        <button
-                          onClick={(e) => handleDelete(e, plan.id)}
-                          className="p-1 rounded-md text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all duration-200 cursor-pointer relative z-20 pointer-events-auto relative"
-                        >
-                          <Trash2 className="w-3 h-3 pointer-events-none" />
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
+                    plan={plan}
+                    user={userMap[plan.userId]}
+                    activeDate={activeDate}
+                    isAdmin={isAdmin}
+                    onDelete={handleDelete}
+                  />
                 ))
               )}
             </AnimatePresence>
@@ -701,26 +721,21 @@ export default function Dashboard({
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
               className="absolute inset-0 bg-zinc-900/40 dark:bg-black/90 backdrop-blur-sm dark:backdrop-blur-md"
             />
 
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="w-full h-full bg-background flex flex-col relative sm:rounded-t-3xl overflow-hidden shadow-premium"
             >
               {/* Header */}
-              <div className="sticky top-0 bg-background/80 backdrop-blur-xl px-6 py-5 z-20 border-b border-border/40 flex justify-end items-center">
+              <div className="sticky top-0 bg-background/80 backdrop-blur-lg px-6 py-4 z-20 border-b border-border/20 flex justify-end items-center">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="tap-target rounded-full bg-muted flex items-center justify-center border border-border text-muted-foreground hover:text-foreground transition-colors"
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -880,7 +895,7 @@ export default function Dashboard({
                                       className={cn(
                                         "px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all",
                                         selectedSubCategory === String(katIdVal)
-                                          ? "bg-primary text-black shadow-glow-lime scale-105"
+                                          ? "bg-primary text-black border border-primary/20 scale-105"
                                           : "bg-muted text-muted-foreground hover:bg-muted-foreground/10",
                                       )}
                                     >
@@ -892,7 +907,7 @@ export default function Dashboard({
                             )}
                           </div>
                           {selectedMarketName === m.nama_pasar && (
-                            <div className="bg-primary text-black p-1.5 rounded-full shadow-glow-lime ml-4 shrink-0 transition-all scale-110">
+                            <div className="bg-primary text-black p-1.5 rounded-full ml-4 shrink-0 transition-all scale-110 ring-2 ring-primary/20">
                               <CheckCircle2 className="w-4 h-4" />
                             </div>
                           )}
@@ -908,12 +923,12 @@ export default function Dashboard({
               </div>
 
               {/* Sticky Footer */}
-              <div className="sticky bottom-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 flex justify-center z-20">
+              <div className="sticky bottom-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border/20 flex justify-center z-20">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddPlan}
-                  className="w-full max-w-xs h-11 bg-foreground text-background rounded-xl font-black tracking-[0.1em] text-[10px] shadow-premium hover:shadow-glow-lime transition-all duration-300 flex items-center justify-center relative overflow-hidden"
+                  className="w-full max-w-xs h-11 bg-foreground text-background rounded-xl font-black tracking-[0.1em] text-[10px] shadow-lg transition-all duration-300 flex items-center justify-center relative border border-white/5"
                 >
                   <span className="relative z-10">SIMPAN RENCANA</span>
                 </motion.button>

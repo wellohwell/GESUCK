@@ -26,15 +26,11 @@ export function SimulatorModal({ isOpen, onClose, product }: Props) {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div 
-            initial={{ y: "100%", opacity: 0 }} 
-            animate={{ y: 0, opacity: 1 }} 
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative w-full max-w-[380px] bg-white dark:bg-zinc-900 sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"

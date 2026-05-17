@@ -14,7 +14,7 @@ const convertToThumbnailLink = (url: string): string => {
 };
 
 
-const ImageCard = ({ item, onClick }: { item: GeaGetraItem, onClick: () => void, key?: string | number }) => {
+const ImageCard = React.memo(({ item, onClick }: { item: GeaGetraItem, onClick: () => void, key?: string | number }) => {
   const [isError, setIsError] = React.useState(false);
   const thumbnailUrl = useMemo(() => convertToThumbnailLink(item.url || ''), [item.url]);
 
@@ -22,27 +22,27 @@ const ImageCard = ({ item, onClick }: { item: GeaGetraItem, onClick: () => void,
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
       className="w-full aspect-square cursor-pointer overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group"
       onClick={onClick}
     >
         {isError ? (
-            <div className="w-full h-full flex items-center justify-center text-[10px] text-center p-2 text-zinc-400">
+            <div className="w-full h-full flex items-center justify-center text-[9px] text-center p-2 text-zinc-400 font-bold uppercase tracking-tighter">
                 Gagal memuat
             </div>
         ) : (
             <img
                 src={thumbnailUrl}
                 alt={item.caption}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover transition-transform duration-500 will-change-transform"
                 loading="lazy"
                 onError={() => setIsError(true)}
             />
         )}
     </motion.div>
   );
-};
+});
+
+ImageCard.displayName = "ImageCard";
 
 
 export default function GeaGetraPage({ 
@@ -55,6 +55,7 @@ export default function GeaGetraPage({
   selectedMerk?: string 
 }) {
   const { data, loading, error } = useGeaGetra();
+  const [displayLimit, setDisplayLimit] = React.useState(20);
   
   const filteredData = useMemo(() => {
     if (!searchQuery) return [];
@@ -76,6 +77,13 @@ export default function GeaGetraPage({
       return true;
     });
   }, [searchQuery, data, selectedMerk]);
+
+  // Reset limit on search change
+  React.useEffect(() => {
+    setDisplayLimit(20);
+  }, [searchQuery, selectedMerk]);
+
+  const displayedData = useMemo(() => filteredData.slice(0, displayLimit), [filteredData, displayLimit]);
   
   const handleImageClick = (clickedItem: GeaGetraItem) => {
     const imageList: ImageData[] = filteredData.map(item => ({
@@ -131,10 +139,21 @@ export default function GeaGetraPage({
   return (
     <div className="w-full pb-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-            {filteredData.map((item) => (
+            {displayedData.map((item) => (
                 <ImageCard key={item.id} item={item} onClick={() => handleImageClick(item)} />
             ))}
         </div>
+        
+        {filteredData.length > displayLimit && (
+          <div className="flex justify-center mt-6">
+            <button 
+              onClick={() => setDisplayLimit(prev => prev + 20)}
+              className="px-8 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-foreground transition-all border border-zinc-200 dark:border-white/10"
+            >
+              Lihat Lebih Banyak ({filteredData.length - displayLimit} lagi)
+            </button>
+          </div>
+        )}
     </div>
   );
 }
