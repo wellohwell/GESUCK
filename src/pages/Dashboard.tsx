@@ -5,7 +5,7 @@ import {
   addMarketPlan,
   deleteMarketPlan,
   subscribeMarkets,
-  subscribeUsers,
+  subscribeUsers
 } from "../lib/services";
 import { auth } from "../firebase/config";
 import {
@@ -41,7 +41,7 @@ const PlanItem = React.memo(({
   user, 
   activeDate, 
   isAdmin, 
-  onDelete 
+  onDelete
 }: { 
   plan: any; 
   user: any; 
@@ -50,6 +50,7 @@ const PlanItem = React.memo(({
   onDelete: (e: React.MouseEvent, id: string) => void;
 }) => {
   const iscurrentUser = plan.userId === auth.currentUser?.uid;
+  const isVisited = plan.status === 'visited';
   
   return (
     <motion.div
@@ -57,7 +58,7 @@ const PlanItem = React.memo(({
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className={cn(
         "group py-1.5 px-2.5 flex items-center gap-3 bg-transparent hover:bg-muted/30 rounded-2xl transition-all duration-200 border border-transparent",
-        iscurrentUser && "bg-background shadow-md border-border/60 ring-1 ring-primary/10 relative overflow-hidden"
+        iscurrentUser && "bg-background shadow-md border-border/60 ring-1 ring-primary/10 relative overflow-hidden cursor-pointer"
       )}
     >
       {iscurrentUser && (
@@ -91,8 +92,9 @@ const PlanItem = React.memo(({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <p className="text-xs font-semibold text-foreground tracking-tight truncate leading-tight">
+          <p className="text-xs font-semibold text-foreground tracking-tight truncate leading-tight flex items-center gap-1.5">
             {toTitleCase(plan.marketName)}
+            {isVisited && <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />}
             {(() => {
               const raw = plan.marketType === 'PASARAN_JAWA' 
                 ? (plan.marketPasaran?.includes(activeDate.pasaran.toUpperCase()) 
@@ -716,9 +718,9 @@ export default function Dashboard({
         </footer>
       </main>
 
-      {/* Modal - Improved Minimal Feel */}
-      <AnimatePresence>
-        {showModal && (
+        {/* Modal - Improved Minimal Feel */}
+        <AnimatePresence>
+          {showModal && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div
               onClick={() => setShowModal(false)}

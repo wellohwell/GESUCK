@@ -181,16 +181,6 @@ export function subscribeCurrentUser(uid: string, callback: (user: any) => void)
   });
 }
 
-// Assignment Service
-export function subscribeAssignments(date: string, callback: (assignments: any[]) => void) {
-  const q = query(collection(db, "assignments"), where("tanggal", "==", date));
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, "assignments");
-  });
-}
-
 // Market Plan Service
 export function subscribeMarketPlans(date: string, callback: (plans: any[]) => void) {
   const q = query(
@@ -237,82 +227,17 @@ export async function deleteMarketPlan(planId: string) {
   }
 }
 
-export async function selectMarket(marketId: string, marketName: string, date: string, oldMarketId?: string) {
-  if (!auth.currentUser) throw new Error("Unauthorized");
-
-  const userId = auth.currentUser.uid;
-  const assignmentId = `${date}_${userId}`;
-  const assignmentRef = doc(db, "assignments", assignmentId);
-
-  try {
-    await runTransaction(db, async (transaction) => {
-      // 1. Check if new market is already taken
-      const lockRef = doc(db, "marketLocks", `${date}_${marketId}`);
-      const lockSnap = await transaction.get(lockRef);
-      
-      if (lockSnap.exists() && lockSnap.data().uid !== userId) {
-        throw new Error("Pasar sudah dipilih orang lain.");
-      }
-
-      // 2. Clear old lock if switching
-      if (oldMarketId && oldMarketId !== marketId) {
-        const oldLockRef = doc(db, "marketLocks", `${date}_${oldMarketId}`);
-        transaction.delete(oldLockRef);
-      }
-
-      // 3. Create/Update Assignment
-      transaction.set(assignmentRef, {
-        uid: userId,
-        nama: auth.currentUser?.displayName || "User",
-        email: auth.currentUser?.email,
-        foto: auth.currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + userId,
-        pendamping: "",
-        pasarId: marketId,
-        pasarNama: marketName,
-        tanggal: date,
-        createdAt: serverTimestamp()
-      });
-      
-      // 4. Set new lock
-      transaction.set(lockRef, {
-        uid: userId,
-        timestamp: serverTimestamp()
-      });
-    });
-  } catch (error) {
-    if (error instanceof Error && error.message === "Pasar sudah dipilih orang lain.") {
-      throw error;
-    }
-    handleFirestoreError(error, OperationType.WRITE, "assignments");
-  }
-}
-
-export async function deleteAssignment(date: string, marketId: string) {
-  if (!auth.currentUser) return;
-  const userId = auth.currentUser.uid;
-  const assignmentId = `${date}_${userId}`;
-  const lockId = `${date}_${marketId}`;
-  
-  try {
-    await runTransaction(db, async (transaction) => {
-      transaction.delete(doc(db, "assignments", assignmentId));
-      transaction.delete(doc(db, "marketLocks", lockId));
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `assignments/${assignmentId}`);
-  }
-}
-
-export async function adminRemoveAssignment(date: string, uid: string, marketId: string) {
-  const assignmentId = `${date}_${uid}`;
-  const lockId = `${date}_${marketId}`;
-  
-  try {
-    await runTransaction(db, async (transaction) => {
-      transaction.delete(doc(db, "assignments", assignmentId));
-      transaction.delete(doc(db, "marketLocks", lockId));
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `assignments/${assignmentId}`);
-  }
+export function subscribeMarketPlansByMonth(month: string, callback: (plans: any[]) => void) {
+  const start = `${month}-01`;
+  const end = `${month}-31`;
+  const q = query(
+    collection(db, "market_plans"), 
+    where("dayStart", ">=", start),
+    where("dayStart", "<=", end)
+  );
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, "market_plans");
+  });
 }

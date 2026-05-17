@@ -18,7 +18,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="tap-target rounded-xl flex items-center justify-center bg-muted/50 border border-border/40 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+      className="w-8 h-8 flex items-center justify-center bg-transparent text-muted-foreground hover:text-foreground transition-all active:scale-95"
       title="Toggle Theme"
     >
       <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">

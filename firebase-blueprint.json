@@ -49,6 +49,49 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "city", "marketType", "marketName", "dayStart", "createdAt"]
+    },
+    "VisitReport": {
+      "title": "Visit Report",
+      "description": "Report submitted after a market visit.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "marketName": { "type": "string" },
+        "customerName": { "type": "string" },
+        "date": { "type": "string", "format": "YYYY-MM-DD" },
+        "status": { "type": "string", "enum": ["planned", "visited", "pending", "canceled", "reschedule"] },
+        "result": { "type": "string", "enum": ["closing", "follow_up", "no_response", "rejected", "maintenance"] },
+        "notes": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "marketName", "date", "status", "result", "createdAt"]
+    },
+    "MonthlySummary": {
+      "title": "Monthly Summary",
+      "description": "Aggregated stats for a user for a specific month.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "month": { "type": "string", "format": "YYYY-MM" },
+        "totalVisits": { "type": "number" },
+        "visitsByResult": {
+          "type": "object",
+          "properties": {
+            "closing": { "type": "number" },
+            "follow_up": { "type": "number" },
+            "no_response": { "type": "number" },
+            "rejected": { "type": "number" },
+            "maintenance": { "type": "number" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "month", "totalVisits", "visitsByResult", "updatedAt"]
     }
   },
   "firestore": {
@@ -63,6 +106,14 @@
     "market_plans/{planId}": {
       "schema": "MarketPlan",
       "description": "Sales live market plans for field operations."
+    },
+    "visit_reports/{reportId}": {
+      "schema": "VisitReport",
+      "description": "Completed visit reports indexed by user and date."
+    },
+    "monthly_summaries/{summaryId}": {
+      "schema": "MonthlySummary",
+      "description": "Monthly performance summaries for KPI tracking."
     },
     "admins/{userId}": {
       "schema": {

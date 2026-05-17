@@ -1,11 +1,35 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { subscribeMarkets, subscribeMarketPlans, subscribeAssignments, addMarket, updateMarket, removeMarket, adminRemoveAssignment, subscribeUsers, updateUser } from "../lib/services";
+import { 
+  subscribeMarkets, 
+  subscribeMarketPlans, 
+  addMarket, 
+  updateMarket, 
+  removeMarket, 
+  subscribeUsers, 
+  updateUser,
+  subscribeMarketPlansByMonth,
+  deleteMarketPlan
+} from "../lib/services";
 import { db, auth } from "../firebase/config";
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getActiveSystemDate } from "../utils/javaneseDate";
 import { motion, AnimatePresence } from "motion/react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import * as XLSX from "xlsx";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Cell,
+  PieChart,
+  Pie,
+  Legend
+} from "recharts";
 import { 
   ArrowLeft, 
   Users, 
@@ -24,12 +48,21 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
-  Download
+  Download,
+  TrendingUp,
+  Activity,
+  FileSpreadsheet
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { toast } from "react-toastify";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { toTitleCase } from "../utils/format";
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
+dayjs.locale("id");
 
 interface AdminProps {
   onBack: () => void;
@@ -55,17 +88,20 @@ const SAMPLE_MARKETS = [
 ];
 
 export default function Admin({ onBack }: AdminProps) {
-  const [activeTab, setActiveTab] = useState<"users" | "master">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "master" | "market-insight">("market-insight");
   const [markets, setMarkets] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [allMonthlyPlans, setAllMonthlyPlans] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [activeDate] = useState(getActiveSystemDate());
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
   const [isSeeding, setIsSeeding] = useState(false);
   const [search, setSearch] = useState("");
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMarket, setEditingMarket] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   
   // Filter States
   const [filterWilayah, setFilterWilayah] = useState("");
@@ -78,12 +114,15 @@ export default function Admin({ onBack }: AdminProps) {
     const unsubMarkets = subscribeMarkets(setMarkets);
     const unsubAssignments = subscribeMarketPlans(activeDate.isoDate, setAssignments);
     const unsubUsers = subscribeUsers(setUsers);
+    const unsubMonthlyPlans = subscribeMarketPlansByMonth(selectedMonth, setAllMonthlyPlans);
+    
     return () => {
       unsubMarkets();
       unsubAssignments();
       unsubUsers();
+      unsubMonthlyPlans();
     };
-  }, [activeDate.isoDate]);
+  }, [activeDate.isoDate, selectedMonth]);
 
   const handleExport = async (type: "pdf" | "jpg") => {
     if (!reportRef.current) return;
@@ -157,16 +196,6 @@ export default function Admin({ onBack }: AdminProps) {
     }
   };
 
-  const handleDeleteAssignment = async (uid: string, marketId: string, name: string) => {
-    if (!window.confirm(`Hapus penugasan "${name}"?`)) return;
-    try {
-      await adminRemoveAssignment(activeDate.isoDate, uid, marketId);
-      toast.info("Penugasan dihapus");
-    } catch (e) {
-      toast.error("Gagal menghapus penugasan");
-    }
-  };
-
   const openForm = (market: any = null) => {
     setEditingMarket(market);
     setIsModalOpen(true);
@@ -183,18 +212,24 @@ export default function Admin({ onBack }: AdminProps) {
           >
             <ArrowLeft className="w-3.5 h-3.5 text-zinc-600 dark:text-white" />
           </button>
-          <div className="flex-1 overflow-hidden">
-            <h1 className="text-sm font-medium tracking-tight  text-zinc-400 dark:text-white/30 truncate">
-              Admin Panel
-            </h1>
-          </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex gap-1 p-0.5 bg-zinc-100 dark:bg-white/10 rounded-lg border border-zinc-200 dark:border-transparent">
+            <div className="flex gap-1 p-0.5 bg-zinc-100 dark:bg-white/10 rounded-lg border border-zinc-200 dark:border-transparent overflow-x-auto no-scrollbar">
+              <button
+                onClick={() => setActiveTab("market-insight")}
+                className={cn(
+                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all tracking-wider whitespace-nowrap",
+                  activeTab === "market-insight"
+                    ? "bg-primary text-black shadow-md shadow-primary/20"
+                    : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
+                )}
+              >
+                Insight
+              </button>
               <button
                 onClick={() => setActiveTab("users")}
                 className={cn(
-                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider",
+                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider whitespace-nowrap",
                   activeTab === "users"
                     ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20"
                     : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
@@ -205,7 +240,7 @@ export default function Admin({ onBack }: AdminProps) {
               <button
                 onClick={() => setActiveTab("master")}
                 className={cn(
-                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider",
+                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider whitespace-nowrap",
                   activeTab === "master"
                     ? "bg-brand-secondary text-black shadow-md shadow-brand-secondary/20"
                     : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
@@ -222,10 +257,19 @@ export default function Admin({ onBack }: AdminProps) {
 
       <main className="max-w-6xl mx-auto px-3 py-4">
         <AnimatePresence mode="wait">
-          {activeTab === "users" ? (
+          {activeTab === "market-insight" ? (
+            <MarketInsightView 
+              plans={allMonthlyPlans}
+              selectedMonth={selectedMonth}
+              setMonth={setSelectedMonth}
+              users={users}
+              markets={markets}
+            />
+          ) : activeTab === "users" ? (
             <UserManagementView 
                users={users}
                assignments={assignments}
+               onSelectUser={setSelectedUser}
             />
           ) : (
             <MasterDataView 
@@ -256,164 +300,274 @@ export default function Admin({ onBack }: AdminProps) {
           />
         )}
       </AnimatePresence>
+
+      {/* User Detail Modal */}
+      <AnimatePresence>
+        {selectedUser && (
+          <UserDetailModal 
+            user={selectedUser} 
+            assignments={assignments.filter((a: any) => a.userId === selectedUser.id)}
+            onClose={() => setSelectedUser(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// --- Subviews Components ---
+// --- Market Insight View ---
 
-function ReportView({ assignments, activeDate, search, setSearch, onDelete, totalUsers, onExport, forwardedRef, markets }: any) {
-  const stats = [
-    { label: "Total Team", value: totalUsers, icon: Users, color: "text-blue-400" },
-    { label: "Sudah Memilih", value: assignments.length, icon: CheckCircle2, color: "text-green-400" },
-    { label: "Belum Memilih", value: Math.max(0, totalUsers - assignments.length), icon: AlertCircle, color: "text-red-400" },
-    { label: "Laporan Hari", value: activeDate.pasaran, icon: Calendar, color: "text-brand-primary" },
-  ];
+function MarketInsightView({ plans, selectedMonth, setMonth, users, markets }: any) {
+  const [trackingUser, setTrackingUser] = useState("");
 
-  const filtered = assignments.filter((a: any) => 
-    a.nama.toLowerCase().includes(search.toLowerCase()) || 
-    a.pasarNama.toLowerCase().includes(search.toLowerCase())
-  );
+  // 1. Summary Calculation
+  const summary = useMemo(() => {
+    const visited = plans.filter(p => p.status === 'visited');
+    const activeMarkets = new Set(plans.map(p => p.marketName)).size;
+    const activeUsers = new Set(plans.map(p => p.userId)).size;
+    
+    const cityCounts: Record<string, number> = {};
+    plans.forEach(p => {
+      if (p.city) cityCounts[p.city] = (cityCounts[p.city] || 0) + 1;
+    });
+    const mostActiveCity = Object.entries(cityCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "-";
+
+    return { totalVisits: visited.length, activeMarkets, activeUsers, mostActiveCity };
+  }, [plans]);
+
+  // 2. Market Insight Calculation
+  const marketInsight = useMemo(() => {
+    const stats: Record<string, any> = {};
+    
+    // Initialize with master data
+    markets.forEach((m: any) => {
+      stats[m.nama_pasar] = {
+        name: m.nama_pasar,
+        city: m.wilayah,
+        visits: 0,
+        lastVisit: null,
+        users: new Set()
+      };
+    });
+
+    plans.forEach(p => {
+      if (!stats[p.marketName]) {
+         stats[p.marketName] = { name: p.marketName, city: p.city, visits: 0, lastVisit: null, users: new Set() };
+      }
+      stats[p.marketName].visits++;
+      stats[p.marketName].users.add(p.userId);
+      if (!stats[p.marketName].lastVisit || dayjs(p.dayStart).isAfter(dayjs(stats[p.marketName].lastVisit))) {
+        stats[p.marketName].lastVisit = p.dayStart;
+      }
+    });
+
+    const list = Object.values(stats).map((s: any) => ({
+      ...s,
+      userCount: s.users.size
+    }));
+
+    return {
+      mostVisited: [...list].sort((a,b) => b.visits - a.visits).slice(0, 10),
+      leastVisited: [...list].sort((a,b) => a.visits - b.visits).slice(0, 10),
+      all: list
+    };
+  }, [plans, markets]);
+
+  // 3. User Tracking Calculation
+  const userTrackingData = useMemo(() => {
+    if (!trackingUser) return null;
+    const userPlans = plans.filter((p: any) => p.userId === trackingUser);
+    const total = userPlans.length;
+    
+    const mCounts: any = {};
+    const cCounts: any = {};
+    userPlans.forEach(p => {
+      mCounts[p.marketName] = (mCounts[p.marketName] || 0) + 1;
+      if (p.city) cCounts[p.city] = (cCounts[p.city] || 0) + 1;
+    });
+
+    const favMarket = Object.entries(mCounts).sort((a: any,b: any) => b[1] - a[1])[0]?.[0] || "-";
+    const favCity = Object.entries(cCounts).sort((a: any,b: any) => b[1] - a[1])[0]?.[0] || "-";
+
+    return {
+      history: userPlans.sort((a,b) => dayjs(b.dayStart).unix() - dayjs(a.dayStart).unix()),
+      total,
+      favMarket,
+      favCity
+    };
+  }, [plans, trackingUser]);
+
+  // 4. Auto Insights
+  const autoInsights = useMemo(() => {
+    const userCounts: any = {};
+    plans.forEach(p => { userCounts[p.userName] = (userCounts[p.userName] || 0) + 1; });
+    const topUser = Object.entries(userCounts).sort((a: any,b: any) => b[1] - a[1])[0] || ["-", 0];
+
+    const longTimeNoVisit = marketInsight.all
+      .filter((m: any) => m.lastVisit && dayjs().diff(dayjs(m.lastVisit), 'day') > 7)
+      .sort((a: any, b: any) => dayjs(a.lastVisit).unix() - dayjs(b.lastVisit).unix())
+      .slice(0, 5);
+
+    return { topUser, longTimeNoVisit };
+  }, [plans, marketInsight]);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-      {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6 items-end sm:items-center justify-between">
-          <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-            <input 
-              type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari personel atau pasar..."
-              className="w-full sm:w-64 h-11 glass pl-10 pr-4 rounded-xl border border-white/10 outline-none focus:border-brand-primary/40 transition-all font-sans text-xs text-white placeholder:text-white/30"
-            />
-         </div>
-         
-         <div className="flex gap-2 w-full sm:w-auto">
-            <button 
-              onClick={() => onExport("pdf")}
-              className="flex-1 sm:flex-none h-10 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border border-white/10"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              Export PDF
-            </button>
-            <button 
-              onClick={() => onExport("jpg")}
-              className="flex-1 sm:flex-none h-10 px-6 glass rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all bg-white/10 border border-white/10"
-            >
-              <Download className="w-3.5 h-3.5" />
-              JPG
-            </button>
+    <div className="max-w-[800px] mx-auto space-y-6 pb-20">
+      {/* Sticky Header Filters */}
+      <div className="sticky top-[48px] z-40 bg-white/90 dark:bg-black/95 backdrop-blur-md py-3 border-b border-zinc-100 dark:border-white/5 -mx-3 px-3">
+         <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-primary">Market Insight</h3>
+              </div>
+              <input 
+                type="month" 
+                value={selectedMonth} 
+                onChange={e => setMonth(e.target.value)}
+                className="h-9 px-3 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-[10px] font-black uppercase outline-none"
+              />
+            </div>
          </div>
       </div>
 
-      <div ref={forwardedRef} className="p-4 bg-[#050505] rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
-        {/* Report Header for Export */}
-        <div className="mb-4 pt-1">
-           <div className="flex items-center gap-3 mb-1">
-              <div className="w-1.5 h-8 bg-brand-primary rounded-full shadow-[0_0_20px_rgba(0,255,255,0.3)]" />
-              <div>
-                 <h2 className="text-xl font-display font-medium tracking-tight text-white  ">#GJY2026</h2>
-                 <p className="text-sm text-white/30 font-medium  tracking-tight">{activeDate.fullDate}</p>
-              </div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-3">
+         <KPICard label="Pasar Aktif" value={summary.activeMarkets} icon={MapPin} color="text-emerald-500" />
+         <KPICard label="Kota Teraktif" value={summary.mostActiveCity} icon={TrendingUp} color="text-purple-500" />
+      </div>
+
+      {/* Market Insight Section */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Market Coverage Insight</h4>
+        </div>
+        
+        <div className="overflow-hidden">
+           <div className="overflow-x-auto no-scrollbar">
+             <table className="w-full text-left">
+               <thead>
+                 <tr className="border-b border-zinc-100 dark:border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                   <th className="px-1 py-4">Nama Pasar</th>
+                   <th className="px-5 py-4">Freq</th>
+                   <th className="px-5 py-4">Terakhir</th>
+                   <th className="px-5 py-4">Users</th>
+                 </tr>
+               </thead>
+               <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                 {marketInsight.mostVisited.slice(0, 4).map((m: any) => (
+                   <tr key={m.name} className="text-xs group hover:bg-zinc-100/50 dark:hover:bg-white/5 transition-colors">
+                     <td className="px-1 py-3">
+                       <p className="font-bold">{m.name}</p>
+                       <p className="text-[9px] text-zinc-400 uppercase font-black tracking-tighter">{m.city}</p>
+                     </td>
+                     <td className="px-5 py-3">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full font-black text-[9px]",
+                          m.visits > 5 ? "bg-primary/20 text-primary" : "bg-zinc-200 dark:bg-white/10 text-zinc-500"
+                        )}>
+                          {m.visits}x
+                        </span>
+                     </td>
+                     <td className="px-5 py-3 font-mono text-[10px] opacity-50">
+                        {m.lastVisit ? dayjs(m.lastVisit).format("DD/MM") : "-"}
+                     </td>
+                     <td className="px-5 py-3 font-bold text-primary">
+                        {m.userCount}
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
            </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
-          {stats.map((s, i) => (
-            <div key={i} className="glass p-3 rounded-xl border border-white/10 bg-white/[0.05]">
-              <s.icon className={cn("w-4 h-4 mb-2.5", s.color)} />
-              <p className="text-xs text-white/50  tracking-tight mb-1 font-medium">{s.label}</p>
-              <p className="text-xl font-display font-medium text-white">{s.value}</p>
-            </div>
-          ))}
+      {/* User Tracking Section */}
+      <section className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">User Performance Tracking</h4>
+          <select 
+            value={trackingUser}
+            onChange={e => setTrackingUser(e.target.value)}
+            className="h-8 px-3 bg-white dark:bg-white/10 border border-zinc-100 dark:border-white/10 rounded-lg text-[9px] font-black uppercase outline-none"
+          >
+            <option value="">PILIH USER</option>
+            {users.map((u: any) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
+          </select>
         </div>
 
-        <div className="glass rounded-xl overflow-hidden border border-white/10 bg-white/[0.02]">
-          <div className="p-3 border-b border-white/10 flex items-center justify-between bg-white/[0.05]">
-            <div className="flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-brand-primary" />
-              <h3 className="text-sm font-medium  tracking-wider">Team Rewanx</h3>
-            </div>
-            <span className="text-xs font-medium text-brand-primary bg-brand-primary/20 border border-brand-primary/40 px-2 py-0.5 rounded-full  tracking-tight">{filtered.length} Aktif</span>
-          </div>
-          <div className="overflow-x-auto text-white">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white/[0.05] text-xs  tracking-tight text-white/60">
-                  <th className="px-4 py-3 font-medium">Personel</th>
-                  <th className="px-4 py-3 font-medium">Pasar</th>
-                  <th className="px-4 py-3 font-medium">Waktu</th>
-                  <th className="px-4 py-3 font-medium sr-only">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-white/10  text-xs font-medium tracking-wide">Belum ada data masuk hari ini</td>
-                  </tr>
-                ) : (
-                  filtered.map((a: any) => (
-                    <tr key={a.id} className="border-t border-white/5 hover:bg-white/[0.02] transition-all group">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={a.foto} 
-                            className="w-8 h-8 rounded-lg object-cover ring-1 ring-white/5 group-hover:ring-brand-primary/30 transition-all shadow-lg" 
-                            alt="" 
-                            crossOrigin="anonymous"
-                            referrerPolicy="no-referrer"
-                          />
+        {userTrackingData ? (
+          <div className="space-y-4">
+             <div className="grid grid-cols-3 gap-2">
+                <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 rounded-xl">
+                   <p className="text-[8px] font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total Kunjungan</p>
+                   <p className="text-lg font-black">{userTrackingData.total}</p>
+                </div>
+                <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 rounded-xl">
+                   <p className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase mb-1">Fav Market</p>
+                   <p className="text-[10px] font-black leading-tight">{userTrackingData.favMarket}</p>
+                </div>
+                <div className="p-3 bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/20 rounded-xl">
+                   <p className="text-[8px] font-black text-purple-600 dark:text-purple-400 uppercase mb-1">Fav Kota</p>
+                   <p className="text-[10px] font-black leading-tight">{userTrackingData.favCity}</p>
+                </div>
+             </div>
+
+             <div className="overflow-hidden">
+                <div className="p-3 border-b border-border/50">
+                   <p className="text-[9px] font-black uppercase tracking-widest">Histori Kunjungan</p>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto no-scrollbar">
+                   {userTrackingData.history.length === 0 ? (
+                     <p className="text-center py-10 text-[10px] italic text-zinc-400">Belum ada histori kunjungan</p>
+                   ) : (
+                     userTrackingData.history.map((h, i) => (
+                       <div key={i} className="px-4 py-3 border-b border-border/30 last:border-0 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
                           <div>
-                            <p className="font-medium text-sm text-white group-hover:text-brand-primary transition-colors">{toTitleCase(a.nama)}</p>
-                            <p className="text-xs text-white/20 font-medium tracking-tight mt-0.5">{a.email}</p>
+                             <p className="text-xs font-bold">{h.marketName}</p>
+                             <p className="text-[9px] text-zinc-400 font-mono">{dayjs(h.dayStart).format("dddd, D MMMM YYYY")}</p>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-xs text-white leading-tight">{toTitleCase(a.pasarNama)}</p>
-                        <div className="flex items-center gap-1.5 mt-1 opacity-40">
-                           <MapPin className="w-2.5 h-2.5 text-brand-primary" />
-                           <span className="text-xs font-medium  tracking-tight">
-                              {toTitleCase(markets.find((m: any) => m.nama_pasar === a.pasarNama)?.wilayah || "Diy")}
-                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5 text-white/30 font-mono text-sm">
-                          <Clock className="w-3 h-3 opacity-20" />
-                          <span className="font-medium">
-                            {a.createdAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                          <span className={cn(
+                            "px-2 py-0.5 rounded-full text-[8px] font-black uppercase",
+                            h.status === 'visited' ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-100 dark:bg-white/10 text-zinc-400"
+                          )}>
+                            {h.status}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button 
-                          onClick={() => onDelete(a.uid, a.pasarId, a.nama)}
-                          className="w-8 h-8 flex items-center justify-center text-white/5 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                       </div>
+                     ))
+                   )}
+                </div>
+             </div>
           </div>
-        </div>
-
-        {/* Export Footer */}
-        <div className="mt-6 pt-4 border-t border-white/[0.03] flex justify-between items-center opacity-20">
-           <p className="text-xs font-medium  tracking-tight">Field Operation System</p>
-           <p className="text-xs font-mono">Generated at: {new Date().toLocaleString()}</p>
-        </div>
-      </div>
-    </motion.div>
+        ) : (
+          <div className="py-12 flex flex-col items-center justify-center opacity-20">
+             <Users className="w-10 h-10 mb-2" />
+             <p className="text-[10px] font-black uppercase tracking-widest">Pilih user untuk melihat insight</p>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
 
+function KPICard({ label, value, icon: Icon, color }: any) {
+  return (
+    <div className="p-4 flex items-center gap-4 transition-all hover:bg-zinc-100/50 dark:hover:bg-white/5">
+      <div className={cn("w-10 h-10 flex items-center justify-center", color)}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-[10px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className="text-xl font-black tracking-tight text-zinc-900 dark:text-white leading-none">{value}</p>
+      </div>
+    </div>
+  );
+}
 
-function UserManagementView({ users, assignments }: any) {
+// --- User Management Components ---
+
+
+function UserManagementView({ users, assignments, onSelectUser }: any) {
   const updateUserRoleAndStatus = async (
     uid: string,
     role: string,
@@ -452,14 +606,15 @@ function UserManagementView({ users, assignments }: any) {
               {users.map((u: any) => {
                 const userPlans = assignments.filter((a: any) => a.userId === u.id);
                 const isSelected = userPlans.length > 0;
-                const lastLogin = u.lastLogin?.toDate 
-                  ? u.lastLogin.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                const lastLoginFormatted = u.lastLogin?.toDate 
+                  ? dayjs(u.lastLogin.toDate()).format("dddd, D MMMM YYYY - HH:mm") 
                   : "-";
                 
                 return (
                   <tr
                     key={u.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors"
+                    onClick={() => onSelectUser(u)}
+                    className="hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">
@@ -472,7 +627,7 @@ function UserManagementView({ users, assignments }: any) {
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
                           <input
                             defaultValue={u.displayName}
                             onBlur={(e) => {
@@ -482,14 +637,14 @@ function UserManagementView({ users, assignments }: any) {
                             }}
                             className="font-medium text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
                           />
-                          <p className="text-sm font-medium text-zinc-500 dark:text-white/30 truncate mt-0.5">{u.email}</p>
+                          <p className="text-[10px] font-bold text-zinc-400 dark:text-white/10 tracking-widest uppercase mt-0.5">{u.role || "PENYELAM"}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-zinc-600 dark:text-white/60">{lastLogin}</span>
+                        <span className="text-[11px] font-medium text-zinc-600 dark:text-white/60">{lastLoginFormatted}</span>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="text-[10px] font-black text-zinc-400 mt-0.5 tracking-[0.2em] uppercase">Pasar:</span>
@@ -509,7 +664,7 @@ function UserManagementView({ users, assignments }: any) {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <div className="relative w-28">
                           <select
@@ -544,7 +699,7 @@ function UserManagementView({ users, assignments }: any) {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={async () => {
                           const { removeUser } = await import("../lib/services");
@@ -573,12 +728,16 @@ function UserManagementView({ users, assignments }: any) {
           {users.map((u: any) => {
             const userPlans = assignments.filter((a: any) => a.userId === u.id);
             const isSelected = userPlans.length > 0;
-            const lastLogin = u.lastLogin?.toDate 
-              ? u.lastLogin.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+            const lastLoginFormatted = u.lastLogin?.toDate 
+              ? dayjs(u.lastLogin.toDate()).format("ddd, D MMM - HH:mm") 
               : "-";
 
             return (
-              <div key={u.id} className="py-2 flex gap-3 items-center hover:bg-zinc-50 dark:hover:bg-white/[0.01] active:bg-zinc-100 dark:active:bg-white/[0.02] transition-colors px-2">
+              <div 
+                key={u.id} 
+                onClick={() => onSelectUser(u)}
+                className="py-2 flex gap-3 items-center hover:bg-zinc-50 dark:hover:bg-white/[0.01] active:bg-zinc-100 dark:active:bg-white/[0.02] transition-colors px-2 cursor-pointer"
+              >
                 <div className="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-white/10 p-0.5 border border-zinc-200 dark:border-white/20">
                   {u.photoURL ? (
                     <img src={u.photoURL} alt="" className="w-full h-full rounded-full ring-1 ring-white/10" crossOrigin="anonymous" referrerPolicy="no-referrer" />
@@ -591,19 +750,21 @@ function UserManagementView({ users, assignments }: any) {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0 flex-1">
-                      <input
-                        defaultValue={u.displayName}
-                        onBlur={(e) => {
-                          const titleVal = toTitleCase(e.target.value);
-                          e.target.value = titleVal;
-                          updateUserRoleAndStatus(u.id, u.role, u.status, titleVal);
-                        }}
-                        className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
-                      />
-                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-muted-foreground/50 truncate text-left uppercase tracking-tight">
-                        <span>{u.email}</span>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input
+                          defaultValue={u.displayName}
+                          onBlur={(e) => {
+                            const titleVal = toTitleCase(e.target.value);
+                            e.target.value = titleVal;
+                            updateUserRoleAndStatus(u.id, u.role, u.status, titleVal);
+                          }}
+                          className="font-medium text-[12px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-4 leading-none"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-muted-foreground/30 truncate text-left uppercase tracking-tight">
+                        <span>{u.role || "PENYELAM"}</span>
                         <span className="opacity-30">•</span>
-                        <span className="text-primary/60 font-mono tracking-tighter">{lastLogin !== '-' ? lastLogin : '—'}</span>
+                        <span className="text-primary/60 font-mono tracking-tighter">{lastLoginFormatted}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0 ml-2 mt-0.5">
@@ -621,7 +782,7 @@ function UserManagementView({ users, assignments }: any) {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 mt-1.5">
+                  <div className="flex gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
                     <div className="relative flex-1">
                         <select
                           value={u.role || "Penyelam"}
@@ -677,6 +838,113 @@ function UserManagementView({ users, assignments }: any) {
           })}
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+// --- User Detail Modal ---
+
+function UserDetailModal({ user, assignments, onClose }: any) {
+  const lastLoginFormatted = user.lastLogin?.toDate 
+    ? dayjs(user.lastLogin.toDate()).format("dddd, D MMMM YYYY - HH:mm") 
+    : "-";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        className="w-full max-w-lg bg-white dark:bg-[#050505] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-white/10 p-1 border border-zinc-200 dark:border-white/10">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="" className="w-full h-full rounded-xl object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-full h-full rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-2xl font-bold text-zinc-400">
+                    {user.displayName?.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">{user.displayName}</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-black px-2 py-0.5 rounded-md bg-brand-primary text-white uppercase tracking-widest leading-none">
+                    {user.role || "PENYELAM"}
+                  </span>
+                  <span className={cn(
+                    "text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-tight",
+                    user.status === "approved" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                  )}>
+                    {user.status || "PENDING"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors">
+              <X className="w-5 h-5 text-zinc-400" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Terakhir Login</p>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{lastLoginFormatted}</p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Penugasan Hari Ini</p>
+                {assignments.length > 0 ? (
+                  <div className="space-y-2">
+                    {assignments.map((plan: any) => (
+                      <div key={plan.id} className="flex items-center justify-between p-2 rounded-xl bg-background border border-border">
+                        <div className="flex items-center gap-3">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          <div>
+                            <p className="text-xs font-bold text-zinc-900 dark:text-white">{plan.marketName}</p>
+                            <p className="text-[10px] font-medium text-zinc-500">{plan.city}</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-400">
+                          {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-zinc-400 italic text-xs">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Belum ada rencana kunjungan</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-2">
+               <button 
+                onClick={onClose}
+                className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-transform active:scale-95 shadow-xl"
+               >
+                 TUTUP DETAIL
+               </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

@@ -24,15 +24,17 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email == 'admin@gmail.com' || 
         request.auth.token.email == 'wahyulaksanajayakusuma@gmail.com' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin') ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid))
       );
     }
 
     function isApproved() {
       return isSignedIn() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved' ||
-        isAdmin()
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved')
       );
     }
 
@@ -66,42 +68,10 @@ service cloud.firestore {
       }
     }
 
-    // 2. Assignments
-    match /assignments/{assignmentId} {
-      allow read: if isApproved();
-      allow create: if isApproved() && isEmailVerified() &&
-        isValidAssignment(incoming()) &&
-        assignmentId == incoming().tanggal + '_' + request.auth.uid &&
-        incoming().uid == request.auth.uid &&
-        incoming().createdAt == request.time;
-      allow update: if isApproved() && isEmailVerified() &&
-        isValidAssignment(incoming()) &&
-        assignmentId == incoming().tanggal + '_' + request.auth.uid &&
-        incoming().uid == request.auth.uid &&
-        existing().uid == request.auth.uid &&
-        incoming().tanggal == existing().tanggal &&
-        incoming().createdAt == existing().createdAt &&
-        incoming().diff(existing()).affectedKeys().hasOnly([
-          'pasarId', 'pasarNama', 'pendamping', 'nama', 'email', 'foto'
-        ]);
-      allow delete: if isApproved() && (existing().uid == request.auth.uid || isAdmin());
-
-      function isValidAssignment(data) {
-        return data.uid is string && data.uid == request.auth.uid &&
-               data.nama is string && data.nama.size() <= 100 &&
-               data.email is string && data.email.size() <= 100 &&
-               data.foto is string && data.foto.size() <= 500 &&
-               data.pendamping is string && data.pendamping.size() <= 100 &&
-               data.pasarId is string && data.pasarId.size() <= 50 &&
-               data.pasarNama is string && data.pasarNama.size() <= 100 &&
-               data.tanggal is string && data.tanggal.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
-               data.createdAt == request.time;
-      }
-    }
-
     // 2.1 Market Plans
     match /market_plans/{planId} {
-      allow read: if isApproved();
+      allow list: if isApproved();
+      allow get: if isApproved();
       allow create: if isApproved() && isEmailVerified() &&
         isValidPlan(incoming()) &&
         incoming().userId == request.auth.uid &&
@@ -137,7 +107,7 @@ service cloud.firestore {
 
     // 3.1 Users
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if isSignedIn() && (request.auth.uid == userId || isApproved());
       allow create: if isSignedIn() && request.auth.uid == userId && 
         incoming().role == 'Penyelam' && 
         incoming().status == 'pending';
@@ -146,18 +116,6 @@ service cloud.firestore {
         isAdmin()
       );
       allow delete: if isAdmin();
-    }
-
-    // 4. Market Locks
-    match /marketLocks/{lockId} {
-      allow read: if isApproved();
-      allow create: if isApproved() && isEmailVerified() &&
-        incoming().uid == request.auth.uid;
-      allow update: if isApproved() && isEmailVerified() &&
-        incoming().uid == request.auth.uid &&
-        existing().uid == request.auth.uid;
-      allow delete: if isApproved() &&
-        (existing().uid == request.auth.uid || isAdmin());
     }
   }
 }
