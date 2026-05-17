@@ -1,49 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Loader2, PackageX } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import type { ImageData } from '../../components/explore/ImageDetailView';
-
-interface GeaGetraItem {
-  filename: string;
-  caption: string;
-  gdrive_link: string;
-  imageUrl?: string;
-  id: string;
-  url: string;
-  title: string;
-  fullResUrl?: string; 
-  source: string;
-}
-
-const parseGoogleSheetJSON = (jsonString: string): { data: GeaGetraItem[], error: string | null } => {
-  try {
-    const jsonObject = JSON.parse(jsonString.substring(jsonString.indexOf('(') + 1, jsonString.lastIndexOf(')')));
-    
-    if (!jsonObject.table || !jsonObject.table.rows) {
-      throw new Error("Invalid Google Sheets JSON format.");
-    }
-
-    const data = jsonObject.table.rows.map((row: any, index: number): GeaGetraItem => {
-        const filename = row.c[0]?.v ?? '';
-        const caption = row.c[1]?.v ?? '';
-        const gdrive_link = row.c[2]?.v ?? '';
-        return {
-            filename: filename,
-            caption: caption,
-            gdrive_link: gdrive_link,
-            id: `${filename}-${gdrive_link}-${index}`,
-            url: gdrive_link, 
-            title: caption || filename,
-            source: 'Google Drive (GEA & GETRA)',
-        }
-    }).filter((item: any) => item.gdrive_link); 
-
-    return { data, error: null };
-  } catch (e: any) {
-    console.error("Failed to parse Google Sheet JSON:", e);
-    return { data: [], error: e.message || "Gagal memproses data dari Google Sheet." };
-  }
-};
+import { useGeaGetra, GeaGetraItem } from '../../hooks/useGeaGetra';
 
 const convertToThumbnailLink = (url: string): string => {
     if (!url) return '';
@@ -56,7 +15,7 @@ const convertToThumbnailLink = (url: string): string => {
 
 
 const ImageCard = ({ item, onClick }: { item: GeaGetraItem, onClick: () => void, key?: string | number }) => {
-  const [isError, setIsError] = useState(false);
+  const [isError, setIsError] = React.useState(false);
   const thumbnailUrl = useMemo(() => convertToThumbnailLink(item.url || ''), [item.url]);
 
   if (!thumbnailUrl) return null;
@@ -86,47 +45,37 @@ const ImageCard = ({ item, onClick }: { item: GeaGetraItem, onClick: () => void,
 };
 
 
-export default function GeaGetraPage({ searchQuery, onImageClick }: { searchQuery: string, onImageClick: (image: ImageData, imageList: ImageData[]) => void }) {
-  const [data, setData] = useState<GeaGetraItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function GeaGetraPage({ 
+  searchQuery, 
+  onImageClick,
+  selectedMerk
+}: { 
+  searchQuery: string, 
+  onImageClick: (image: ImageData, imageList: ImageData[]) => void,
+  selectedMerk?: string 
+}) {
+  const { data, loading, error } = useGeaGetra();
   
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch('https://docs.google.com/spreadsheets/d/16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ/gviz/tq?tqx=out:json&sheet=CACHE');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const text = await response.text();
-        const { data: parsedData, error: parseError } = parseGoogleSheetJSON(text);
-
-        if (parseError) {
-          setError(parseError);
-        } else {
-           setData(parsedData);
-        }
-
-      } catch (e: any) {
-        console.error("Fetch error:", e);
-        setError(e.message || "Gagal mengambil data dari Google Sheet.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
   const filteredData = useMemo(() => {
     if (!searchQuery) return [];
     const searchTerms = searchQuery.toLowerCase().split(' ').filter(term => term.trim() !== '');
     if (searchTerms.length === 0) return [];
 
     return data.filter((item: GeaGetraItem) => {
+      // 1. Contextual search filter
       const combinedText = `${(item.caption || '').toLowerCase()} ${(item.filename || '').toLowerCase()}`;
-      return searchTerms.every(term => combinedText.includes(term));
+      const matchesSearch = searchTerms.every(term => combinedText.includes(term));
+      if (!matchesSearch) return false;
+
+      // 2. Merk filter
+      if (selectedMerk && selectedMerk !== 'all') {
+        const textToSearch = `${item.caption} ${item.filename}`.toUpperCase();
+        if (!textToSearch.includes(selectedMerk.toUpperCase())) return false;
+      }
+
+      return true;
     });
-  }, [searchQuery, data]);
+  }, [searchQuery, data, selectedMerk]);
   
   const handleImageClick = (clickedItem: GeaGetraItem) => {
     const imageList: ImageData[] = filteredData.map(item => ({
@@ -180,8 +129,8 @@ export default function GeaGetraPage({ searchQuery, onImageClick }: { searchQuer
   }
   
   return (
-    <div className="w-full pb-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    <div className="w-full pb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
             {filteredData.map((item) => (
                 <ImageCard key={item.id} item={item} onClick={() => handleImageClick(item)} />
             ))}
@@ -189,3 +138,4 @@ export default function GeaGetraPage({ searchQuery, onImageClick }: { searchQuer
     </div>
   );
 }
+

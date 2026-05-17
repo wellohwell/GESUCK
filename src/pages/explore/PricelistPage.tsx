@@ -4,12 +4,15 @@ import { usePricelist } from '../../hooks/usePricelist';
 import { SimulatorModal } from '../../components/pricelist/SimulatorModal';
 import { Product } from '../../types/pricelist';
 import { formatRp } from '../../lib/pricing/simulateInstallment';
+import { SortType } from './ExplorePage';
 
 interface Props {
   searchQuery: string;
+  sortBy: SortType;
+  selectedMerk: string;
 }
 
-export function PricelistPage({ searchQuery }: Props) {
+export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
   const { data, loading, error } = usePricelist();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -19,7 +22,10 @@ export function PricelistPage({ searchQuery }: Props) {
     // Result should be empty if no search term is entered
     if (searchTerms.length === 0) return [];
 
-    return data.filter(item => {
+    let filtered = data.filter(item => {
+      // Applied MERK filter first
+      if (selectedMerk !== 'all' && item.merk !== selectedMerk) return false;
+
       // Combined text for searching
       const combinedText = [
         item.model || '',
@@ -33,7 +39,27 @@ export function PricelistPage({ searchQuery }: Props) {
 
       return searchTerms.every(term => combinedText.includes(term));
     });
-  }, [data, searchQuery]);
+
+    // Apply Sorting
+    if (sortBy !== 'default') {
+      filtered = [...filtered].sort((a, b) => {
+        switch (sortBy) {
+          case 'merk_asc':
+            return (a.merk || '').localeCompare(b.merk || '');
+          case 'merk_desc':
+            return (b.merk || '').localeCompare(a.merk || '');
+          case 'price_low':
+            return (a.harga || 0) - (b.harga || 0);
+          case 'price_high':
+            return (b.harga || 0) - (a.harga || 0);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [data, searchQuery, sortBy, selectedMerk]);
 
   // If search query is empty, return null or empty UI
   if (!searchQuery.trim()) {
@@ -50,19 +76,19 @@ export function PricelistPage({ searchQuery }: Props) {
   }
 
   return (
-    <div className="w-full pb-10">
+    <div className="w-full pb-6">
       {/* Loading State */}
       {loading ? (
-         <div className="flex flex-col items-center justify-center py-20 opacity-50">
-           <Loader2 className="w-8 h-8 animate-spin text-zinc-900 dark:text-[#C6FF00] mb-4" />
-           <p className="text-sm font-medium text-zinc-500 uppercase tracking-widest">Sinkronisasi Katalog...</p>
+         <div className="flex flex-col items-center justify-center py-12 opacity-50">
+           <Loader2 className="w-8 h-8 animate-spin text-zinc-900 dark:text-[#C6FF00] mb-3" />
+           <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Sinkronisasi Katalog...</p>
          </div>
       ) : (
         /* List View */
         filteredData.length > 0 ? (
-          <div className="bg-white dark:bg-[#111] overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 shadow-xl dark:shadow-black/50">
+          <div className="bg-white dark:bg-[#111] overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10 shadow-xl dark:shadow-black/50">
             {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-3 bg-zinc-50/80 dark:bg-white/5 border-b border-zinc-200 dark:border-white/10">
+            <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-2.5 bg-zinc-50/80 dark:bg-white/5 border-b border-zinc-200 dark:border-white/10">
                <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MERK</div>
                <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MODEL</div>
                <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">TYPE</div>
@@ -75,26 +101,26 @@ export function PricelistPage({ searchQuery }: Props) {
                 <div 
                   key={product.id || index} 
                   onClick={() => setSelectedProduct(product)}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-2 md:gap-4 px-6 py-3.5 md:py-2.5 hover:bg-zinc-50 dark:hover:bg-white/[0.02] cursor-pointer transition-colors group"
+                  className="grid grid-cols-1 md:grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-2 md:gap-4 px-6 py-2.5 md:py-2 hover:bg-zinc-50 dark:hover:bg-white/[0.02] cursor-pointer transition-colors group"
                 >
                    {/* Mobile Layout (Table-like rows) */}
                    <div className="flex items-center justify-between md:hidden w-full gap-4">
-                      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                      <div className="flex flex-col gap-0 min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{product.merk}</span>
+                          <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{product.merk}</span>
                           <div className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-white/10" />
-                          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 truncate">{product.type}</span>
+                          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 truncate">{product.type}</span>
                         </div>
-                        <span className="font-bold text-[13px] text-zinc-900 dark:text-zinc-100 leading-tight truncate">{product.model}</span>
+                        <span className="font-bold text-[12.5px] text-zinc-900 dark:text-zinc-100 leading-tight truncate">{product.model}</span>
                         {(product.fitur || product.caption) && (
-                           <span className="text-[9px] text-zinc-400 dark:text-zinc-500 italic truncate tracking-tight">
+                           <span className="text-[8.5px] text-zinc-400 dark:text-zinc-500 italic truncate tracking-tight">
                              {product.fitur || product.caption}
                            </span>
                         )}
                       </div>
 
                       <div className="flex-shrink-0 text-right">
-                        <span className="font-black text-[#86b100] dark:text-[#C6FF00] text-sm tracking-tighter">
+                        <span className="font-black text-[#86b100] dark:text-[#C6FF00] text-[13px] tracking-tighter">
                           {product.jual || formatRp(product.harga)}
                         </span>
                       </div>
