@@ -13,6 +13,14 @@ export default function ExplorePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [currentImageList, setCurrentImageList] = useState<ImageData[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   const currentSearch = searchParams.get('search') || '';
   
@@ -110,14 +118,14 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-300">
+    <div className={`min-h-screen ${isMobile ? 'bg-black' : 'bg-background'} text-foreground flex flex-col font-sans transition-colors duration-300`}>
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-3 sm:pt-6">
         <div className="flex flex-col gap-4">
             
             {/* Header / Logo */}
             <div className="flex flex-col items-center justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-75" />
+                  {!isMobile && <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-75" />}
                   <img
                       src="/login-illustration.png"
                       alt="Logo"
