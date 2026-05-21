@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/config";
 import { motion } from "motion/react";
-import { toast } from "react-toastify";
+import { toast } from "../hooks/use-toast";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -74,8 +74,8 @@ export default function Login() {
 
         {/* App Title */}
         <div className="flex flex-col items-center justify-center mb-10 z-10 relative">
-          <h1 className="text-3xl font-black tracking-[0.1em] text-white uppercase">
-            VORK
+          <h1 className="text-3xl font-black tracking-[0.15em] text-white uppercase flex items-center gap-1.5">
+            VORK<span className="font-normal text-white">TEAM</span>
           </h1>
           <p className="text-[8px] text-white/40 tracking-[0.3em] font-black uppercase mt-2">
             A small tools make vork easier.

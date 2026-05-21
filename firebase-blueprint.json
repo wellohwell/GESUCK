@@ -1,154 +1,155 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "SPV", "Sales"] },
+        "status": { "type": "string" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      }
+    },
     "Market": {
       "title": "Market",
-      "description": "Details about a market location, its area, and operational hours.",
+      "description": "Market data",
       "type": "object",
       "properties": {
         "nama_pasar": { "type": "string" },
         "wilayah": { "type": "string" },
-        "buka_harian": { "type": "boolean" },
-        "pasaran": { "type": "array", "items": { "type": "string" } },
-        "jam_buka": { "type": "string" },
-        "kategori": { "type": "string" },
         "created_at": { "type": "string", "format": "date-time" }
-      },
-      "required": ["nama_pasar", "wilayah", "buka_harian", "jam_buka", "kategori"]
-    },
-    "Assignment": {
-      "title": "Assignment",
-      "description": "Mapping of a user to a specific market for a specific date.",
-      "type": "object",
-      "properties": {
-        "uid": { "type": "string" },
-        "nama": { "type": "string" },
-        "email": { "type": "string" },
-        "foto": { "type": "string" },
-        "pendamping": { "type": "string" },
-        "pasarId": { "type": "string" },
-        "pasarNama": { "type": "string" },
-        "tanggal": { "type": "string", "format": "YYYY-MM-DD" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["uid", "nama", "email", "pasarId", "pasarNama", "tanggal", "createdAt"]
+      }
     },
     "MarketPlan": {
       "title": "Market Plan",
-      "description": "Sales field operation market plan.",
+      "description": "Daily activity plans for markets",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "userPhoto": { "type": "string" },
-        "city": { "type": "string" },
-        "marketType": { "type": "string" },
-        "marketName": { "type": "string" },
-        "marketJam": { "type": "string" },
-        "dayStart": { "type": "string", "format": "YYYY-MM-DD" },
+        "dayStart": { "type": "string" },
         "status": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "userName", "city", "marketType", "marketName", "dayStart", "createdAt"]
+      }
     },
-    "VisitReport": {
-      "title": "Visit Report",
-      "description": "Report submitted after a market visit.",
+    "Client": {
+      "title": "Client",
+      "description": "Client data",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "marketName": { "type": "string" },
-        "customerName": { "type": "string" },
-        "date": { "type": "string", "format": "YYYY-MM-DD" },
-        "status": { "type": "string", "enum": ["planned", "visited", "pending", "canceled", "reschedule"] },
-        "result": { "type": "string", "enum": ["closing", "follow_up", "no_response", "rejected", "maintenance"] },
-        "notes": { "type": "string" },
-        "photoUrl": { "type": "string" },
-        "latitude": { "type": "number" },
-        "longitude": { "type": "number" },
+        "ownerId": { "type": "string" },
+        "nama": { "type": "string" },
+        "nomor": { "type": "string" },
+        "usaha": { "type": "string" },
+        "alamat": { "type": "string" },
+        "kategori": { "type": "string", "enum": ["baru", "eks", "langgan"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Client orders",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "barang": { "type": "string" },
+        "angsuran": { "type": "number" },
+        "tenorDays": { "type": "number" },
+        "status": { "type": "string", "enum": ["waiting", "approved", "rejected", "shipped", "active", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "dueAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Tasks related to orders",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "type": { "type": "string", "enum": ["survey", "delivery", "followup"] },
+        "status": { "type": "string", "enum": ["pending", "done"] },
+        "dueAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "System and user activity logs",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "category": { "type": "string", "enum": ["user", "order", "task", "workflow", "notification", "system"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "actorId": { "type": "string" },
+        "actorName": { "type": "string" },
+        "actorRole": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetType": { "type": "string" },
+        "metadata": { "type": "object" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "userName", "marketName", "date", "status", "result", "createdAt"]
+      "required": ["type", "category", "title", "description", "actorId", "actorName", "actorRole", "createdAt"]
     },
-    "MonthlySummary": {
-      "title": "Monthly Summary",
-      "description": "Aggregated stats for a user for a specific month.",
+    "ModuleConfig": {
+      "title": "Module Config",
+      "description": "Centralized system feature flag and module governance",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "month": { "type": "string", "format": "YYYY-MM" },
-        "totalVisits": { "type": "number" },
-        "visitsByResult": {
-          "type": "object",
-          "properties": {
-            "closing": { "type": "number" },
-            "follow_up": { "type": "number" },
-            "no_response": { "type": "number" },
-            "rejected": { "type": "number" },
-            "maintenance": { "type": "number" }
-          }
-        },
+        "moduleId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "visibleInNav": { "type": "boolean" },
+        "allowedRoles": { "type": "array" },
+        "allowedBranches": { "type": "array" },
+        "betaMode": { "type": "boolean" },
+        "maintenanceMode": { "type": "boolean" },
         "updatedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "userName", "month", "totalVisits", "visitsByResult", "updatedAt"]
+      }
     }
   },
   "firestore": {
-    "markets/{marketId}": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/markets/{marketId}": {
       "schema": "Market",
-      "description": "Collection of all markets."
+      "description": "Market list"
     },
-    "assignments/{assignmentId}": {
-      "schema": "Assignment",
-      "description": "Daily market assignments. ID is usually 'YYYY-MM-DD_uid' or similar."
-    },
-    "market_plans/{planId}": {
+    "/market_plans/{planId}": {
       "schema": "MarketPlan",
-      "description": "Sales live market plans for field operations."
+      "description": "Market visit plans"
     },
-    "visit_reports/{reportId}": {
-      "schema": "VisitReport",
-      "description": "Completed visit reports indexed by user and date."
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Client list"
     },
-    "monthly_summaries/{summaryId}": {
-      "schema": "MonthlySummary",
-      "description": "Monthly performance summaries for KPI tracking."
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Order list"
     },
-    "admins/{userId}": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "email": { "type": "string" }
-        }
-      },
-      "description": "List of admin users."
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Task list"
     },
-    "marketLocks/{lockId}": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "uid": { "type": "string" },
-          "timestamp": { "type": "string", "format": "date-time" }
-        }
-      },
-      "description": "Locks for markets to prevent duplicate selection."
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Audit and operational activity logs"
     },
-    "users/{userId}": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "uid": { "type": "string" },
-          "displayName": { "type": "string" },
-          "email": { "type": "string" },
-          "photoURL": { "type": "string" },
-          "role": { "type": "string", "enum": ["Penyelam", "Admin"] },
-          "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
-          "lastLogin": { "type": "string", "format": "date-time" }
-        },
-        "required": ["uid", "role", "status"]
-      },
-      "description": "User profiles and registration details."
+    "/modules/{moduleId}": {
+      "schema": "ModuleConfig",
+      "description": "Feature flag and modular configuration settings"
     }
   }
 }

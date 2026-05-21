@@ -18,7 +18,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="w-8 h-8 flex items-center justify-center bg-transparent text-muted-foreground hover:text-foreground transition-all active:scale-95"
+      className="p-2.5 rounded-xl text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/5 transition-all duration-200 active:scale-95 group"
       title="Toggle Theme"
     >
       <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">
@@ -30,8 +30,9 @@ export function ThemeToggle() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="group-hover:scale-110 transition-transform"
             >
-              <Moon className="w-4 h-4" />
+              <Moon className="w-5 h-5" />
             </motion.div>
           ) : (
             <motion.div
@@ -40,8 +41,9 @@ export function ThemeToggle() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="group-hover:scale-110 transition-transform"
             >
-              <Sun className="w-4 h-4" />
+              <Sun className="w-5 h-5" />
             </motion.div>
           )}
         </AnimatePresence>

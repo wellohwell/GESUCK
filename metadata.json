@@ -1,6 +1,6 @@
 {
   "name": "Vork",
-  "description": "Market attendance tracking and operational insight management tool for field teams.",
+  "description": "A small tools make vork easier!",
   "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE"]
 }

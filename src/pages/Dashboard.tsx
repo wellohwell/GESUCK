@@ -24,7 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { toast } from "react-toastify";
+import { toast } from "../hooks/use-toast";
 import { cn } from "../lib/utils";
 import { getActiveSystemDate } from "../utils/javaneseDate";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -167,14 +167,10 @@ const KATEGORI_TYPES = [
 ];
 
 interface DashboardProps {
-  onNavigateAdmin: () => void;
-  onNavigateReport: () => void;
   isAdmin: boolean;
 }
 
 export default function Dashboard({
-  onNavigateAdmin,
-  onNavigateReport,
   isAdmin,
 }: DashboardProps) {
   const [plans, setPlans] = useState<any[]>([]);
@@ -461,57 +457,12 @@ export default function Dashboard({
         <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.035] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-125" />
       </div>
       
-      {/* Navbar Minimal */}
-      <nav className="p-1 flex items-center justify-between max-w-2xl mx-auto border-b border-border/20 bg-background/60 backdrop-blur-lg sticky top-0 z-40">
-        <div className="flex items-center gap-2.5">
-          <div className="flex flex-col justify-center">
-            <h4 className="text-[10px] font-semibold tracking-tight text-zinc-900 dark:text-white leading-none uppercase">
-              HALLO {auth.currentUser?.displayName?.split(' ')[0] || "USER"}!
-            </h4>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/5 dark:bg-white/5 rounded-full border border-zinc-200/50 dark:border-white/[0.05] mr-1">
-              <span className="text-[7.5px] font-bold text-zinc-400 dark:text-white/30 uppercase tracking-widest">{markets.length} PASAR</span>
-              <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/20" />
-              <span className="text-[7.5px] font-bold text-[#B7E800] dark:text-[#C6FF00] uppercase tracking-widest leading-none">LIVE</span>
-            </div>
-          )}
-          <ThemeToggle />
-          <div className="w-px h-3 bg-zinc-200 dark:bg-white/10 mx-0.5" />
-          {isAdmin && (
-            <button
-              onClick={onNavigateAdmin}
-              className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-zinc-300/50 dark:hover:border-white/10"
-            >
-              <Settings className="w-3 h-3 text-zinc-400 dark:text-white/40" />
-            </button>
-          )}
-          {isAdmin && (
-            <button
-              onClick={onNavigateReport}
-              title="Export Report"
-              className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-zinc-300/50 dark:hover:border-white/10"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 dark:text-white/40"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"/><path d="M4 11V4a2 2 0 0 1 2-2h9l5 5v3"/></svg>
-            </button>
-          )}
-          <button
-            onClick={() => auth.signOut()}
-            className="p-1 rounded-lg hover:bg-red-500/10 transition-colors border border-transparent"
-          >
-            <LogOut className="w-3 h-3 text-red-500/30" />
-          </button>
-        </div>
-      </nav>
-
       <main className="max-w-2xl mx-auto px-4 pt-0.5 pb-8 relative z-10">
         {/* Header Hero */}
         <section className="mb-1 text-center pt-0.5 relative">
           <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-[180px] h-[60px] bg-[#B7E800]/3 dark:bg-[#C6FF00]/3 blur-[40px] rounded-full pointer-events-none" />
           
-          <h1 className="text-lg font-black leading-none tracking-tight text-foreground mb-0.5 uppercase">
+          <h1 className="text-lg font-black leading-none tracking-tight text-foreground mb-0.5 capitalize">
             {activeDate.dayName}{" "}
             <span className="text-primary">{activeDate.pasaran}</span>
           </h1>
@@ -870,10 +821,10 @@ export default function Dashboard({
                                     if (typeof m.jam_buka === "object" && m.jam_buka !== null) return String(m.jam_buka[selectedSubCategory] || Object.values(m.jam_buka)[0] || "");
                                   }
                                   if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
-                                    return Object.values(m.jam_buka)
-                                      .map((val) => typeof val === "object" ? JSON.stringify(val) : String(val))
-                                      .filter(Boolean)
-                                      .join(" • ").replace(/Pasar/g, "");
+                                    const jams = Object.values(m.jam_buka)
+                                      .map((val) => typeof val === "object" ? "" : String(val))
+                                      .filter(Boolean);
+                                    return jams.length > 0 ? jams.join(" • ") : "";
                                   }
                                   return String(m.jam_buka || "");
                                 })()}

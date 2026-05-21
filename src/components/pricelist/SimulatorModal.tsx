@@ -19,6 +19,7 @@ export function SimulatorModal({ isOpen, onClose, product }: Props) {
     TYPE: product.type || '',
     MODEL: product.model || product.nama || '',
     JUAL: product.jual || product.harga.toString(),
+    caption: product.caption || ''
   };
 
   return (

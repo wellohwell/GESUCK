@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { auth } from "../firebase/config";
 import { LogOut, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Blocked() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Auto sign out if they land here while authenticated (e.g. suspended while online)
+    if (auth.currentUser) {
+      auth.signOut().catch(console.error);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-red-50 dark:bg-[#050000] flex flex-col items-center justify-center p-6 text-center">
       <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mb-8">
@@ -18,11 +28,14 @@ export default function Blocked() {
       </p>
 
       <button
-        onClick={() => auth.signOut()}
+        onClick={() => {
+          auth.signOut();
+          navigate("/");
+        }}
         className="w-full max-w-xs py-4 bg-white dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all shadow-sm"
       >
         <LogOut className="w-4 h-4" />
-        Keluar
+        Kembali ke Login
       </button>
     </div>
   );

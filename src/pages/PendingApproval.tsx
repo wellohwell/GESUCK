@@ -4,34 +4,50 @@ import { LogOut, Clock, ShieldAlert } from "lucide-react";
 
 export default function PendingApproval() {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center text-white">
-      <div className="w-20 h-20 bg-brand-primary/10 rounded-3xl flex items-center justify-center mb-8 animate-pulse text-brand-primary">
-        <Clock className="w-10 h-10" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      
+      {/* Icon Container */}
+      <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 animate-pulse border border-primary/20">
+        <Clock className="w-10 h-10 text-primary" />
       </div>
       
-      <h1 className="text-2xl font-display font-medium tracking-tight mb-2">
+      <h1 className="text-2xl font-bold tracking-tight text-foreground mb-3">
         Menunggu Persetujuan
       </h1>
       
-      <p className="text-white/40 max-w-xs text-sm mb-10 leading-relaxed">
-        Akun Anda sedang diverifikasi oleh admin.<br />Silakan tunggu aktivasi akun.
+      <p className="text-muted-foreground max-w-xs text-[15px] mb-10 leading-relaxed">
+        Akun Anda sedang diverifikasi oleh admin.<br />
+        Mohon tunggu sebentar hingga akun diaktifkan.
       </p>
 
-      <div className="w-full max-w-xs space-y-3">
-        <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.05] flex items-center gap-3 text-left">
-          <ShieldAlert className="w-5 h-5 text-brand-primary/60 shrink-0" />
-          <p className="text-[11px] font-medium text-white/30 italic">
-            Status: <span className="text-brand-primary not-italic">Pending Verification</span>
-          </p>
+      <div className="w-full max-w-xs space-y-4">
+        {/* Status Card */}
+        <div className="p-5 bg-card border border-border rounded-3xl flex items-start gap-4">
+          <div className="mt-0.5">
+            <ShieldAlert className="w-6 h-6 text-primary" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium text-foreground">Status Akun</p>
+            <p className="text-primary font-semibold mt-1">Pending Verification</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Admin sedang memeriksa data Anda
+            </p>
+          </div>
         </div>
 
+        {/* Logout Button */}
         <button
           onClick={() => auth.signOut()}
-          className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white hover:bg-white/[0.08] transition-all"
+          className="w-full py-4 bg-transparent border border-border hover:border-primary/50 rounded-3xl flex items-center justify-center gap-3 text-foreground font-semibold transition-all active:scale-[0.98]"
         >
           <LogOut className="w-4 h-4" />
           Keluar
         </button>
+      </div>
+
+      {/* Neon Lime Accent Bottom */}
+      <div className="absolute bottom-8 text-[10px] font-mono tracking-[2px] text-primary/40">
+        VORK • WAITING APPROVAL
       </div>
     </div>
   );

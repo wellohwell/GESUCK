@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Download, Share2, AlertTriangle, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { toast } from 'react-hot-toast';
+import { toast } from '../../hooks/use-toast';
 import { cn } from '../../lib/utils';
 
 export interface ImageData {

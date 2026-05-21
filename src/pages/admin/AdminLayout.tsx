@@ -9,14 +9,14 @@ import {
   updateUser,
   subscribeMarketPlansByMonth,
   deleteMarketPlan
-} from "../lib/services";
-import { db, auth } from "../firebase/config";
+} from "../../lib/services";
+import { db, auth } from "../../firebase/config";
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { getActiveSystemDate } from "../utils/javaneseDate";
+import { getActiveSystemDate } from "../../utils/javaneseDate";
 import { motion, AnimatePresence } from "motion/react";
-import html2canvas from "html2canvas";
+import { Outlet } from "react-router-dom";
+import { domToCanvas } from "modern-screenshot";
 import { jsPDF } from "jspdf";
-import * as XLSX from "xlsx";
 import { 
   BarChart, 
   Bar, 
@@ -53,10 +53,10 @@ import {
   Activity,
   FileSpreadsheet
 } from "lucide-react";
-import { cn } from "../lib/utils";
-import { toast } from "react-toastify";
-import { ThemeToggle } from "../components/ThemeToggle";
-import { toTitleCase } from "../utils/format";
+import { cn } from "../../lib/utils";
+import { toast } from "../../hooks/use-toast";
+import { ThemeToggle } from "../../components/ThemeToggle";
+import { toTitleCase } from "../../utils/format";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -87,8 +87,11 @@ const SAMPLE_MARKETS = [
   { nama_pasar: "PS BERINGHARJO", wilayah: "Kota Yogyakarta", pasaran: [], buka_harian: true, jam_buka: "05:00 - 17:00", kategori: "PASAR_UMUM" },
 ];
 
+// Import necessary hooks
+import { useModal } from '../../hooks/use-modal';
+
 export default function Admin({ onBack }: AdminProps) {
-  const [activeTab, setActiveTab] = useState<"users" | "master" | "market-insight">("market-insight");
+  const { openModal, openDrawer, closeAllModals } = useModal();
   const [markets, setMarkets] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [allMonthlyPlans, setAllMonthlyPlans] = useState<any[]>([]);
@@ -97,11 +100,6 @@ export default function Admin({ onBack }: AdminProps) {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
   const [isSeeding, setIsSeeding] = useState(false);
   const [search, setSearch] = useState("");
-  
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMarket, setEditingMarket] = useState<any>(null);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
   
   // Filter States
   const [filterWilayah, setFilterWilayah] = useState("");
@@ -129,21 +127,24 @@ export default function Admin({ onBack }: AdminProps) {
     const toastId = toast.loading("Menyiapkan dokumen...");
     try {
       const isDark = document.documentElement.classList.contains("dark");
-      // Optimization for HTML2Canvas to avoid tainting and deal with memory limits
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: isDark ? "#050505" : "#ffffff",
-        scale: 1.5, // Reduced slightly for memory stability on mobile
-        useCORS: true,
-        allowTaint: false,
-        imageTimeout: 15000,
-        logging: false
+      const canvas = await domToCanvas(reportRef.current, {
+        backgroundColor: isDark ? "#050505" : "#f5f5f3",
+        scale: 3,
+        filter: (node) => {
+          if (node instanceof HTMLElement) {
+            return !node.hasAttribute("data-html2canvas-ignore") && !node.hasAttribute("data-ignore");
+          }
+          return true;
+        }
       });
 
       if (type === "jpg") {
         const link = document.createElement("a");
         link.download = `Laporan_Pasar_${activeDate.isoDate}.jpg`;
-        link.href = canvas.toDataURL("image/jpeg", 0.9);
+        link.href = canvas.toDataURL("image/jpeg", 1.0);
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } else {
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF({
@@ -154,9 +155,9 @@ export default function Admin({ onBack }: AdminProps) {
         pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
         pdf.save(`Laporan_Pasar_${activeDate.isoDate}.pdf`);
       }
-      toast.update(toastId, { render: "Berhasil diekspor!", type: "success", isLoading: false, autoClose: 2000 });
+      toast.update(toastId, { render: "Berhasil diekspor!", type: "success", duration: 2000 });
     } catch (e) {
-      toast.update(toastId, { render: "Gagal mengekspor laporan", type: "error", isLoading: false, autoClose: 2000 });
+      toast.update(toastId, { render: "Gagal mengekspor laporan", type: "error", duration: 2000 });
     }
   };
 
@@ -197,15 +198,27 @@ export default function Admin({ onBack }: AdminProps) {
   };
 
   const openForm = (market: any = null) => {
-    setEditingMarket(market);
-    setIsModalOpen(true);
+    openModal({
+      type: 'fullscreen',
+      hideCloseButton: true,
+      content: <MarketFormContent market={market} onClose={closeAllModals} />,
+    });
+  };
+
+  const handleSelectUser = (u: any) => {
+    const userAssignments = assignments.filter((a: any) => a.userId === u.id);
+    openModal({
+      type: 'fullscreen',
+      hideCloseButton: true,
+      content: <UserDetailContent user={u} assignments={userAssignments} onClose={closeAllModals} />,
+    });
   };
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-100 dark:border-white/10 transition-colors">
-        <div className="max-w-6xl mx-auto px-3 h-12 flex items-center gap-2.5">
+        <div className="max-w-6xl mx-auto px-3 h-12 flex items-center justify-between">
           <button
             onClick={onBack}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 transition-colors border border-zinc-200 dark:border-transparent"
@@ -214,103 +227,33 @@ export default function Admin({ onBack }: AdminProps) {
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="flex gap-1 p-0.5 bg-zinc-100 dark:bg-white/10 rounded-lg border border-zinc-200 dark:border-transparent overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => setActiveTab("market-insight")}
-                className={cn(
-                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all tracking-wider whitespace-nowrap",
-                  activeTab === "market-insight"
-                    ? "bg-primary text-black shadow-md shadow-primary/20"
-                    : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
-                )}
-              >
-                Insight
-              </button>
-              <button
-                onClick={() => setActiveTab("users")}
-                className={cn(
-                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider whitespace-nowrap",
-                  activeTab === "users"
-                    ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20"
-                    : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
-                )}
-              >
-                Users
-              </button>
-              <button
-                onClick={() => setActiveTab("master")}
-                className={cn(
-                  "px-3 py-0.5 rounded-md text-xs font-medium transition-all  tracking-wider whitespace-nowrap",
-                  activeTab === "master"
-                    ? "bg-brand-secondary text-black shadow-md shadow-brand-secondary/20"
-                    : "text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white",
-                )}
-              >
-                Master
-              </button>
-            </div>
-            <div className="w-px h-3 bg-zinc-100 dark:bg-white/10 mx-0.5" />
             <ThemeToggle />
           </div>
         </div>
       </div>
 
       <main className="max-w-6xl mx-auto px-3 py-4">
-        <AnimatePresence mode="wait">
-          {activeTab === "market-insight" ? (
-            <MarketInsightView 
-              plans={allMonthlyPlans}
-              selectedMonth={selectedMonth}
-              setMonth={setSelectedMonth}
-              users={users}
-              markets={markets}
-            />
-          ) : activeTab === "users" ? (
-            <UserManagementView 
-               users={users}
-               assignments={assignments}
-               onSelectUser={setSelectedUser}
-            />
-          ) : (
-            <MasterDataView 
-              markets={filteredMarkets} 
-              onAdd={() => openForm()} 
-              onEdit={openForm} 
-              onDelete={handleDeleteMarket}
-              onSeed={seedData}
-              isSeeding={isSeeding}
-              search={search}
-              setSearch={setSearch}
-              filters={{
-                wilayah: filterWilayah, setWilayah: setFilterWilayah,
-                kategori: filterKategori, setKategori: setFilterKategori,
-                pasaran: filterPasaran, setPasaran: setFilterPasaran
-              }}
-            />
-          )}
-        </AnimatePresence>
+        <Outlet context={{ 
+            markets, 
+            assignments, 
+            users, 
+            plans: allMonthlyPlans, 
+            handleSelectUser, 
+            handleDeleteMarket, 
+            openForm, 
+            seedData, 
+            isSeeding, 
+            search, 
+            setSearch, 
+            filterWilayah, 
+            setFilterWilayah, 
+            filterKategori, 
+            setFilterKategori, 
+            filterPasaran, 
+            setFilterPasaran, 
+            filteredMarkets 
+        }} />
       </main>
-
-      {/* Form Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <MarketFormModal 
-            market={editingMarket} 
-            onClose={() => setIsModalOpen(false)} 
-          />
-        )}
-      </AnimatePresence>
-
-      {/* User Detail Modal */}
-      <AnimatePresence>
-        {selectedUser && (
-          <UserDetailModal 
-            user={selectedUser} 
-            assignments={assignments.filter((a: any) => a.userId === selectedUser.id)}
-            onClose={() => setSelectedUser(null)} 
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -637,7 +580,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                             }}
                             className="font-medium text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
                           />
-                          <p className="text-[10px] font-bold text-zinc-400 dark:text-white/10 tracking-widest uppercase mt-0.5">{u.role || "PENYELAM"}</p>
+                          <p className="text-[10px] font-bold text-zinc-400 dark:text-white/10 tracking-widest uppercase mt-0.5">{u.role || "SPV"}</p>
                         </div>
                       </div>
                     </td>
@@ -668,12 +611,12 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                       <div className="flex items-center gap-2">
                         <div className="relative w-28">
                           <select
-                            value={u.role || "Penyelam"}
+                            value={u.role || "SPV"}
                             onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
                             className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
                           >
                             <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
-                            <option value="Penyelam" className="bg-zinc-900 text-white">Penyelam</option>
+                            <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
                             <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
                           </select>
                           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
@@ -681,7 +624,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                         <div className="relative w-28">
                           <select
                             value={u.status || "pending"}
-                            onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
+                            onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "SPV", e.target.value)}
                             className={cn(
                               "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
                               u.status === "approved"
@@ -702,7 +645,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                     <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={async () => {
-                          const { removeUser } = await import("../lib/services");
+                          const { removeUser } = await import("../../lib/services");
                           try {
                             await removeUser(u.id);
                             toast.success("User deleted successfully.");
@@ -762,7 +705,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                         />
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-bold text-muted-foreground/30 truncate text-left uppercase tracking-tight">
-                        <span>{u.role || "PENYELAM"}</span>
+                        <span>{u.role || "SPV"}</span>
                         <span className="opacity-30">•</span>
                         <span className="text-primary/60 font-mono tracking-tighter">{lastLoginFormatted}</span>
                       </div>
@@ -785,12 +728,12 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                   <div className="flex gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
                     <div className="relative flex-1">
                         <select
-                          value={u.role || "Penyelam"}
+                          value={u.role || "SPV"}
                           onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "approved")}
                           className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
                         >
                           <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
-                          <option value="Penyelam" className="bg-zinc-900 text-white">Penyelam</option>
+                          <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
                           <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
                         </select>
                       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
@@ -798,7 +741,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                     <div className="relative flex-1">
                         <select
                           value={u.status || "pending"}
-                          onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "Penyelam", e.target.value)}
+                          onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "SPV", e.target.value)}
                           className={cn(
                             "w-full px-1 py-1 rounded-md text-xs font-medium border outline-none appearance-none cursor-pointer transition-all",
                             u.status === "approved"
@@ -817,7 +760,7 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
                     
                     <button
                       onClick={async () => {
-                        const { removeUser } = await import("../lib/services");
+                        const { removeUser } = await import("../../lib/services");
                         try {
                           await removeUser(u.id);
                           toast.success("User deleted successfully.");
@@ -844,59 +787,44 @@ function UserManagementView({ users, assignments, onSelectUser }: any) {
 
 // --- User Detail Modal ---
 
-function UserDetailModal({ user, assignments, onClose }: any) {
+function UserDetailContent({ user, assignments, onClose }: any) {
   const lastLoginFormatted = user.lastLogin?.toDate 
     ? dayjs(user.lastLogin.toDate()).format("dddd, D MMMM YYYY - HH:mm") 
     : "-";
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white dark:bg-[#050505] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-white/10 p-1 border border-zinc-200 dark:border-white/10">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" className="w-full h-full rounded-xl object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-full h-full rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-2xl font-bold text-zinc-400">
-                    {user.displayName?.charAt(0)}
-                  </div>
-                )}
+    <>
+      <div className="flex flex-col">
+        <button onClick={onClose} className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-400">Tutup</button>
+        <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-white/10 p-1 border border-zinc-200 dark:border-white/10">
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="" className="w-full h-full rounded-xl object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-full h-full rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-2xl font-bold text-zinc-400">
+                {user.displayName?.charAt(0)}
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">{user.displayName}</h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs font-black px-2 py-0.5 rounded-md bg-brand-primary text-white uppercase tracking-widest leading-none">
-                    {user.role || "PENYELAM"}
-                  </span>
-                  <span className={cn(
-                    "text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-tight",
-                    user.status === "approved" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
-                  )}>
-                    {user.status || "PENDING"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors">
-              <X className="w-5 h-5 text-zinc-400" />
-            </button>
+            )}
           </div>
+          <div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">{user.displayName}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-black px-2 py-0.5 rounded-md bg-brand-primary text-white uppercase tracking-widest leading-none">
+                {user.role || "SPV"}
+              </span>
+              <span className={cn(
+                "text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-tight",
+                user.status === "approved" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+              )}>
+                {user.status || "PENDING"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <div className="space-y-6">
+      <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4">
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Terakhir Login</p>
@@ -935,17 +863,11 @@ function UserDetailModal({ user, assignments, onClose }: any) {
             </div>
 
             <div className="pt-2">
-               <button 
-                onClick={onClose}
-                className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-transform active:scale-95 shadow-xl"
-               >
-                 TUTUP DETAIL
-               </button>
+               {/* Since it is a drawer or modal, the close action can be omitted or we can pass modalId and call close. But we already stripped `onClose` so we can remove this button. */}
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+    </>
   );
 }
 
@@ -1117,7 +1039,7 @@ function MasterDataView({
                               );
                               const jamStr =
                                 typeof jam === "object"
-                                  ? JSON.stringify(jam)
+                                  ? ""
                                   : String(jam);
                               return (
                                 <div
@@ -1194,7 +1116,7 @@ function MasterDataView({
                                   KATEGORI_OPTIONS.find((o) => o.id === cat)?.label ||
                                     cat,
                                 ).replace("Pasar ", "");
-                                const jamStr = typeof jam === 'object' ? JSON.stringify(jam) : String(jam);
+                                const jamStr = typeof jam === 'object' ? "" : String(jam);
                                 return `${label} ${jamStr.replace(/Pasar/g, "")}`;
                               })
                               .join(" • ")
@@ -1232,7 +1154,7 @@ function MasterDataView({
   );
 }
 
-function MarketFormModal({ market, onClose }: any) {
+function MarketFormContent({ market, onClose }: any) {
   const [formData, setFormData] = useState({
     nama_pasar: market?.nama_pasar || "",
     wilayah: market?.wilayah || "Kota Yogyakarta",
@@ -1333,31 +1255,11 @@ function MarketFormModal({ market, onClose }: any) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: "100%" }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: "100%" }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[60] bg-white dark:bg-[#050505] overflow-y-auto"
-    >
-      <div className="w-full max-w-lg mx-auto min-h-screen flex flex-col">
-        <div className="sticky top-0 z-10 bg-white dark:bg-[#050505] p-5 border-b border-zinc-100 dark:border-white/5 flex items-center gap-4">
-          <button
-            onClick={onClose}
-            type="button"
-            className="w-8 h-8 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <h2 className="text-sm font-display font-medium tracking-tight text-zinc-900 dark:text-white  ">
-            {market ? "Edit Master Data" : "Tambah Master Data"}
-          </h2>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 flex flex-col relative"
-        >
+    <div className="w-full flex-1 flex flex-col h-full relative">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col relative h-full"
+      >
           <div className="p-5 space-y-6 pb-6">
             <div className="space-y-2">
             <label className="text-sm text-zinc-400 dark:text-white/60  tracking-tight font-medium block pl-1">
@@ -1502,25 +1404,24 @@ function MarketFormModal({ market, onClose }: any) {
           )}
           </div>
 
-          <div className="sticky bottom-0 p-5 mt-auto bg-white dark:bg-[#050505] border-t border-zinc-100 dark:border-white/5 flex justify-center gap-3 z-20">
+          <div className="sticky bottom-0 p-5 mt-auto bg-card border-t border-border flex justify-center gap-3 z-20">
             <button
               type="button"
               onClick={onClose}
-              className="w-full max-w-[140px] h-11 bg-zinc-100 dark:bg-white/10 rounded-xl font-black tracking-widest text-[10px] uppercase text-zinc-500 dark:text-white/60 hover:bg-zinc-200 dark:hover:bg-white/20 transition-all"
+              className="w-full max-w-[140px] h-11 bg-muted rounded-xl font-black tracking-widest text-[10px] uppercase text-muted-foreground hover:bg-muted/80 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full max-w-[200px] h-11 bg-zinc-900 dark:bg-brand-secondary text-white dark:text-black rounded-xl font-black tracking-widest text-[10px] uppercase shadow-lg transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
+              className="w-full max-w-[200px] h-11 bg-primary text-primary-foreground rounded-xl font-black tracking-widest text-[10px] uppercase shadow-lg transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
             >
               {isSubmitting ? "Processing..." : "Simpan"}
             </button>
           </div>
         </form>
       </div>
-    </motion.div>
   );
 }
 

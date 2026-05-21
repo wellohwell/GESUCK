@@ -67,7 +67,7 @@ export default function Report({ onBack }: ReportProps) {
     try {
       const dataUrl = await domToJpeg(captureRef.current, {
         scale: 4,
-        backgroundColor: "#F5F5F3",
+        backgroundColor: "#BAB9AC",
       });
       const link = document.createElement("a");
       link.href = dataUrl;
@@ -207,10 +207,10 @@ export default function Report({ onBack }: ReportProps) {
         {/* THE CANVAS: Targeted directly for exact 9:16 portrait export */}
         <div 
           ref={captureRef}
-          className="w-[360px] min-h-[640px] h-fit flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#F5F5F3]"
+          className="w-[360px] min-h-[640px] h-fit flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#E2E1DC]"
         >
           {/* Ambient Premium SaaS Background Effects - INSIDE CANVAS */}
-          <div className="absolute inset-0 bg-[#F5F5F3]" />
+          <div className="absolute inset-0 bg-[#E2E1DC]" />
           <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-br from-[#C6FF00]/5 to-transparent pointer-events-none" />
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
           
@@ -280,7 +280,7 @@ export default function Report({ onBack }: ReportProps) {
                 </div>
               </div>
   
-              <div className="space-y-0 relative bg-white/40 rounded-[20px] border border-white/30 p-1 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.02)]">
+              <div className="space-y-0 relative bg-white rounded-[24px] border border-zinc-200/50 p-2 shadow-[0_12px_36px_rgba(0,0,0,0.03)]">
                 {plans.length === 0 && !loading && (
                   <div className="py-20 flex flex-col items-center gap-3 opacity-10">
                     <div className="w-8 h-8 rounded-full border-2 border-zinc-900 flex items-center justify-center">
@@ -361,7 +361,7 @@ export default function Report({ onBack }: ReportProps) {
                           {displayCategory && (
                             <>
                               <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 shrink-0" />
-                              <span className="text-[7.5px] font-bold text-zinc-400/80 uppercase tracking-tighter">
+                              <span className="text-[7.5px] font-bold text-[#b7e800] uppercase tracking-tighter">
                                 {displayCategory}
                               </span>
                             </>
@@ -413,4 +413,3 @@ export default function Report({ onBack }: ReportProps) {
     </div>
   );
 }
-

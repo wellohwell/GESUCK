@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Copy } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { toast } from '../../hooks/use-toast';
 import { cn } from '../../lib/utils';
 import { RupiahInput } from '../ui/RupiahInput';
 
@@ -12,6 +12,7 @@ interface PricelistItem {
   TYPE: string;
   MODEL: string;
   JUAL: string;
+  caption?: string;
 }
 
 const aturanMargin: Record<TipeProduk, { maksHari: number, margin: number }[]> = {
@@ -48,6 +49,12 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
 
   const [angsuranHarian, setAngsuranHarian] = useState<number>(0)
   const [estimasiPotongan, setEstimasiPotongan] = useState<number>(0)
+
+  useEffect(() => {
+    if (tipe === 'HP' && typeof tenor === 'number' && tenor > 120) {
+      setTenor('');
+    }
+  }, [tipe, tenor]);
   
   useEffect(() => {
     if (itemDefaults) {
@@ -63,7 +70,12 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
             'FURNITURE': 'Furniture',
             'HP': 'HP',
         };
-        const productType = typeMap[itemDefaults.MERK.toUpperCase()] || 'Elektronik';
+        let productType = typeMap[itemDefaults.MERK.toUpperCase()] || 'Elektronik';
+        
+        if (itemDefaults.caption && itemDefaults.caption.toUpperCase().includes('HP')) {
+            productType = 'HP';
+        }
+        
         setTipe(productType);
 
         setProductDetails({
@@ -85,6 +97,12 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
       const nawarNum = nawar || 0;
 
       if (!modalAwalNum || !tipe || !tenorNum) {
+        setAngsuranHarian(0);
+        setEstimasiPotongan(0);
+        return;
+      }
+
+      if (tipe === 'HP' && dpNum < 100000) {
         setAngsuranHarian(0);
         setEstimasiPotongan(0);
         return;
@@ -197,6 +215,9 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             <div className="space-y-1 text-left">
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">DP / Uang Muka</label>
                 <RupiahInput placeholder="Rp 0" value={dp} onValueChange={setDp} className="py-2.5" />
+                {tipe === 'HP' && (dp || 0) < 100000 && (
+                  <p className="text-[9px] text-red-500 font-bold ml-1">Minimal DP Rp 100.000</p>
+                )}
             </div>
             <div className="space-y-1 text-left">
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Tenor (Hari)</label>
@@ -206,7 +227,9 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                   className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C6FF00] appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tenor</option>
-                  {[30, 60, 90, 120, 150, 180].map((hari) => (
+                  {[30, 60, 90, 120, 150, 180]
+                    .filter(hari => tipe !== 'HP' || hari <= 120)
+                    .map((hari) => (
                     <option key={hari} value={hari}>{hari} Hari</option>
                   ))}
                 </select>

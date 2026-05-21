@@ -4,16 +4,32 @@ import { Product } from '../../types/pricelist';
 // Fallback ID GSheet, bisa diganti lewat environment VITE_PRICELIST_SHEET_ID
 const DEFAULT_SHEET_ID = "16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc"; 
 
+export function extractSpreadsheetId(idOrUrl: string): string {
+  const clean = idOrUrl.trim();
+  if (clean.includes('/d/')) {
+    const parts = clean.split('/d/');
+    if (parts[1]) {
+      return parts[1].split('/')[0];
+    }
+  }
+  return clean;
+}
+
 export async function fetchPricelist(): Promise<Product[]> {
-  let sheetId = import.meta.env.VITE_PRICELIST_SHEET_ID || DEFAULT_SHEET_ID;
-  sheetId = sheetId.replace('/edit', '').replace('/edit#gid=0', '').split('/')[0];
+  const rawId = import.meta.env.VITE_PRICELIST_SHEET_ID || DEFAULT_SHEET_ID;
+  const sheetId = extractSpreadsheetId(rawId);
   
   // Menggunakan API GViz Google Docs untuk raw data tanpa publis JSON ribet
   const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=List%20Harga`;
-  const urlWithCacheBust = `${sheetUrl}&_=${new Date().getTime()}`;
 
   try {
-    const response = await fetch(urlWithCacheBust);
+    const response = await fetch(sheetUrl, {
+      method: "GET",
+      // Important to omit credentials and specify mode to avoid CORS/Cookie issues on public sheets
+      credentials: "omit",
+      mode: "cors",
+      cache: "no-store"
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const text = await response.text();
     
@@ -22,7 +38,7 @@ export async function fetchPricelist(): Promise<Product[]> {
     const jsonObject = JSON.parse(jsonString);
 
     if (!jsonObject.table || !jsonObject.table.rows || !jsonObject.table.cols) {
-      throw new Error("Format JSON Google Sheets tidak valid.");
+      throw new Error("Format JSON Google Sheets tidak valid. Pastikan sheet berisi tabel data.");
     }
 
     const headers = jsonObject.table.cols.map((col: any) => (col.label || '').toUpperCase().trim());
@@ -62,8 +78,11 @@ export async function fetchPricelist(): Promise<Product[]> {
         deskripsi: getVal(fiturIndex)
       };
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gagal mengambil data pricelist:", error);
-    return [];
+    if (error.message === "Failed to fetch") {
+      throw new Error("Gagal terhubung ke Google Sheets. Pastikan akses Spreadsheet diset ke 'Siapa saja yang memiliki link dapat melihat' (Public) atau periksa koneksi internet Anda.");
+    }
+    throw error;
   }
 }
