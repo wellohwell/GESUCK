@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg'],
         manifest: {
-          name: 'Vork',
+          name: 'Vork App',
           short_name: 'Vork',
           description: 'A small tools make vork easier',
           theme_color: '#000000',

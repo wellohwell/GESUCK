@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Download, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils";
-import { useToast } from "../hooks/use-toast";
+import { toast } from "../hooks/use-toast";
 
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if dismissed
@@ -25,8 +24,7 @@ export default function PWAInstallPrompt() {
       setDeferredPrompt(null);
       setIsVisible(false);
       localStorage.removeItem("pwa_install_dismissed");
-      toast({
-        title: "VORK TEAM installed successfully",
+      toast.success("VORK TEAM installed successfully", {
         description: "You can now access VORK TEAM directly from your home screen.",
       });
     };
@@ -38,7 +36,7 @@ export default function PWAInstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [toast]);
+  }, []);
 
   const handleDismiss = () => {
     setIsVisible(false);

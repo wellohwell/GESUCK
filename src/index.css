@@ -173,4 +173,8 @@
   }
 }
 
+body.market-modal-active div#root > div > header {
+  display: none !important;
+}
+
 @custom-variant dark (&:is(.dark *));

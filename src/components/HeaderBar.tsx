@@ -13,7 +13,7 @@ export function HeaderBar() {
   const { isOnline, isSlow } = useNetwork();
 
   return (
-    <header className="sticky top-0 z-[60] w-full border-b border-zinc-100/80 dark:border-zinc-800/50 bg-background/80 backdrop-blur-md px-4 py-3 md:px-8">
+    <header className="sticky top-0 z-[60] w-full border-b border-zinc-100/80 dark:border-zinc-800/50 bg-background/80 backdrop-blur-md px-4 py-1.2 md:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Section: Scoped Workspace / Network Indicator */}
         <div className="flex items-center gap-3">
