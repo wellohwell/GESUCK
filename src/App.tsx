@@ -36,6 +36,7 @@ import { WorkspaceResolver } from "./components/auth/WorkspaceResolver";
 import ModulesPage from "./pages/admin/ModulesPage";
 import NavigationPage from "./pages/admin/NavigationPage";
 import DocsPage from "./pages/admin/DocsPage";
+import OrgManagement from "./pages/admin/OrgManagement";
 import { UserLifecycleGuard } from "./components/auth/UserLifecycleGuard";
 
 import { AppLayout } from "./layouts/AppLayout";
@@ -121,6 +122,15 @@ function AppContent() {
               element={
                 <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
                   <ModulesPage />
+                </RequireRole>
+              } 
+            />
+
+            <Route 
+              path="/admin/branches" 
+              element={
+                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
+                  <OrgManagement />
                 </RequireRole>
               } 
             />

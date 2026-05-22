@@ -190,7 +190,7 @@ export default function Report({ onBack }: ReportProps) {
           </button>
           <button
             onClick={handleDownload}
-            className="h-7 px-3 rounded-full flex items-center justify-center bg-[#C6FF00] text-black font-bold text-[10px] tracking-tight shadow-sm active:scale-95 transition-transform"
+            className="h-7 px-3 rounded-full flex items-center justify-center bg-[#C6FF2E] text-black font-bold text-[10px] tracking-tight shadow-sm active:scale-95 transition-transform"
           >
             <Download className="w-3 h-3 mr-1.5" />
             <span>JPG</span>
@@ -200,18 +200,18 @@ export default function Report({ onBack }: ReportProps) {
 
       <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-[#fdfdfe] relative">
         {/* Ambient Premium SaaS Background Effects */}
-        <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#C6FF00]/10 blur-[160px] rounded-full pointer-events-none opacity-40 mix-blend-multiply" />
+        <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#C6FF2E]/10 blur-[160px] rounded-full pointer-events-none opacity-40 mix-blend-multiply" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-[#18181b]/5 blur-[140px] rounded-full pointer-events-none opacity-30 mix-blend-multiply" />
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
 
         {/* THE CANVAS: Targeted directly for exact 9:16 portrait export */}
         <div 
           ref={captureRef}
-          className="w-[360px] min-h-[640px] h-fit flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#E2E1DC]"
+          className="w-[360px] min-h-[640px] h-fit flex flex-col items-stretch relative overflow-hidden flex-shrink-0 bg-[#F4F8F1]"
         >
           {/* Ambient Premium SaaS Background Effects - INSIDE CANVAS */}
-          <div className="absolute inset-0 bg-[#E2E1DC]" />
-          <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-br from-[#C6FF00]/5 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-[#F4F8F1]" />
+          <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-br from-[#C6FF2E]/5 to-transparent pointer-events-none" />
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-150 brightness-100" />
           
           {/* THE CONTENT: Integrated with Canvas Layout */}
@@ -234,7 +234,7 @@ export default function Report({ onBack }: ReportProps) {
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1 mb-0.5">
-                      <div className="w-1 h-1 rounded-full bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.8)]" />
+                      <div className="w-1 h-1 rounded-full bg-[#C6FF2E] shadow-[0_0_8px_rgba(198,255,46,0.8)]" />
                       <span className="text-[7.5px] font-bold tracking-[0.3em] text-black uppercase leading-none">LAPORAN HARIAN</span>
                     </div>
 
@@ -242,7 +242,7 @@ export default function Report({ onBack }: ReportProps) {
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <div className="px-1.5 py-0.5 bg-zinc-900 rounded-full flex items-center gap-1 shadow-sm">
-                    <div className="w-0.5 h-0.5 rounded-full bg-[#C6FF00] animate-pulse" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-[#C6FF2E] animate-pulse" />
                     <span className="text-[5px] font-extrabold text-white uppercase tracking-widest leading-none">Secure</span>
                   </div>
 
@@ -254,7 +254,7 @@ export default function Report({ onBack }: ReportProps) {
                   Rencana Kunjungan
                 </h1>
                 <div className="flex items-center gap-1.5 py-0.5">
-                  <div className="px-1.5 py-0.5 rounded-full bg-[#C6FF00] text-[7px] font-black tracking-tight text-black uppercase leading-none shadow-[0_2px_4px_rgba(198,255,0,0.2)]">
+                  <div className="px-1.5 py-0.5 rounded-full bg-[#C6FF2E] text-[7px] font-black tracking-tight text-black uppercase leading-none shadow-[0_2px_4px_rgba(198,255,46,0.2)]">
                     {activeDate.dayName} {activeDate.pasaran}
                   </div>
                   <span className="text-[8.5px] font-bold tracking-tight text-zinc-500">
@@ -270,12 +270,12 @@ export default function Report({ onBack }: ReportProps) {
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[7px] font-black text-zinc-900 uppercase tracking-widest leading-none">MEMBER LIST</span>
-                    <div className="h-0.5 w-4 bg-[#C6FF00] rounded-full" />
+                    <div className="h-0.5 w-4 bg-[#C6FF2E] rounded-full" />
                   </div>
                   <div className="h-px bg-zinc-200/50 flex-1" />
                 </div>
                 <div className="px-1.5 py-0.5 bg-white/80 border border-white/60 rounded-[4px] flex items-center gap-1">
-                  <div className="w-1 h-1 rounded-full bg-[#C6FF00] animate-pulse" />
+                  <div className="w-1 h-1 rounded-full bg-[#C6FF2E] animate-pulse" />
                   <span className="text-[5.5px] font-bold text-zinc-500 uppercase tracking-widest">LIVE SYNC</span>
                 </div>
               </div>
@@ -352,7 +352,7 @@ export default function Report({ onBack }: ReportProps) {
                         </div>
   
                         <div className="flex items-center gap-1.5">
-                          <span className="inline-flex items-center justify-center text-[7.5px] font-black text-[#C6FF00] bg-zinc-900 px-1.5 py-0.5 rounded-[4px] tracking-tight truncate uppercase leading-none shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                          <span className="inline-flex items-center justify-center text-[7.5px] font-black text-[#C6FF2E] bg-zinc-900 px-1.5 py-0.5 rounded-[4px] tracking-tight truncate uppercase leading-none shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
                             {userName}
                           </span>
                           <span className="text-[8px] font-[450] text-zinc-400 tracking-tight truncate opacity-70">
@@ -361,7 +361,7 @@ export default function Report({ onBack }: ReportProps) {
                           {displayCategory && (
                             <>
                               <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 shrink-0" />
-                              <span className="text-[7.5px] font-bold text-[#b7e800] uppercase tracking-tighter">
+                              <span className="text-[7.5px] font-bold text-[#86b100] uppercase tracking-tighter">
                                 {displayCategory}
                               </span>
                             </>

@@ -1411,3 +1411,53 @@ export async function getActivitiesPaginated(options: {
   }
 }
 
+// Branches Service
+export function subscribeBranches(callback: (branches: any[]) => void) {
+  const q = query(collection(db, "branches"));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, "branches");
+  });
+}
+
+export async function addBranch(branchData: {
+  branchId: string;
+  branchName: string;
+  active: boolean;
+  spreadsheets?: { explore?: string; pricing?: string; catalog?: string };
+  admins?: string[];
+}) {
+  try {
+    const id = branchData.branchId.toUpperCase().trim();
+    await setDoc(doc(db, "branches", id), {
+      ...branchData,
+      branchId: id,
+      archived: false,
+      admins: branchData.admins || [],
+      spreadsheets: {
+        explore: branchData.spreadsheets?.explore || "",
+        pricing: branchData.spreadsheets?.pricing || "",
+        catalog: branchData.spreadsheets?.catalog || "",
+      },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `branches/${branchData.branchId}`);
+  }
+}
+
+export async function updateBranch(branchId: string, updates: any) {
+  try {
+    const docRef = doc(db, "branches", branchId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `branches/${branchId}`);
+  }
+}
+
+

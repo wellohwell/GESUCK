@@ -35,7 +35,7 @@ const ProductItem = React.memo(({ product, onClick }: { product: Product, onClic
           </div>
 
           <div className="flex-shrink-0 text-right">
-            <span className="font-black text-[#86b100] dark:text-[#C6FF00] text-[12px] tracking-tighter tabular-nums">
+            <span className="font-black text-[#86b100] dark:text-primary text-[12px] tracking-tighter tabular-nums">
               {product.jual || formatRp(product.harga)}
             </span>
           </div>
@@ -54,10 +54,10 @@ const ProductItem = React.memo(({ product, onClick }: { product: Product, onClic
        
        {/* Price - Right Aligned on Desktop */}
        <div className="hidden md:flex items-center justify-end pr-4 gap-3">
-         <span className="font-black text-sm text-[#86b100] dark:text-[#C6FF00] tabular-nums">
+         <span className="font-black text-sm text-[#86b100] dark:text-primary tabular-nums">
            {product.jual || formatRp(product.harga)}
          </span>
-         <ChevronRight className="w-3.5 h-3.5 text-zinc-300 dark:text-white/10 group-hover:text-[#C6FF00] transition-colors" />
+         <ChevronRight className="w-3.5 h-3.5 text-zinc-300 dark:text-white/10 group-hover:text-primary transition-colors" />
        </div>
     </div>
   );
@@ -141,7 +141,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
       {/* Loading State */}
       {loading ? (
          <div className="flex flex-col items-center justify-center py-12 opacity-50">
-           <Loader2 className="w-8 h-8 animate-spin text-zinc-900 dark:text-[#C6FF00] mb-3" />
+           <Loader2 className="w-8 h-8 animate-spin text-foreground dark:text-primary mb-3" />
            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Sinkronisasi Katalog...</p>
          </div>
       ) : (

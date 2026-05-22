@@ -60,9 +60,9 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
                 key={item.id}
                 to={item.route}
                 className={cn(
-                  'relative flex items-center justify-center transition-all h-9 sm:h-10 px-2 sm:px-4 rounded-2xl z-10 group',
+                  'relative flex items-center justify-center transition-all h-7 sm:h-8 px-2 sm:px-4 rounded-xl z-10 group',
                   'focus:outline-none active:scale-95 shrink-0',
-                  !isActive && 'hover:bg-white/10 dark:hover:bg-black/10',
+                  !isActive && 'hover:bg-primary/10',
                   displayClasses
                 )}
                 aria-label={item.label}
@@ -71,7 +71,7 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
                 {isActive && (
                   <motion.div
                     layoutId="active-nav-item"
-                    className="absolute inset-0 bg-white dark:bg-black rounded-2xl shadow-sm"
+                    className="absolute inset-0 bg-primary rounded-xl shadow-sm"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -82,8 +82,8 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
                     className={cn(
                       'h-4 w-4 shrink-0 z-10 transition-all duration-200',
                       isActive 
-                        ? 'text-black dark:text-white' 
-                        : 'text-zinc-400 dark:text-zinc-500 group-hover:text-white dark:group-hover:text-black'
+                        ? 'text-primary-foreground' 
+                        : 'text-zinc-400 dark:text-zinc-500 group-hover:text-primary'
                     )} 
                   />
                   
@@ -106,7 +106,7 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
                        animate={{ opacity: 1, width: 'auto' }}
                        exit={{ opacity: 0, width: 0 }}
                        transition={{ duration: 0.2 }}
-                       className="text-[10px] font-bold tracking-tight whitespace-nowrap z-10 ml-1.5 text-black dark:text-white"
+                       className="text-[10px] font-bold tracking-tight whitespace-nowrap z-10 ml-1.5 text-primary-foreground"
                      >
                        {item.label}
                      </motion.span>

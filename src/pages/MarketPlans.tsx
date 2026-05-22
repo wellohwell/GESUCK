@@ -32,6 +32,7 @@ import { useRole } from "../hooks/authHooks";
 import { ROLES } from "../config/roles";
 import { useModal } from "../hooks/use-modal";
 import { MasterDataView, MarketFormContent } from "./admin/Master";
+import { useSearchParams } from "react-router-dom";
 import Report from "./Report";
 
 dayjs.extend(dayOfYear);
@@ -197,7 +198,11 @@ export default function MarketPlans({
   const canAccessMaster = role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.ADMIN_CABANG || role === ROLES.SPV;
   const actualIsAdmin = isAdmin || canAccessMaster;
 
-  const [activeTab, setActiveTab] = useState<'plans' | 'master' | 'laporan'>('plans');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'plans' | 'master' | 'laporan') || 'plans';
+  const setActiveTab = (tab: 'plans' | 'master' | 'laporan') => {
+    setSearchParams({ tab });
+  };
   const [masterSearch, setMasterSearch] = useState("");
   const [filterWilayah, setFilterWilayah] = useState("");
   const [filterKategori, setFilterKategori] = useState("");
@@ -284,6 +289,12 @@ export default function MarketPlans({
     });
     return map;
   }, [users]);
+
+  const pendingSpvCount = useMemo(() => {
+    const spvUsers = users.filter(u => u.role === 'spv');
+    const spvWithPlans = plans.filter(p => spvUsers.some(u => u.id === p.userId));
+    return Math.max(0, spvUsers.length - spvWithPlans.length);
+  }, [users, plans]);
 
   const availableMarkets = useMemo(() => {
     const takenMarketNames = new Set(plans.map((p) => p.marketName));
@@ -524,54 +535,43 @@ export default function MarketPlans({
         <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.035] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] contrast-125" />
       </div>
       
-      <main className="max-w-2xl md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-12 pb-32 relative z-10 w-full">
+      <main className={cn(
+        "max-w-2xl md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-8 pb-32 relative z-10 w-full",
+        canAccessMaster ? "pt-4 md:pt-12" : "pt-2 md:pt-6"
+      )}>
         {/* Minimalist Tab Switcher / Navigation & Export Trigger */}
-        <div data-html2canvas-ignore="true" className="flex items-center gap-5 md:gap-8 mb-6 border-b border-zinc-200/40 dark:border-white/[0.04] pb-2 w-full">
-          <button
-            onClick={() => setActiveTab('plans')}
-            className={cn(
-              "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
-              activeTab === 'plans' 
-                ? "text-foreground border-[#B7E800] dark:border-[#C6FF00]" 
-                : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
-            )}
-          >
-            Rencana Kunjungan
-          </button>
-          
-          {canAccessMaster && (
+        {canAccessMaster && (
+          <div data-html2canvas-ignore="true" className="flex items-center gap-5 md:gap-8 mb-6 border-b border-zinc-200/40 dark:border-white/[0.04] pb-2 w-full">
+            <button
+              onClick={() => setActiveTab('plans')}
+              className={cn(
+                "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
+                activeTab === 'plans' 
+                  ? "text-foreground border-primary" 
+                  : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
+              )}
+            >
+              Rencana Kunjungan
+            </button>
             <button
               onClick={() => setActiveTab('master')}
               className={cn(
                 "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
                 activeTab === 'master' 
-                  ? "text-foreground border-[#B7E800] dark:border-[#C6FF00]" 
+                  ? "text-foreground border-primary" 
                   : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
               )}
             >
               Master Data Pasar
             </button>
-          )}
-
-          <button
-            onClick={() => setActiveTab('laporan')}
-            className={cn(
-              "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
-              activeTab === 'laporan' 
-                ? "text-foreground border-[#B7E800] dark:border-[#C6FF00]" 
-                : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
-            )}
-          >
-            Laporan harian
-          </button>
-
-        </div>
+          </div>
+        )}
 
         {activeTab === 'plans' ? (
           <div className="md:grid md:grid-cols-12 md:gap-12 md:items-start w-full relative">
             {/* Header Hero */}
             <section className="mb-4 md:mb-0 text-center md:text-left pt-0.5 relative md:col-span-5 lg:col-span-4 md:sticky md:top-24">
-          <div className="absolute top-[-30px] left-1/2 md:left-20 -translate-x-1/2 w-[180px] h-[60px] bg-[#B7E800]/3 dark:bg-[#C6FF00]/3 blur-[40px] rounded-full pointer-events-none" />
+          <div className="absolute top-[-30px] left-1/2 md:left-20 -translate-x-1/2 w-[180px] h-[60px] bg-primary/5 blur-[40px] rounded-full pointer-events-none" />
           
           <h1 className="text-2xl md:text-4xl font-black leading-none tracking-tight text-foreground mb-1 capitalize">
             {activeDate.dayName}{" "}
@@ -672,17 +672,17 @@ export default function MarketPlans({
           <section className="mb-4 md:mb-6">
             <div className="flex items-center justify-between mb-2 px-1">
               <div className="flex items-center gap-2">
-                <div className="w-4 md:w-5 h-4 md:h-5 bg-[#B7E800] dark:bg-[#C6FF00] rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(183,232,0,0.3)] dark:shadow-[0_2px_10px_rgba(198,255,0,0.4)]">
+                <div className="w-4 md:w-5 h-4 md:h-5 bg-primary rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(198,255,46,0.2)]">
                    <Users className="w-2.5 md:w-3 h-2.5 md:h-3 text-black" />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <h2 className="text-xs md:text-sm font-bold tracking-tight text-zinc-800 dark:text-white/90">
                     Rencana Kunjungan
-                    {users.length - plans.length > 0 && (
+                    {pendingSpvCount > 0 && (
                       <>
                         <span className="opacity-10 mx-1.5 font-normal md:text-base">•</span>
                         <span className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-wider">
-                          {Math.max(0, users.length - plans.length)} PENDING
+                          {pendingSpvCount} PENDING
                         </span>
                       </>
                     )}
@@ -763,7 +763,7 @@ export default function MarketPlans({
              <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-[#B7E800] dark:bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.3)]" />
+                      <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(198,255,46,0.3)]" />
                       <span className="text-[9px] md:text-[11px] font-black text-zinc-900/80 dark:text-white/80 uppercase tracking-[0.25em] md:tracking-[0.3em] leading-none mb-[1px] md:mb-[2px]">VORKTEAM</span>
                    </div>
                    <span className="text-[7px] md:text-[8px] font-bold text-zinc-400 dark:text-white/30 uppercase tracking-widest mt-1">OPS DASHBOARD v.2.0</span>
@@ -776,7 +776,7 @@ export default function MarketPlans({
                    <div className="flex items-center gap-1.5 opacity-30 md:opacity-40">
                       <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-white/50" />
                       <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-white/50" />
-                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-[#B7E800] dark:bg-[#C6FF00]" />
+                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-primary" />
                    </div>
                 </div>
              </div>
@@ -1040,7 +1040,7 @@ export default function MarketPlans({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleAddPlan}
-                    className="relative w-full flex items-center justify-center gap-2 h-9 sm:h-10 px-8 rounded-full bg-[#C6FF00] text-black shadow-[0_0_15px_rgba(198,255,0,0.3)] transition-all group"
+                    className="relative w-full flex items-center justify-center gap-2 h-9 sm:h-10 px-8 rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(198,255,46,0.3)] transition-all group pointer-events-auto"
                   >
                     <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     <span className="text-[11px] font-bold tracking-tight uppercase">

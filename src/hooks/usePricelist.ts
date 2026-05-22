@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchPricelist } from '../lib/sheets/fetchPricelist';
 import { Product } from '../types/pricelist';
+import { useAuth } from '../providers/AuthProvider';
 
 export function usePricelist() {
+  const { spreadsheetId } = useAuth();
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -10,7 +12,7 @@ export function usePricelist() {
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
-    fetchPricelist().then(res => {
+    fetchPricelist(spreadsheetId).then(res => {
       if (isMounted) {
         setData(res);
         setLoading(false);
@@ -22,7 +24,7 @@ export function usePricelist() {
       }
     });
     return () => { isMounted = false; };
-  }, []);
+  }, [spreadsheetId]);
 
   const categories = useMemo(() => {
     // Generate unique tags/category from data

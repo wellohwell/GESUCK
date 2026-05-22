@@ -48,7 +48,7 @@ export const PricelistCard: React.FC<Props> = ({ product, onOpenSimulator }) => 
         <div className="mt-auto pt-4 flex flex-col sm:flex-row items-center sm:justify-between gap-4">
           <div className="flex flex-col text-left w-full sm:w-auto">
             <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">Harga OTR</span>
-            <span className="font-extrabold text-[#C6FF00] dark:text-[#C6FF00] text-lg sm:text-lg tracking-tight leading-none drop-shadow-sm">
+            <span className="font-extrabold text-foreground dark:text-primary text-lg sm:text-lg tracking-tight leading-none drop-shadow-sm">
               {formatRp(product.harga)}
             </span>
           </div>

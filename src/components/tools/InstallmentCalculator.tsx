@@ -202,7 +202,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             <select 
               value={tipe} 
               onChange={(e) => setTipe(e.target.value as TipeProduk)}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C6FF00] appearance-none cursor-pointer"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
             >
               <option value="">Pilih Tipe Produk</option>
               {Object.keys(aturanMargin).map((key) => (
@@ -224,7 +224,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 <select 
                   value={tenor} 
                   onChange={(e) => setTenor(Number(e.target.value) as Tenor)}
-                  className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C6FF00] appearance-none cursor-pointer"
+                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tenor</option>
                   {[30, 60, 90, 120, 150, 180]
@@ -248,7 +248,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         </div>
 
         <div className="grid grid-cols-1 gap-2 pt-1">
-            <div className="flex justify-between items-center bg-[#C6FF00] text-black px-4 py-3 rounded-xl">
+            <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl">
                 <span className="font-black text-[9px] uppercase tracking-wider opacity-60">Angsuran / Hari</span>
                 <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
             </div>

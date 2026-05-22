@@ -165,7 +165,7 @@ export default function ExplorePage() {
                       onClick={() => setSelectedMerk(selectedMerk === brand ? 'all' : brand)}
                       className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border whitespace-nowrap ${
                         selectedMerk === brand
-                          ? 'bg-primary text-primary-foreground dark:bg-[#C6FF00] dark:text-black border-transparent'
+                          ? 'bg-primary text-primary-foreground border-transparent'
                           : 'bg-background hover:bg-zinc-100 dark:hover:bg-zinc-850 border-border/50 text-muted-foreground hover:text-foreground'
                       }`}
                     >

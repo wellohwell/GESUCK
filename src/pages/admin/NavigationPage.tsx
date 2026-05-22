@@ -151,8 +151,8 @@ export default function NavigationPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-[#C6FF00]/10 border border-[#C6FF00]/20 rounded-xl">
-                <Sliders className="w-5 h-5 text-[#C6FF00]" />
+              <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
+                <Sliders className="w-5 h-5 text-primary" />
               </div>
               <h1 className="text-xl font-black uppercase tracking-wider text-white">
                 Tata Kelola Navigasi
@@ -197,7 +197,7 @@ export default function NavigationPage() {
           </div>
           <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-3.5 space-y-1">
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none">Bottom Bar Aktif</span>
-            <div className={`text-lg font-black ${activeMobileNavCount > 5 ? 'text-amber-400' : 'text-[#C6FF00]'}`}>
+            <div className={`text-lg font-black ${activeMobileNavCount > 5 ? 'text-amber-400' : 'text-primary'}`}>
               {activeMobileNavCount} Items
             </div>
           </div>
@@ -225,14 +225,14 @@ export default function NavigationPage() {
             placeholder="Cari label, ID modul, rute alamat..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900/30 border border-zinc-800/80 rounded-2xl py-3 pl-10 pr-4 text-xs font-semibold text-white placeholder-zinc-500 focus:outline-none focus:border-[#C6FF00]/40 focus:ring-1 focus:ring-[#C6FF00]/40 transition-all"
+            className="w-full bg-zinc-900/30 border border-zinc-800/80 rounded-2xl py-3 pl-10 pr-4 text-xs font-semibold text-white placeholder-zinc-500 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/40 transition-all"
           />
         </div>
 
         {/* Visual Board List */}
         {!isLoaded ? (
           <div className="text-center py-20">
-            <div className="inline-block w-8 h-8 border-3 border-zinc-700 border-t-[#C6FF00] rounded-full animate-spin mb-3"></div>
+            <div className="inline-block w-8 h-8 border-3 border-zinc-700 border-t-primary rounded-full animate-spin mb-3"></div>
             <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Memuat Struktur Registri Navigasi...</p>
           </div>
         ) : (
@@ -265,7 +265,7 @@ export default function NavigationPage() {
                       <div className="flex gap-3">
                         <div className={`p-2.5 rounded-xl border shrink-0 ${
                           item.visible && item.enabled 
-                            ? 'bg-[#C6FF00]/5 border-[#C6FF00]/10 text-[#C6FF00]' 
+                            ? 'bg-primary/5 border-primary/10 text-primary' 
                             : 'bg-zinc-900 border-zinc-800 text-zinc-500'
                         }`}>
                           <IconComponent className="w-5 h-5" />
@@ -364,7 +364,7 @@ export default function NavigationPage() {
                         {/* Edit click */}
                         <button
                           onClick={() => handleEditClick(item)}
-                          className="p-1.5 bg-[#C6FF00]/10 border border-[#C6FF00]/20 text-[#C6FF00] rounded-xl hover:bg-[#C6FF00]/20 transition-all cursor-pointer ml-1"
+                          className="p-1.5 bg-primary/10 border border-primary/20 text-primary"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
@@ -397,7 +397,7 @@ export default function NavigationPage() {
               </button>
 
               <h2 className="text-base font-black uppercase tracking-wider text-white mb-6 border-b border-zinc-900 pb-3 flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-[#C6FF00]" />
+                <Edit3 className="w-4 h-4 text-primary" />
                 Ubah Konfigurasi Navigasi: <span className="text-zinc-400 text-sm font-bold lowercase">#{editingId}</span>
               </h2>
 
@@ -412,7 +412,7 @@ export default function NavigationPage() {
                       value={draftLabel}
                       onChange={(e) => setDraftLabel(e.target.value)}
                       required
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-[#C6FF00]/40 transition-all"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all"
                     />
                   </div>
 
@@ -423,7 +423,7 @@ export default function NavigationPage() {
                       value={draftRoute}
                       onChange={(e) => setDraftRoute(e.target.value)}
                       required
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-[#C6FF00]/40 transition-all font-mono"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all font-mono"
                     />
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function NavigationPage() {
                     <select
                       value={draftIcon}
                       onChange={(e) => setDraftIcon(e.target.value)}
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-[#C6FF00]/40 cursor-pointer text-zinc-300"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300"
                     >
                       {Object.keys(ICON_DICTIONARY).map(key => (
                         <option key={key} value={key} className="bg-zinc-950 font-bold">{key.toUpperCase()}</option>
@@ -448,7 +448,7 @@ export default function NavigationPage() {
                     <select
                       value={draftBadge}
                       onChange={(e) => setDraftBadge(e.target.value as any)}
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-[#C6FF00]/40 cursor-pointer text-zinc-300 animate-none"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 animate-none"
                     >
                       <option value="none" className="bg-zinc-950 text-zinc-400 font-bold">NONE</option>
                       <option value="beta" className="bg-zinc-950 text-amber-400 font-bold">BETA MODE</option>
@@ -465,7 +465,7 @@ export default function NavigationPage() {
                   <select
                     value={draftModuleId}
                     onChange={(e) => setDraftModuleId(e.target.value)}
-                    className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-[#C6FF00]/40 cursor-pointer text-zinc-300 font-mono"
+                    className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 font-mono"
                   >
                     <option value="" className="bg-zinc-950 text-zinc-400">Tidak Terikat Modul (Selalu Terbuka)</option>
                     {Object.keys(modules).map(modKey => (
@@ -481,8 +481,8 @@ export default function NavigationPage() {
                     onClick={() => setDraftVisible(!draftVisible)}
                     className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all ${
                       draftVisible 
-                        ? 'bg-[#C6FF00]/5 border-[#C6FF00]/15' 
-                        : 'bg-zinc-900/40 border-zinc-805/80 opacity-60'
+                        ? 'bg-primary/5 border-primary/20' 
+                        : 'bg-zinc-900/40 border-zinc-850/80 opacity-60'
                     }`}
                   >
                     <div className="space-y-0.5">
@@ -490,7 +490,7 @@ export default function NavigationPage() {
                       <span className="text-[9px] text-zinc-500 block leading-none">Tampil di UI</span>
                     </div>
                     {draftVisible ? (
-                      <ToggleRight className="w-6 h-6 text-[#C6FF00]" />
+                      <ToggleRight className="w-6 h-6 text-primary" />
                     ) : (
                       <ToggleLeft className="w-6 h-6 text-zinc-500" />
                     )}
@@ -501,8 +501,8 @@ export default function NavigationPage() {
                     onClick={() => setDraftEnabled(!draftEnabled)}
                     className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all ${
                       draftEnabled 
-                        ? 'bg-[#C6FF00]/5 border-[#C6FF00]/15' 
-                        : 'bg-zinc-900/40 border-zinc-805/80 opacity-60'
+                        ? 'bg-primary/5 border-primary/20' 
+                        : 'bg-zinc-900/40 border-zinc-850/80 opacity-60'
                     }`}
                   >
                     <div className="space-y-0.5">
@@ -510,7 +510,7 @@ export default function NavigationPage() {
                       <span className="text-[9px] text-zinc-500 block leading-none">Dapat di-klik</span>
                     </div>
                     {draftEnabled ? (
-                      <ToggleRight className="w-6 h-6 text-[#C6FF00]" />
+                      <ToggleRight className="w-6 h-6 text-primary" />
                     ) : (
                       <ToggleLeft className="w-6 h-6 text-zinc-500" />
                     )}
@@ -572,7 +572,7 @@ export default function NavigationPage() {
                           onClick={() => toggleRole(role)}
                           className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border ${
                             isSelected
-                              ? 'bg-[#C6FF00] border-transparent text-[#000]'
+                              ? 'bg-primary border-transparent text-primary-foreground'
                               : 'bg-zinc-900/50 hover:bg-zinc-800 border-zinc-800 text-zinc-400'
                           }`}
                         >
@@ -594,7 +594,7 @@ export default function NavigationPage() {
                       placeholder="Contoh: KDR-MTR"
                       value={branchInput}
                       onChange={(e) => setBranchInput(e.target.value)}
-                      className="bg-zinc-900/60 border border-zinc-805/80 text-xs text-white uppercase rounded-xl px-3 py-2 flex-grow focus:outline-none focus:border-[#C6FF00]/40 transition-all font-mono"
+                      className="bg-zinc-900/60 border border-zinc-850/80 text-xs text-white uppercase rounded-xl px-3 py-2 flex-grow focus:outline-none focus:border-primary/40 transition-all font-mono"
                     />
                     <button
                       type="button"
@@ -641,7 +641,7 @@ export default function NavigationPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 bg-[#C6FF00] hover:bg-[#d4ff33] text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
+                    className="px-5 py-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
                   >
                     {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
                   </button>

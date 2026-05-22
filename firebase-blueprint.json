@@ -116,9 +116,36 @@
         "maintenanceMode": { "type": "boolean" },
         "updatedAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "Branch": {
+      "title": "Branch",
+      "description": "Branch configuration parameters",
+      "type": "object",
+      "properties": {
+        "branchId": { "type": "string" },
+        "branchName": { "type": "string" },
+        "active": { "type": "boolean" },
+        "archived": { "type": "boolean" },
+        "admins": { "type": "array" },
+        "spreadsheets": {
+          "type": "object",
+          "properties": {
+            "explore": { "type": "string" },
+            "pricing": { "type": "string" },
+            "catalog": { "type": "string" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branchId", "branchName", "active"]
     }
   },
   "firestore": {
+    "/branches/{branchId}": {
+      "schema": "Branch",
+      "description": "Multi-branch operational register"
+    },
     "/users/{userId}": {
       "schema": "User",
       "description": "User profiles"

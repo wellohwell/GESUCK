@@ -6,6 +6,7 @@ import { useUserProfile } from '../lib/services';
 import { useNetwork } from '../hooks/use-network';
 import { Wifi, WifiOff, MapPin, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { MarketPlansHeaderAction } from './MarketPlansHeaderAction';
 
 export function HeaderBar() {
   const { profile } = useUserProfile();
@@ -59,6 +60,7 @@ export function HeaderBar() {
 
         {/* Right Section: Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+          <MarketPlansHeaderAction />
           <div className="flex items-center gap-1">
              <ThemeToggle />
           </div>

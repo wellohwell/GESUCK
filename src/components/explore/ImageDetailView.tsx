@@ -78,8 +78,8 @@ const RelatedImagesGrid = ({ images, onSelect, currentImageId }: { images: Image
           key={img.id} 
           onClick={() => onSelect(img)} 
           className={cn(
-            "w-full aspect-square bg-zinc-100 dark:bg-white/5 rounded-lg overflow-hidden relative transition-all",
-             img.id === currentImageId ? "ring-2 ring-[#C6FF00] scale-95" : "hover:opacity-80"
+            "w-full aspect-square bg-secondary rounded-lg overflow-hidden relative transition-all",
+             img.id === currentImageId ? "ring-2 ring-primary scale-95" : "hover:opacity-80"
           )}
         >
           <img src={getThumbnailUrl(img.url)} alt={img.title} className="w-full h-full object-cover" loading="lazy" />

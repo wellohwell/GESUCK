@@ -460,7 +460,7 @@ export default function Dashboard({
       <main className="max-w-2xl mx-auto px-4 pt-0.5 pb-8 relative z-10">
         {/* Header Hero */}
         <section className="mb-1 text-center pt-0.5 relative">
-          <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-[180px] h-[60px] bg-[#B7E800]/3 dark:bg-[#C6FF00]/3 blur-[40px] rounded-full pointer-events-none" />
+          <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-[180px] h-[60px] bg-primary/5 blur-[40px] rounded-full pointer-events-none" />
           
           <h1 className="text-lg font-black leading-none tracking-tight text-foreground mb-0.5 capitalize">
             {activeDate.dayName}{" "}
@@ -560,7 +560,7 @@ export default function Dashboard({
         <section className="mb-2">
           <div className="flex items-center justify-between mb-0.5 px-1">
             <div className="flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 bg-[#B7E800] dark:bg-[#C6FF00] rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(183,232,0,0.3)] dark:shadow-[0_2px_10px_rgba(198,255,0,0.4)]">
+              <div className="w-3.5 h-3.5 bg-primary rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(198,255,46,0.2)]">
                  <Users className="w-2.5 h-2.5 text-black" />
               </div>
               <div className="flex items-center gap-1">
@@ -649,7 +649,7 @@ export default function Dashboard({
            <div className="flex items-center justify-between">
               <div className="flex flex-col">
                  <div className="flex items-center gap-1.5">
-                    <div className="w-1 h-1 rounded-full bg-[#B7E800] dark:bg-[#C6FF00] shadow-[0_0_8px_rgba(198,255,0,0.3)]" />
+                    <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(198,255,46,0.3)]" />
                     <span className="text-[7.5px] font-black text-zinc-900/80 dark:text-white/80 uppercase tracking-[0.25em] leading-none mb-[1px]">VORKTEAM</span>
                  </div>
                  <span className="text-[6px] font-bold text-zinc-400 dark:text-white/20 uppercase tracking-widest">OPS DASHBOARD v.2.0</span>
@@ -662,7 +662,7 @@ export default function Dashboard({
                  <div className="flex items-center gap-1 opacity-20">
                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
-                    <div className="w-0.5 h-0.5 rounded-full bg-[#B7E800] dark:bg-[#C6FF00]" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-primary" />
                  </div>
               </div>
            </div>

@@ -87,6 +87,14 @@ export function UserMenu() {
               {isHighLevelAdmin && (
                 <>
                   <Link 
+                    to="/admin/branches" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                  >
+                    Manajemen Cabang
+                  </Link>
+
+                  <Link 
                     to="/admin/modules" 
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"

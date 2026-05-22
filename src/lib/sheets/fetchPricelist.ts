@@ -15,8 +15,8 @@ export function extractSpreadsheetId(idOrUrl: string): string {
   return clean;
 }
 
-export async function fetchPricelist(): Promise<Product[]> {
-  const rawId = import.meta.env.VITE_PRICELIST_SHEET_ID || DEFAULT_SHEET_ID;
+export async function fetchPricelist(customSpreadsheetId?: string | null): Promise<Product[]> {
+  const rawId = customSpreadsheetId || import.meta.env.VITE_PRICELIST_SHEET_ID || DEFAULT_SHEET_ID;
   const sheetId = extractSpreadsheetId(rawId);
   
   // Menggunakan API GViz Google Docs untuk raw data tanpa publis JSON ribet
