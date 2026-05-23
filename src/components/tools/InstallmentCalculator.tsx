@@ -192,23 +192,25 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
       </div>
 
       <div className="space-y-3">
-        <div className="space-y-1 text-left">
-            <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Harga / Modal</label>
-            <RupiahInput placeholder="Rp 0" value={modal} onValueChange={setModal} autoMultiply={true} className="py-2.5" />
-        </div>
-        
-        <div className="space-y-1 text-left">
-            <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Tipe Produk</label>
-            <select 
-              value={tipe} 
-              onChange={(e) => setTipe(e.target.value as TipeProduk)}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-            >
-              <option value="">Pilih Tipe Produk</option>
-              {Object.keys(aturanMargin).map((key) => (
-                <option key={key} value={key}>{key}</option>
-              ))}
-            </select>
+        <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1 text-left">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Harga / Modal</label>
+                <RupiahInput placeholder="Rp 0" value={modal} onValueChange={setModal} autoMultiply={true} className="py-2.5" />
+            </div>
+            
+            <div className="space-y-1 text-left">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Tipe Produk</label>
+                <select 
+                  value={tipe} 
+                  onChange={(e) => setTipe(e.target.value as TipeProduk)}
+                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                >
+                  <option value="">Pilih Tipe Produk</option>
+                  {Object.keys(aturanMargin).map((key) => (
+                    <option key={key} value={key}>{key}</option>
+                  ))}
+                </select>
+            </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -247,20 +249,19 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             />
         </div>
 
-        <div className="grid grid-cols-1 gap-2 pt-1">
-            <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl">
-                <span className="font-black text-[9px] uppercase tracking-wider opacity-60">Angsuran / Hari</span>
-                <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
-            </div>
-            <div className={cn(
-                "flex justify-between items-center px-4 py-3 rounded-xl transition-colors",
-                isNawarFilled 
-                    ? "bg-red-500 text-white" 
-                    : "bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white"
-            )}>
-                <span className="font-black text-[9px] uppercase tracking-wider opacity-60">Est. Potongan / DP</span>
-                <span className="font-black text-lg">{formatRupiah(estimasiPotongan)}</span>
-            </div>
+        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl shadow-sm mt-2">
+            <span className="font-black text-[9px] uppercase tracking-wider opacity-80">Angsuran / Hari</span>
+            <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
+        </div>
+
+        <div className={cn(
+            "flex justify-between items-center px-4 py-3 rounded-xl transition-colors",
+            isNawarFilled 
+                ? "bg-red-500 text-white shadow-sm" 
+                : "bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white"
+        )}>
+            <span className="font-black text-[9px] uppercase tracking-wider opacity-60">Est. Potongan / DP</span>
+            <span className="font-black text-lg">{formatRupiah(estimasiPotongan)}</span>
         </div>
 
         <button 

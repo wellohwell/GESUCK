@@ -11,7 +11,6 @@ export default function AdminMasterPage() {
   const { 
     markets, 
     handleDeleteMarket, 
-    openForm, 
     search, 
     setSearch, 
     filterWilayah, 
@@ -23,11 +22,35 @@ export default function AdminMasterPage() {
     filteredMarkets 
   } = useOutletContext<any>();
 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [marketToEdit, setMarketToEdit] = useState<any>(null);
+
+  const handleOpenForm = (market: any = null) => {
+    setMarketToEdit(market);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setMarketToEdit(null);
+    setIsFormOpen(false);
+  };
+
+  if (isFormOpen) {
+    return (
+      <div className="w-full">
+        <MarketFormContent 
+          market={marketToEdit} 
+          onClose={handleCloseForm} 
+        />
+      </div>
+    );
+  }
+
   return (
     <MasterDataView
       markets={filteredMarkets}
-      onAdd={() => openForm()}
-      onEdit={openForm}
+      onAdd={() => handleOpenForm()}
+      onEdit={handleOpenForm}
       onDelete={handleDeleteMarket}
       search={search}
       setSearch={setSearch}
@@ -341,8 +364,20 @@ export function MarketFormContent({ market, onClose }: any) {
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col h-full relative">
-      <form onSubmit={handleSubmit} className="flex flex-col relative h-full">
+    <div className="w-full flex-1 flex flex-col h-full bg-white dark:bg-black rounded-lg sm:rounded-2xl border border-border shadow-sm">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 className="text-lg font-bold text-foreground">
+          {market?.id ? "Edit Pasar" : "Tambah Pasar"}
+        </h2>
+        <button 
+          onClick={onClose} 
+          type="button"
+          className="text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 bg-muted rounded-md"
+        >
+          Kembali
+        </button>
+      </div>
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 relative h-full max-w-3xl mx-auto w-full">
           <div className="p-5 space-y-6 pb-6">
             <div className="space-y-2">
             <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium block pl-1">

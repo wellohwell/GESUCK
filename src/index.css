@@ -34,6 +34,16 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-bg-primary: var(--background);
+  --color-bg-secondary: var(--secondary);
+  --color-bg-tertiary: var(--tertiary);
+  --color-card-surface: var(--card-surface);
+  --color-input-surface: var(--input-surface);
+  --color-border-default: var(--border-default);
+
   --color-lime-primary: #C6FF2E;
   --color-lime-soft: #D7FF33;
 }
@@ -41,24 +51,26 @@
 /* ==================== LIGHT & DARK MODE ==================== */
 @layer base {
   :root {
-    /* ==================== PREMIUM LIGHT WORKSPACE (Green-tinted) ==================== */
+    /* ==================== PREMIUM LIGHT WORKSPACE ==================== */
     --background: #F4F8F1;
-    --foreground: #121A0E;
+    --foreground: #111111;
     
-    --card: #EDF3E8;
-    --card-foreground: #121A0E;
+    --card: #FFFFFF;
+    --card-foreground: #111111;
     
-    --popover: #EDF3E8;
-    --popover-foreground: #121A0E;
+    --popover: #FFFFFF;
+    --popover-foreground: #111111;
     
     --primary: #C6FF2E;
     --primary-foreground: #0A0A0A;
     
-    --secondary: #E5EEDF;
-    --secondary-foreground: #121A0E;
+    --secondary: #EDF3E8;
+    --secondary-foreground: #4B4B4B;
+    
+    --tertiary: #E5EEDF;
     
     --muted: #E5EEDF;
-    --muted-foreground: #55684D;
+    --muted-foreground: #7A7A7A;
     
     --accent: #C6FF2E;
     --accent-foreground: #0A0A0A;
@@ -66,32 +78,41 @@
     --destructive: #EF4444;
     --destructive-foreground: #FFFFFF;
     
-    --border: #D2DEC4;
-    --input: #EDF3E8;
+    --border: rgba(0,0,0,0.06);
+    --input: #F7FAF4;
     --ring: #C6FF2E;
     
     --radius: 1.25rem;
+
+    --text-primary: #111111;
+    --text-secondary: #4B4B4B;
+    --text-muted: #7A7A7A;
+    --card-surface: #FFFFFF;
+    --input-surface: #F7FAF4;
+    --border-default: rgba(0,0,0,0.06);
   }
 
   .dark {
     /* ==================== GRAPHITE BLACK DARK WORKSPACE ==================== */
     --background: #0A0A0A;
-    --foreground: #EDEDED;
+    --foreground: #F5F5F5;
     
     --card: #161616;
-    --card-foreground: #EDEDED;
+    --card-foreground: #F5F5F5;
     
     --popover: #121212;
-    --popover-foreground: #EDEDED;
+    --popover-foreground: #F5F5F5;
     
     --primary: #C6FF2E;
     --primary-foreground: #0A0A0A;
     
     --secondary: #121212;
-    --secondary-foreground: #EDEDED;
+    --secondary-foreground: #A1A1A1;
+    
+    --tertiary: #161616;
     
     --muted: #161616;
-    --muted-foreground: #787878;
+    --muted-foreground: #6B6B6B;
     
     --accent: #C6FF2E;
     --accent-foreground: #0A0A0A;
@@ -99,9 +120,16 @@
     --destructive: #F87171;
     --destructive-foreground: #FFFFFF;
     
-    --border: #222222;
-    --input: #121212;
+    --border: rgba(255,255,255,0.06);
+    --input: #1B1B1B;
     --ring: #C6FF2E;
+
+    --text-primary: #F5F5F5;
+    --text-secondary: #A1A1A1;
+    --text-muted: #6B6B6B;
+    --card-surface: #161616;
+    --input-surface: #1B1B1B;
+    --border-default: rgba(255,255,255,0.06);
   }
 
   * {
@@ -109,14 +137,24 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground overflow-x-hidden;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary-foreground overflow-x-hidden;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-black tracking-tight text-foreground;
+    @apply font-display font-black tracking-tight text-text-primary;
+  }
+
+  /* Autofill custom look to prevent white browser flash and preserve theme */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text-primary) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--input-surface) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
   }
 }
 
@@ -159,11 +197,6 @@
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-muted-foreground/30 rounded-full hover:bg-primary/50;
-}
-
-/* Bottom Nav */
-#global-bottom-nav > nav {
-  background-color: rgba(10, 10, 10, 0.98) !important;
 }
 
 /* Mobile adjustment */

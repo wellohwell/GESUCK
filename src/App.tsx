@@ -96,62 +96,39 @@ function AppContent() {
             <Route path="/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
             <Route path="/profile" element={<ProfilePage />} />
             
-            {/* Admin Routes */}
+            {/* Core Nested Admin Routes */}
             <Route 
-              path="/admin/approvals" 
+              path="/admin" 
               element={
                 <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
-                  <AdminUserApprovalPage />
+                  <AdminLayoutPage />
                 </RequireRole>
-              } 
-            />
-            
-            <Route 
-              path="/admin/users" 
-              element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
+              }
+            >
+              {/* Main dashboard & navigation index */}
+              <Route index element={<AdminHubPage />} />
+              
+              {/* Modular admin sub-features */}
+              <Route path="insight" element={<AdminInsightPage />} />
+              <Route path="user" element={<AdminUserPage />} />
+              <Route path="master" element={<AdminMasterPage />} />
+              
+              <Route path="approvals" element={<AdminUserApprovalPage />} />
+              
+              <Route 
+                path="users" 
+                element={
                   <ModuleGuard moduleId="adminUsers">
                     <UsersPage />
                   </ModuleGuard>
-                </RequireRole>
-              } 
-            />
+                } 
+              />
 
-            <Route 
-              path="/admin/modules" 
-              element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
-                  <ModulesPage />
-                </RequireRole>
-              } 
-            />
-
-            <Route 
-              path="/admin/branches" 
-              element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
-                  <OrgManagement />
-                </RequireRole>
-              } 
-            />
-
-            <Route 
-              path="/admin/navigation" 
-              element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
-                  <NavigationPage />
-                </RequireRole>
-              } 
-            />
-
-            <Route 
-              path="/admin/docs" 
-              element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
-                  <DocsPage />
-                </RequireRole>
-              } 
-            />
+              <Route path="modules" element={<ModulesPage />} />
+              <Route path="branches" element={<OrgManagement />} />
+              <Route path="navigation" element={<NavigationPage />} />
+              <Route path="docs" element={<DocsPage />} />
+            </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

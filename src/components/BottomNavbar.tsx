@@ -39,7 +39,7 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
       <nav 
         className={cn(
           "backdrop-blur-2xl rounded-2xl shadow-xl p-1 pointer-events-auto w-fit max-w-[95vw] md:max-w-[70vw] overflow-x-auto no-scrollbar",
-          "bg-zinc-950/95 dark:bg-white/95 border border-zinc-900/10 dark:border-zinc-100/10"
+          "bg-card/95 border border-border"
         )}
       >
         <div className="flex items-center justify-center gap-1.5 relative">
@@ -83,7 +83,7 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
                       'h-4 w-4 shrink-0 z-10 transition-all duration-200',
                       isActive 
                         ? 'text-primary-foreground' 
-                        : 'text-zinc-400 dark:text-zinc-500 group-hover:text-primary'
+                        : 'text-text-secondary group-hover:text-primary'
                     )} 
                   />
                   

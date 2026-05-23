@@ -43,7 +43,7 @@ export function ModalRenderer({ modal, onClose, index }: ModalRendererProps) {
         exit={{ opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
-          "relative flex flex-col bg-background border border-border shadow-2xl overflow-hidden",
+          "relative flex flex-col bg-card border border-border shadow-2xl overflow-hidden",
           "w-full min-w-[280px] max-h-[88vh] md:max-h-[90vh]",
           // Desktop sizing: centered card
           "md:w-[85vw] lg:w-full md:max-w-[700px] md:rounded-3xl",
@@ -58,15 +58,15 @@ export function ModalRenderer({ modal, onClose, index }: ModalRendererProps) {
 
         {/* Header */}
         {(modal.title || !modal.hideCloseButton) && (
-          <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border">
+          <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-card/85 backdrop-blur-md border-b border-border">
             <div className="flex flex-col">
-              {modal.title && <h2 className="text-base font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-50">{modal.title}</h2>}
-              {modal.subtitle && <p className="text-xs font-semibold text-muted-foreground mt-0.5">{modal.subtitle}</p>}
+              {modal.title && <h2 className="text-base font-black uppercase tracking-wider text-text-primary">{modal.title}</h2>}
+              {modal.subtitle && <p className="text-xs font-semibold text-text-secondary mt-0.5">{modal.subtitle}</p>}
             </div>
             {!modal.hideCloseButton && (
               <button 
                 onClick={handleClose}
-                className="p-2 -mr-2 text-muted-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all active:scale-90"
+                className="p-2 -mr-2 text-text-secondary hover:bg-secondary rounded-xl transition-all active:scale-90"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
@@ -82,7 +82,7 @@ export function ModalRenderer({ modal, onClose, index }: ModalRendererProps) {
 
         {/* Footer */}
         {modal.footer && (
-          <div className="px-6 py-4 border-t border-border bg-muted/10 backdrop-blur-md shrink-0">
+          <div className="px-6 py-4 border-t border-border bg-secondary/35 backdrop-blur-md shrink-0">
             {modal.footer}
           </div>
         )}

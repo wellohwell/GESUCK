@@ -35,17 +35,30 @@ export function ThemeProvider({
 
     root.classList.remove("light", "dark");
 
+    let activeTheme: "light" | "dark" = "light";
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light";
-
-      root.classList.add(systemTheme);
-      return;
+      activeTheme = systemTheme;
+    } else {
+      activeTheme = theme;
     }
 
-    root.classList.add(theme);
+    root.classList.add(activeTheme);
+
+    // Sync Android/Mobile browser status bar theme color
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const colorHex = activeTheme === "dark" ? "#0A0A0A" : "#F4F8F1";
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", colorHex);
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "theme-color";
+      meta.content = colorHex;
+      document.getElementsByTagName("head")[0].appendChild(meta);
+    }
   }, [theme]);
 
   const value = {

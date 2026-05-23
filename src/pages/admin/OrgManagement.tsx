@@ -199,38 +199,29 @@ export default function OrgManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased transition-colors duration-300">
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate("/")}
-              className="p-2 hover:bg-secondary/50 rounded-full transition-colors flex items-center justify-center text-muted-foreground"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-accent" />
-                Manajemen Organisasi & Cabang
-              </h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
-                Centralized Control Center
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah Cabang
-          </button>
+    <div className="space-y-6">
+      {/* Subpage Header area for consistent actions inside AdminLayout */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-white/5">
+        <div>
+          <h2 className="text-xl font-black uppercase tracking-tight flex items-center gap-2 text-zinc-900 dark:text-white">
+            <Building2 className="w-5 h-5 text-accent" />
+            Manajemen Organisasi & Cabang
+          </h2>
+          <p className="text-[10px] text-zinc-500 dark:text-zinc-400/80 uppercase tracking-widest font-mono">
+            Centralized Control Center
+          </p>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          Tambah Cabang
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
         
         {/* Statistics Section */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -422,17 +413,17 @@ export default function OrgManagement() {
             </AnimatePresence>
           </div>
         )}
-      </main>
+      </div>
 
-      {/* Editor Modal Overlay */}
+      {/* Editor Modal Overlay with high z-index and correct viewport layers */}
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/75 backdrop-blur-sm"
               onClick={resetForm}
             />
             
@@ -440,11 +431,11 @@ export default function OrgManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-lg bg-card border border-border shadow-premium rounded-3xl overflow-hidden z-20 flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-col max-h-[90vh]"
             >
-              <header className="px-6 py-4 border-b border-border flex items-center justify-between bg-secondary/50">
+              <header className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/50">
                 <div>
-                  <h3 className="text-base font-black flex items-center gap-2">
+                  <h3 className="text-base font-black flex items-center gap-2 text-zinc-900 dark:text-white">
                     <Settings2 className="w-5 h-5 text-accent" />
                     {editingBranch ? "Edit Konfigurasi Cabang" : "Tambah Registrasi Cabang Baru"}
                   </h3>
@@ -454,7 +445,7 @@ export default function OrgManagement() {
                 </div>
                 <button 
                   onClick={resetForm}
-                  className="p-1.5 hover:bg-secondary text-muted-foreground rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-muted-foreground rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -621,18 +612,18 @@ export default function OrgManagement() {
                 </div>
               </form>
 
-              <footer className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-secondary/50">
+              <footer className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-end gap-3 bg-zinc-50 dark:bg-zinc-950/50">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-secondary rounded-xl transition-colors"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md"
+                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
                 >
                   Simpan Konfigurasi
                 </button>

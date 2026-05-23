@@ -126,12 +126,12 @@ export default function MarketPlans({
     }
   };
 
+  const [isMasterFormOpen, setIsMasterFormOpen] = useState(false);
+  const [masterMarketToEdit, setMasterMarketToEdit] = useState<any>(null);
+
   const openForm = (market: any = null) => {
-    openModal({
-      type: "fullscreen",
-      hideCloseButton: true,
-      content: <MarketFormContent market={market} onClose={closeAllModals} />,
-    });
+    setMasterMarketToEdit(market);
+    setIsMasterFormOpen(true);
   };
 
   useEffect(() => {
@@ -456,6 +456,246 @@ export default function MarketPlans({
         )}
 
         {activeTab === 'plans' ? (
+          showModal ? (
+            <div className="w-full flex-1 flex flex-col relative h-[80vh] min-h-[500px] mt-2 mb-10 bg-white dark:bg-black sm:rounded-2xl border border-border shadow-sm animate-in fade-in zoom-in-95 duration-300">
+               {/* Header Native */}
+               <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 z-20 bg-white dark:bg-black sm:rounded-t-2xl shadow-sm">
+                  <h2 className="text-lg font-bold text-foreground">
+                    
+                  </h2>
+                  <button 
+                    onClick={() => setShowModal(false)}
+                    type="button"
+                    className="text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 bg-muted rounded-md"
+                  >
+                  back
+                  </button>
+               </div>
+
+              <div className="p-4 md:p-6 pb-32 flex-1 overflow-y-auto no-scrollbar w-full max-w-3xl mx-auto">
+                <div className="space-y-3 mb-5">
+                {/* Search Box */}
+                <div className="relative group w-full">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="Cari pasar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
+                    className="w-full bg-muted/50 border border-border/60 rounded-xl pl-10 pr-4 h-10 text-[11px] font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex gap-1.5 w-full overflow-x-auto no-scrollbar py-0.5">
+                  {/* City Selector */}
+                  <div className="shrink-0 flex-1 min-w-[90px]">
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                    >
+                      <option value="" className="bg-background">Wilayah</option>
+                      {WILAYAH_EXACT.map((w) => (
+                        <option key={w} value={w} className="bg-background">{w}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Type Selector */}
+                  <div className="shrink-0 flex-1 min-w-[90px]">
+                    <select
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                    >
+                      <option value="" className="bg-background">Kategori</option>
+                      {KATEGORI_TYPES.map((k) => (
+                        <option key={k.id} value={k.id} className="bg-background">{k.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Pasaran Selector */}
+                  <div className="shrink-0 flex-1 min-w-[90px]">
+                    <select
+                      value={selectedPasaran || ""}
+                      onChange={(e) => setSelectedPasaran(e.target.value)}
+                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                    >
+                      <option value="" className="bg-background">Pasaran</option>
+                      {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
+                        <option key={p} value={p} className="bg-background">{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Available Markets List */}
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                    Pasar Tersedia
+                  </label>
+                  <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
+                    {availableMarkets.length} TOTAL
+                  </span>
+                </div>
+
+                <AnimatePresence>
+                  {pasaranWarning && !searchQuery && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
+                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
+                        {pasaranWarning}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar">
+                    {availableMarkets.length > 0 ? (
+                      availableMarkets.map((m) => (
+                         <div
+                          key={m.id}
+                          onClick={() => handleMarketClick(m)}
+                          className={cn(
+                            "flex items-center justify-between py-2 px-1 transition-all hover:bg-muted/30 active:bg-muted group cursor-pointer border-b border-border/5 last:border-0",
+                            selectedMarketName === m.nama_pasar && "bg-primary/5 shadow-inner rounded-xl"
+                          )}
+                        >
+                          <div className="min-w-0 flex-1 pl-1">
+                            <h4 className={cn(
+                              "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
+                              selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
+                            )}>
+                              {toTitleCase(m.nama_pasar)}
+                            </h4>
+                            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                              <span className="text-zinc-400">{toTitleCase(m.wilayah)}</span>
+                              {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((kat: any, kIdx: number) => {
+                                const katId = typeof kat === "object" ? kat.kode || kat.id : kat;
+                                const isPasaranJawa = katId === "PASARAN_JAWA";
+                                
+                                if (isPasaranJawa) {
+                                  return (
+                                    <React.Fragment key={`${m.id}-kat-${kIdx}`}>
+                                      <span className="opacity-30">•</span>
+                                      <span className="text-primary font-mono tracking-normal">
+                                        [{m.pasaran?.join(", ") || "HARI INI"}]
+                                      </span>
+                                    </React.Fragment>
+                                  );
+                                }
+
+                                const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
+                                return (
+                                  <React.Fragment key={`${m.id}-kat-${kIdx}`}>
+                                    <span className="opacity-30">•</span>
+                                    <span className="text-primary">
+                                      {String(labelText).replace("Pasar ", "")}
+                                    </span>
+                                  </React.Fragment>
+                                );
+                              })}
+                              
+                              <span className="opacity-30">•</span>
+                              <span className="text-foreground/40 tabular-nums">
+                                {(() => {
+                                  if (selectedMarketName === m.nama_pasar && selectedSubCategory) {
+                                    const mKats = Array.isArray(m.kategori) ? m.kategori : [m.kategori];
+                                    const katObj = mKats.find((k: any) => (typeof k === "object" ? k.kode || k.id : k) === selectedSubCategory);
+                                    if (typeof katObj === "object" && katObj?.jam_buka) return String(katObj.jam_buka);
+                                    if (typeof m.jam_buka === "object" && m.jam_buka !== null) return String(m.jam_buka[selectedSubCategory] || Object.values(m.jam_buka)[0] || "");
+                                  }
+                                  if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
+                                    const jams = Object.values(m.jam_buka)
+                                      .map((val) => typeof val === "object" ? "" : String(val))
+                                      .filter(Boolean);
+                                    return jams.length > 0 ? jams.join(" • ") : "";
+                                  }
+                                  return String(m.jam_buka || "");
+                                })()}
+                              </span>
+                            </div>
+
+                            {/* Sub Category Selection - Always show if multi-category and selected */}
+                            {selectedMarketName === m.nama_pasar && Array.isArray(m.kategori) && m.kategori.length > 1 && (
+                              <div className="mt-2.5 flex flex-wrap gap-1.5 p-1.5 bg-zinc-50 dark:bg-white/[0.02] rounded-xl w-fit border border-zinc-100 dark:border-white/5 shadow-inner">
+                                {m.kategori.map((kat: any, katIdx: number) => {
+                                  const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
+                                  const labelValue = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
+                                  const labelStr = typeof labelValue === "object" ? String(labelValue.label || katIdVal) : String(labelValue);
+                                  const isSelected = selectedSubCategory === String(katIdVal);
+                                  
+                                  return (
+                                    <button
+                                      key={`${m.id}-choice-${katIdVal}-${katIdx}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedSubCategory(String(katIdVal));
+                                      }}
+                                      className={cn(
+                                        "px-4 py-1.5 rounded-lg text-[9px] font-black tracking-[0.05em] uppercase transition-all duration-200",
+                                        isSelected
+                                          ? "bg-primary text-black shadow-[0_2px_8px_rgba(183,232,0,0.2)] scale-105"
+                                          : "bg-zinc-200 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-white/10",
+                                      )}
+                                    >
+                                      {labelStr.replace("Pasar ", "")}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          {selectedMarketName === m.nama_pasar && (
+                            <div className="bg-primary text-black p-1.5 rounded-full ml-4 shrink-0 transition-all scale-110 ring-2 ring-primary/20">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-20 text-center text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] opacity-30">
+                        Data Tidak Ditemukan
+                      </div>
+                    )}
+                </div>
+              </div>
+               </div>
+
+              {/* Floating Save Button - Perfectly matching Bottom Nav style */}
+              <div className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pointer-events-none">
+                <nav className="bg-white/90 dark:bg-black/90 backdrop-blur-2xl rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] p-1.5 pointer-events-auto min-w-[200px]">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleAddPlan}
+                    className="relative w-full flex items-center justify-center gap-2 h-9 sm:h-10 px-8 rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(198,255,46,0.3)] transition-all group pointer-events-auto"
+                  >
+                    <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold tracking-tight uppercase">
+                      SIMPAN RENCANA
+                    </span>
+                  </motion.button>
+                </nav>
+              </div>
+            </div>
+          ) : (
           <div className="md:grid md:grid-cols-12 md:gap-12 md:items-start w-full relative">
             {/* Header Hero */}
             <section className="mb-4 md:mb-0 text-center md:text-left pt-0.5 relative md:col-span-5 lg:col-span-4 md:sticky md:top-24">
@@ -671,277 +911,38 @@ export default function MarketPlans({
           </footer>
         </div>
       </div>
+      )
     ) : (
       <div className="w-full">
-        <MasterDataView
-          markets={filteredMasterMarkets}
-          onAdd={() => openForm()}
-          onEdit={openForm}
-          onDelete={handleDeleteMarket}
-          search={masterSearch}
-          setSearch={setMasterSearch}
-          filters={{
-            wilayah: filterWilayah,
-            setWilayah: setFilterWilayah,
-            kategori: filterKategori,
-            setKategori: setFilterKategori,
-            pasaran: filterPasaran,
-            setPasaran: setFilterPasaran,
-          }}
-        />
+        {isMasterFormOpen ? (
+          <MarketFormContent 
+            market={masterMarketToEdit} 
+            onClose={() => {
+              setIsMasterFormOpen(false);
+              setMasterMarketToEdit(null);
+            }} 
+          />
+        ) : (
+          <MasterDataView
+            markets={filteredMasterMarkets}
+            onAdd={() => openForm()}
+            onEdit={openForm}
+            onDelete={handleDeleteMarket}
+            search={masterSearch}
+            setSearch={setMasterSearch}
+            filters={{
+              wilayah: filterWilayah,
+              setWilayah: setFilterWilayah,
+              kategori: filterKategori,
+              setKategori: setFilterKategori,
+              pasaran: filterPasaran,
+              setPasaran: setFilterPasaran,
+            }}
+          />
+        )}
       </div>
     )}
   </main>
-
-        {/* Modal - Improved Minimal Feel */}
-        <AnimatePresence>
-          {showModal && (
-          <div className="fixed inset-x-0 bottom-0 top-14 sm:top-0 sm:inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <motion.div
-              onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-zinc-900/40 dark:bg-black/90 backdrop-blur-sm dark:backdrop-blur-md"
-            />
-
-            <motion.div
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full h-full bg-background flex flex-col relative sm:rounded-t-3xl overflow-hidden shadow-premium"
-            >
-              {/* Floating Close - Minimalist */}
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 z-50 w-7 h-7 rounded-full bg-muted/40 hover:bg-muted/60 backdrop-blur-sm flex items-center justify-center border border-border/10 text-muted-foreground transition-all active:scale-95"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-
-              <div className="p-6 pt-12 sm:pt-8 pb-32 flex-1 overflow-y-auto no-scrollbar">
-                <div className="space-y-3 mb-5">
-                {/* Search Box */}
-                <div className="relative group max-w-sm mx-auto">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Cari pasar..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
-                    className="w-full bg-muted/50 border border-border/60 rounded-xl pl-10 pr-4 h-10 text-[11px] font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex gap-1.5 max-w-sm mx-auto overflow-x-auto no-scrollbar py-0.5">
-                  {/* City Selector */}
-                  <div className="shrink-0 min-w-[90px]">
-                    <select
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Wilayah</option>
-                      {WILAYAH_EXACT.map((w) => (
-                        <option key={w} value={w} className="bg-background">{w}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Type Selector */}
-                  <div className="shrink-0 min-w-[90px]">
-                    <select
-                      value={selectedType}
-                      onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Kategori</option>
-                      {KATEGORI_TYPES.map((k) => (
-                        <option key={k.id} value={k.id} className="bg-background">{k.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Pasaran Selector */}
-                  <div className="shrink-0 min-w-[90px]">
-                    <select
-                      value={selectedPasaran || ""}
-                      onChange={(e) => setSelectedPasaran(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Pasaran</option>
-                      {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
-                        <option key={p} value={p} className="bg-background">{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Available Markets List */}
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                    Pasar Tersedia
-                  </label>
-                  <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
-                    {availableMarkets.length} TOTAL
-                  </span>
-                </div>
-
-                <AnimatePresence>
-                  {pasaranWarning && !searchQuery && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
-                    >
-                      <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
-                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
-                        {pasaranWarning}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="max-h-[450px] overflow-y-auto no-scrollbar">
-                    {availableMarkets.length > 0 ? (
-                      availableMarkets.map((m) => (
-                        <div
-                          key={m.id}
-                          onClick={() => handleMarketClick(m)}
-                          className={cn(
-                            "flex items-center justify-between py-2 px-0.5 transition-all hover:bg-muted/30 active:bg-muted group cursor-pointer border-b border-border/5 last:border-0",
-                            selectedMarketName === m.nama_pasar && "bg-primary/5 shadow-inner"
-                          )}
-                        >
-                          <div className="min-w-0 flex-1">
-                            <h4 className={cn(
-                              "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
-                              selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
-                            )}>
-                              {toTitleCase(m.nama_pasar)}
-                            </h4>
-                            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                              <span className="text-zinc-400">{toTitleCase(m.wilayah)}</span>
-                              {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((kat: any, kIdx: number) => {
-                                const katId = typeof kat === "object" ? kat.kode || kat.id : kat;
-                                const isPasaranJawa = katId === "PASARAN_JAWA";
-                                
-                                if (isPasaranJawa) {
-                                  return (
-                                    <React.Fragment key={`${m.id}-kat-${kIdx}`}>
-                                      <span className="opacity-30">•</span>
-                                      <span className="text-primary font-mono tracking-normal">
-                                        [{m.pasaran?.join(", ") || "HARI INI"}]
-                                      </span>
-                                    </React.Fragment>
-                                  );
-                                }
-
-                                const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
-                                return (
-                                  <React.Fragment key={`${m.id}-kat-${kIdx}`}>
-                                    <span className="opacity-30">•</span>
-                                    <span className="text-primary">
-                                      {String(labelText).replace("Pasar ", "")}
-                                    </span>
-                                  </React.Fragment>
-                                );
-                              })}
-                              
-                              <span className="opacity-30">•</span>
-                              <span className="text-foreground/40 tabular-nums">
-                                {(() => {
-                                  if (selectedMarketName === m.nama_pasar && selectedSubCategory) {
-                                    const mKats = Array.isArray(m.kategori) ? m.kategori : [m.kategori];
-                                    const katObj = mKats.find((k: any) => (typeof k === "object" ? k.kode || k.id : k) === selectedSubCategory);
-                                    if (typeof katObj === "object" && katObj?.jam_buka) return String(katObj.jam_buka);
-                                    if (typeof m.jam_buka === "object" && m.jam_buka !== null) return String(m.jam_buka[selectedSubCategory] || Object.values(m.jam_buka)[0] || "");
-                                  }
-                                  if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
-                                    const jams = Object.values(m.jam_buka)
-                                      .map((val) => typeof val === "object" ? "" : String(val))
-                                      .filter(Boolean);
-                                    return jams.length > 0 ? jams.join(" • ") : "";
-                                  }
-                                  return String(m.jam_buka || "");
-                                })()}
-                              </span>
-                            </div>
-
-                            {/* Sub Category Selection - Always show if multi-category and selected */}
-                            {selectedMarketName === m.nama_pasar && Array.isArray(m.kategori) && m.kategori.length > 1 && (
-                              <div className="mt-2.5 flex flex-wrap gap-1.5 p-1.5 bg-zinc-50 dark:bg-white/[0.02] rounded-xl w-fit border border-zinc-100 dark:border-white/5 shadow-inner">
-                                {m.kategori.map((kat: any, katIdx: number) => {
-                                  const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
-                                  const labelValue = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
-                                  const labelStr = typeof labelValue === "object" ? String(labelValue.label || katIdVal) : String(labelValue);
-                                  const isSelected = selectedSubCategory === String(katIdVal);
-                                  
-                                  return (
-                                    <button
-                                      key={`${m.id}-choice-${katIdVal}-${katIdx}`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedSubCategory(String(katIdVal));
-                                      }}
-                                      className={cn(
-                                        "px-4 py-1.5 rounded-lg text-[9px] font-black tracking-[0.05em] uppercase transition-all duration-200",
-                                        isSelected
-                                          ? "bg-primary text-black shadow-[0_2px_8px_rgba(183,232,0,0.2)] scale-105"
-                                          : "bg-zinc-200 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-white/10",
-                                      )}
-                                    >
-                                      {labelStr.replace("Pasar ", "")}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                          {selectedMarketName === m.nama_pasar && (
-                            <div className="bg-primary text-black p-1.5 rounded-full ml-4 shrink-0 transition-all scale-110 ring-2 ring-primary/20">
-                              <CheckCircle2 className="w-4 h-4" />
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="py-20 text-center text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] opacity-30">
-                        Data Tidak Ditemukan
-                      </div>
-                    )}
-                </div>
-              </div>
-               </div>
-
-              {/* Floating Save Button - Perfectly matching Bottom Nav style */}
-              <div className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pointer-events-none">
-                <nav className="bg-white/90 dark:bg-black/90 backdrop-blur-2xl rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] p-1.5 pointer-events-auto min-w-[200px]">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleAddPlan}
-                    className="relative w-full flex items-center justify-center gap-2 h-9 sm:h-10 px-8 rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(198,255,46,0.3)] transition-all group pointer-events-auto"
-                  >
-                    <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-bold tracking-tight uppercase">
-                      SIMPAN RENCANA
-                    </span>
-                  </motion.button>
-                </nav>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }

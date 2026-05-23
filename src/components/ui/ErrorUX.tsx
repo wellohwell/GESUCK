@@ -65,7 +65,7 @@ export function ErrorUX({ error, onRetry, className, fallbackTitle }: ErrorUXPro
       {onRetry && (
         <button
           onClick={onRetry}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black hover:opacity-90 active:scale-95 transition-all shadow-md"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-md"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Segarkan
