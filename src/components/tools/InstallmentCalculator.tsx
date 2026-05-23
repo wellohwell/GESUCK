@@ -238,6 +238,11 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             </div>
         </div>
         
+        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl shadow-sm mt-2">
+            <span className="font-black text-[9px] uppercase tracking-wider opacity-80">Angsuran / Hari</span>
+            <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
+        </div>
+
         <div className="space-y-1 text-left">
             <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Harga Nawar</label>
             <RupiahInput 
@@ -247,11 +252,6 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
               className={cn("py-2.5", isNawarFilled && "border-red-500 ring-red-500 ring-1")}
               autoMultiply={true}
             />
-        </div>
-
-        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl shadow-sm mt-2">
-            <span className="font-black text-[9px] uppercase tracking-wider opacity-80">Angsuran / Hari</span>
-            <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
         </div>
 
         <div className={cn(

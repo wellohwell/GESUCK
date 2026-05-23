@@ -17,7 +17,9 @@ import {
   Trash2,
   Search,
   AlertTriangle,
-  Download
+  Download,
+  Edit2,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "../hooks/use-toast";
@@ -427,128 +429,114 @@ export default function MarketPlans({
         "max-w-2xl md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-8 pb-32 relative z-10 w-full",
         canAccessMaster ? "pt-4 md:pt-12" : "pt-2 md:pt-6"
       )}>
-        {/* Minimalist Tab Switcher / Navigation & Export Trigger */}
-        {canAccessMaster && (
-          <div data-html2canvas-ignore="true" className="flex items-center gap-5 md:gap-8 mb-6 border-b border-zinc-200/40 dark:border-white/[0.04] pb-2 w-full">
-            <button
-              onClick={() => setActiveTab('plans')}
-              className={cn(
-                "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
-                activeTab === 'plans' 
-                  ? "text-foreground border-primary" 
-                  : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
-              )}
-            >
-              Rencana Kunjungan
-            </button>
-            <button
-              onClick={() => setActiveTab('master')}
-              className={cn(
-                "pb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative cursor-pointer -mb-[10px] border-b-2",
-                activeTab === 'master' 
-                  ? "text-foreground border-primary" 
-                  : "text-zinc-400 dark:text-zinc-500 hover:text-foreground border-transparent"
-              )}
-            >
-              Master Data Pasar
-            </button>
-          </div>
-        )}
-
         {activeTab === 'plans' ? (
           showModal ? (
-            <div className="w-full flex-1 flex flex-col relative h-[80vh] min-h-[500px] mt-2 mb-10 bg-white dark:bg-black sm:rounded-2xl border border-border shadow-sm animate-in fade-in zoom-in-95 duration-300">
-               {/* Header Native */}
-               <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 z-20 bg-white dark:bg-black sm:rounded-t-2xl shadow-sm">
-                  <h2 className="text-lg font-bold text-foreground">
-                    
-                  </h2>
-                  <button 
-                    onClick={() => setShowModal(false)}
-                    type="button"
-                    className="text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 bg-muted rounded-md"
-                  >
-                  back
-                  </button>
-               </div>
-
-              <div className="p-4 md:p-6 pb-32 flex-1 overflow-y-auto no-scrollbar w-full max-w-3xl mx-auto">
-                <div className="space-y-3 mb-5">
-                {/* Search Box */}
-                <div className="relative group w-full">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Cari pasar..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
-                    className="w-full bg-muted/50 border border-border/60 rounded-xl pl-10 pr-4 h-10 text-[11px] font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex gap-1.5 w-full overflow-x-auto no-scrollbar py-0.5">
-                  {/* City Selector */}
-                  <div className="shrink-0 flex-1 min-w-[90px]">
-                    <select
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Wilayah</option>
-                      {WILAYAH_EXACT.map((w) => (
-                        <option key={w} value={w} className="bg-background">{w}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Type Selector */}
-                  <div className="shrink-0 flex-1 min-w-[90px]">
-                    <select
-                      value={selectedType}
-                      onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Kategori</option>
-                      {KATEGORI_TYPES.map((k) => (
-                        <option key={k.id} value={k.id} className="bg-background">{k.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Pasaran Selector */}
-                  <div className="shrink-0 flex-1 min-w-[90px]">
-                    <select
-                      value={selectedPasaran || ""}
-                      onChange={(e) => setSelectedPasaran(e.target.value)}
-                      className="w-full h-8 bg-muted/40 px-2 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                    >
-                      <option value="" className="bg-background">Pasaran</option>
-                      {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
-                        <option key={p} value={p} className="bg-background">{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+            isMasterFormOpen ? (
+              <div className="w-full flex-1 flex flex-col relative h-[calc(100dvh-120px)] sm:h-[80vh] min-h-[500px] mt-2 mb-10 bg-white dark:bg-black rounded-2xl border border-border shadow-sm">
+                <MarketFormContent 
+                  market={masterMarketToEdit} 
+                  onClose={() => {
+                    setIsMasterFormOpen(false);
+                    setMasterMarketToEdit(null);
+                  }} 
+                />
               </div>
+            ) : (
+              <div className="w-full flex-1 flex flex-col relative h-[calc(100dvh-120px)] sm:h-[80vh] min-h-[500px] mt-2 mb-10 bg-transparent sm:bg-white sm:dark:bg-black sm:rounded-2xl border-none sm:border sm:border-border shadow-none sm:shadow-sm animate-in fade-in zoom-in-95 duration-300">
+                {/* Floating Clean Close Button */}
+                <button 
+                  onClick={() => setShowModal(false)}
+                  type="button"
+                  className="absolute right-2 top-2 sm:right-4 sm:top-4 z-30 text-muted-foreground hover:text-foreground transition-all p-2.5 bg-muted/40 hover:bg-muted/60 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80 rounded-full flex items-center justify-center border border-border/10 shrink-0 shadow-sm"
+                  aria-label="Kembali"
+                >
+                  <X className="w-4 h-4" />
+                </button>
 
-              {/* Available Markets List */}
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                    Pasar Tersedia
-                  </label>
-                  <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
-                    {availableMarkets.length} TOTAL
-                  </span>
-                </div>
+                 <div className="px-4 sm:px-6 pt-12 pb-32 flex-1 overflow-y-auto no-scrollbar w-full max-w-3xl mx-auto relative">
+                   {/* Sticky Filter & Header Section */}
+                   <div className="sticky top-0 z-20 bg-background sm:bg-white sm:dark:bg-black pt-2 pb-4 space-y-4 mb-4 border-b border-border/20">
+                     {/* Search Box */}
+                     <div className="relative group w-full">
+                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                       <input
+                         type="text"
+                         placeholder="Cari pasar atau wilayah..."
+                         value={searchQuery}
+                         onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
+                         className="w-full bg-muted/50 border border-border/60 rounded-xl pl-10 pr-4 h-10 text-[11px] font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30"
+                       />
+                       {searchQuery && (
+                         <button
+                           onClick={() => setSearchQuery("")}
+                           className="absolute right-3.5 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
+                         >
+                           <X className="w-3.5 h-3.5 text-muted-foreground" />
+                         </button>
+                       )}
+                     </div>
+
+                     {/* Filters Hub */}
+                     <div className="grid grid-cols-3 gap-2 py-0.5">
+                       {/* City Selector */}
+                       <div className="relative">
+                         <select
+                           value={selectedCity}
+                           onChange={(e) => setSelectedCity(e.target.value)}
+                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                         >
+                           <option value="" className="bg-background">WILAYAH</option>
+                           {WILAYAH_EXACT.map((w) => (
+                             <option key={w} value={w} className="bg-background">{w.toUpperCase()}</option>
+                           ))}
+                         </select>
+                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+                       </div>
+
+                       {/* Type Selector */}
+                       <div className="relative">
+                         <select
+                           value={selectedType}
+                           onChange={(e) => setSelectedType(e.target.value)}
+                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                         >
+                           <option value="" className="bg-background">KATEGORI</option>
+                           {KATEGORI_TYPES.map((k) => (
+                             <option key={k.id} value={k.id} className="bg-background">{k.label.toUpperCase()}</option>
+                           ))}
+                         </select>
+                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+                       </div>
+
+                       {/* Pasaran Selector */}
+                       <div className="relative">
+                         <select
+                           value={selectedPasaran || ""}
+                           onChange={(e) => setSelectedPasaran(e.target.value)}
+                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                         >
+                           <option value="" className="bg-background">PASARAN</option>
+                           {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
+                             <option key={p} value={p} className="bg-background">{p.toUpperCase()}</option>
+                           ))}
+                         </select>
+                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+                       </div>
+                     </div>
+
+                     {/* "Pasar Tersedia" Header */}
+                     <div className="flex items-center justify-between px-1 pt-2 border-b border-border/20 pb-2">
+                       <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                         Pasar Tersedia
+                       </label>
+                       <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
+                         {availableMarkets.length} TOTAL
+                       </span>
+                     </div>
+                   </div>
+
+               {/* Available Markets List */}
+               <div className="relative">
 
                 <AnimatePresence>
                   {pasaranWarning && !searchQuery && (
@@ -566,18 +554,18 @@ export default function MarketPlans({
                   )}
                 </AnimatePresence>
 
-                <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar">
+                <div className="flex flex-col gap-1">
                     {availableMarkets.length > 0 ? (
                       availableMarkets.map((m) => (
                          <div
                           key={m.id}
                           onClick={() => handleMarketClick(m)}
                           className={cn(
-                            "flex items-center justify-between py-2 px-1 transition-all hover:bg-muted/30 active:bg-muted group cursor-pointer border-b border-border/5 last:border-0",
-                            selectedMarketName === m.nama_pasar && "bg-primary/5 shadow-inner rounded-xl"
+                            "flex items-center justify-between p-4 mb-3 transition-all active:scale-[0.99] group cursor-pointer border border-border/40 dark:border-white/[0.04] bg-muted/15 dark:bg-zinc-900/30 hover:bg-muted/25 dark:hover:bg-zinc-900/60 rounded-2xl shadow-sm",
+                            selectedMarketName === m.nama_pasar && "bg-primary/10 border-primary/40 dark:border-primary/40 dark:bg-primary/[0.04] ring-1 ring-primary/20"
                           )}
                         >
-                          <div className="min-w-0 flex-1 pl-1">
+                          <div className="min-w-0 flex-1 pr-1">
                             <h4 className={cn(
                               "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
                               selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
@@ -662,11 +650,6 @@ export default function MarketPlans({
                               </div>
                             )}
                           </div>
-                          {selectedMarketName === m.nama_pasar && (
-                            <div className="bg-primary text-black p-1.5 rounded-full ml-4 shrink-0 transition-all scale-110 ring-2 ring-primary/20">
-                              <CheckCircle2 className="w-4 h-4" />
-                            </div>
-                          )}
                         </div>
                       ))
                     ) : (
@@ -695,7 +678,8 @@ export default function MarketPlans({
                 </nav>
               </div>
             </div>
-          ) : (
+          )
+        ) : (
           <div className="md:grid md:grid-cols-12 md:gap-12 md:items-start w-full relative">
             {/* Header Hero */}
             <section className="mb-4 md:mb-0 text-center md:text-left pt-0.5 relative md:col-span-5 lg:col-span-4 md:sticky md:top-24">
