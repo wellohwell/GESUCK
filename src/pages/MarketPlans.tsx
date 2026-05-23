@@ -572,52 +572,36 @@ export default function MarketPlans({
                             )}>
                               {toTitleCase(m.nama_pasar)}
                             </h4>
-                            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                              <span className="text-zinc-400">{toTitleCase(m.wilayah)}</span>
+                            <div className="text-[11px] font-bold text-muted-foreground/80 tracking-wide mt-0.5">
+                              {toTitleCase(m.wilayah)}
+                            </div>
+                            <div className="flex flex-col gap-1 mt-1">
                               {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((kat: any, kIdx: number) => {
                                 const katId = typeof kat === "object" ? kat.kode || kat.id : kat;
                                 const isPasaranJawa = katId === "PASARAN_JAWA";
                                 
+                                let infoLabel = "";
                                 if (isPasaranJawa) {
-                                  return (
-                                    <React.Fragment key={`${m.id}-kat-${kIdx}`}>
-                                      <span className="opacity-30">•</span>
-                                      <span className="text-primary font-mono tracking-normal">
-                                        [{m.pasaran?.join(", ") || "HARI INI"}]
-                                      </span>
-                                    </React.Fragment>
-                                  );
+                                  infoLabel = (m.pasaran || []).map(p => p.toUpperCase()).join(", ") || "HARI INI";
+                                } else {
+                                  const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
+                                  infoLabel = toTitleCase(String(labelText).replace("Pasar ", ""));
                                 }
 
-                                const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
+                                let scheduleText = "";
+                                if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
+                                  scheduleText = m.jam_buka[katId] || Object.values(m.jam_buka)[0] || "";
+                                } else {
+                                  scheduleText = m.jam_buka || "";
+                                }
+
                                 return (
-                                  <React.Fragment key={`${m.id}-kat-${kIdx}`}>
-                                    <span className="opacity-30">•</span>
-                                    <span className="text-primary">
-                                      {String(labelText).replace("Pasar ", "")}
-                                    </span>
-                                  </React.Fragment>
+                                  <div key={`${m.id}-kat-${kIdx}`} className="flex items-center gap-1.5 text-[11px] font-bold text-primary tracking-tight">
+                                    <span>🕐</span>
+                                    <span>{infoLabel} - {scheduleText}</span>
+                                  </div>
                                 );
                               })}
-                              
-                              <span className="opacity-30">•</span>
-                              <span className="text-foreground/40 tabular-nums">
-                                {(() => {
-                                  if (selectedMarketName === m.nama_pasar && selectedSubCategory) {
-                                    const mKats = Array.isArray(m.kategori) ? m.kategori : [m.kategori];
-                                    const katObj = mKats.find((k: any) => (typeof k === "object" ? k.kode || k.id : k) === selectedSubCategory);
-                                    if (typeof katObj === "object" && katObj?.jam_buka) return String(katObj.jam_buka);
-                                    if (typeof m.jam_buka === "object" && m.jam_buka !== null) return String(m.jam_buka[selectedSubCategory] || Object.values(m.jam_buka)[0] || "");
-                                  }
-                                  if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
-                                    const jams = Object.values(m.jam_buka)
-                                      .map((val) => typeof val === "object" ? "" : String(val))
-                                      .filter(Boolean);
-                                    return jams.length > 0 ? jams.join(" • ") : "";
-                                  }
-                                  return String(m.jam_buka || "");
-                                })()}
-                              </span>
                             </div>
 
                             {/* Sub Category Selection - Always show if multi-category and selected */}
