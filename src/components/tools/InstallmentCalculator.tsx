@@ -38,7 +38,7 @@ const formatRupiah = (value: number) => {
   }).format(value)
 }
 
-export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: PricelistItem | null }) {
+export function InstallmentCalculator({ itemDefaults, onClose }: { itemDefaults?: PricelistItem | null, onClose: () => void }) {
   const [modal, setModal] = useState<number | undefined>()
   const [dp, setDp] = useState<number | undefined>()
   const [tipe, setTipe] = useState<TipeProduk | ''>('')
@@ -271,6 +271,12 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         >
             <Copy className="w-4 h-4" />
             <span className="text-sm">Salin Hasil</span>
+        </button>
+        <button 
+          onClick={onClose} 
+          className="w-full bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-300 text-zinc-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:opacity-80 active:scale-[0.98] transition-all"
+        >
+            <span className="text-sm">Tutup</span>
         </button>
       </div>
     </div>
