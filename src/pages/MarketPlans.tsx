@@ -85,7 +85,7 @@ export default function MarketPlans({
 
   const { openModal, closeAllModals } = useModal();
   const role = useRole();
-  const canAccessMaster = role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.ADMIN_CABANG || role === ROLES.SPV;
+  const canAccessMaster = role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.STAFF || role === ROLES.SPV;
   const actualIsAdmin = isAdmin || canAccessMaster;
 
   const [searchParams, setSearchParams] = useSearchParams();

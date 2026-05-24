@@ -19,7 +19,7 @@ import React from 'react';
 export const DEFAULT_WORKSPACES: Record<string, string> = {
   owner: "/home",
   admin: "/admin/modules",
-  admin_cabang: "/client",
+  staff: "/client",
   sales: "/explore",
   survey: "/tools",
   gudang: "/tools",
@@ -152,7 +152,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     visible: true,
     enabled: true,
     order: 6,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN],
+    allowedRoles: [ROLES.OWNER, ROLES.STAFF],
     allowedBranches: [],
     mobileOnly: false,
     desktopOnly: false,

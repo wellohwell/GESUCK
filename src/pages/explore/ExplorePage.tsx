@@ -6,10 +6,12 @@ import { useGeaGetra } from '../../hooks/useGeaGetra';
 import { PricelistPage } from './PricelistPage';
 import GeaGetraPage from './GeaGetraPage';
 import { ImageDetailView, ImageData } from '../../components/explore/ImageDetailView';
+import { useRuntime } from '../../providers/RuntimeProvider';
 
 export type SortType = 'default' | 'merk_asc' | 'merk_desc' | 'price_low' | 'price_high';
 
 export default function ExplorePage() {
+  const { loading: runtimeLoading, error: runtimeError, runtime, branch } = useRuntime();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [currentImageList, setCurrentImageList] = useState<ImageData[]>([]);
@@ -21,6 +23,16 @@ export default function ExplorePage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Temporarily add runtime debug logging for cross-branch configuration audit
+  React.useEffect(() => {
+    if (runtime) {
+      console.log(`[Runtime Audit] branchId: ${branch?.id || 'unknown'}`);
+      console.log(`[Runtime Audit] loaded runtime:`, runtime);
+      console.log(`[Runtime Audit] active datasource:`, runtime.modules?.explore?.datasource);
+      console.log(`[Runtime Audit] spreadsheetId being used: ${runtime.modules?.explore?.datasource?.spreadsheetId || 'none'}`);
+    }
+  }, [runtime, branch]);
   
   const currentSearch = searchParams.get('search') || '';
   
@@ -30,6 +42,94 @@ export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>('pricelist');
   const [sortBy, setSortBy] = useState<SortType>('default');
   const [selectedMerk, setSelectedMerk] = useState<string>('all');
+
+  const exploreConfig = runtime?.modules?.explore;
+
+  // Render initialization loading spinner
+  const renderedLoading = useMemo(() => {
+    if (runtimeLoading) {
+      return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground animate-pulse">
+              Menginisialisasi Runtime...
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }, [runtimeLoading]);
+
+  // Render disabled state or missing config fallbacks
+  const renderedFallback = useMemo(() => {
+    if (runtimeLoading) return null;
+
+    if (runtimeError || !exploreConfig) {
+      return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-black uppercase tracking-wider text-foreground">
+              Akses Terbatas / Konfigurasi Saluran Hilang
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {runtimeError || "Konfigurasi cabang Anda tidak dapat ditemukan di server kami. Silakan hubungi admin Anda untuk mengaktifkan modul pencarian produk."}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!exploreConfig.datasource?.spreadsheetId) {
+      return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center space-y-5">
+            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-lg font-black uppercase tracking-wider text-foreground">
+                Cabang Belum Dikonfigurasi
+              </h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Tautan spreadsheet untuk Cabang Anda belum dikonfigurasi. Silakan hubungi administrator pusat.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!exploreConfig.enabled) {
+      return (
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,255,46,0.1)]">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-black uppercase tracking-wider text-foreground">
+              Modul Explore Dinonaktifkan
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Modul Explore untuk Cabang Anda sedang dinonaktifkan oleh administrator sistem.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  }, [runtimeLoading, runtimeError, exploreConfig]);
 
   const brands = useMemo(() => {
     let sourceData = [];
@@ -107,6 +207,9 @@ export default function ExplorePage() {
     { label: 'TERMURAH', value: 'price_low' },
     { label: 'TERMAHAL', value: 'price_high' },
   ];
+
+  if (renderedLoading) return renderedLoading;
+  if (renderedFallback) return renderedFallback;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-300">

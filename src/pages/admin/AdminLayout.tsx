@@ -140,29 +140,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300 flex flex-col">
-      {/* Reusable Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-100 dark:border-white/10 transition-colors">
-        <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 transition-colors border border-zinc-200 dark:border-transparent active:scale-95"
-            id="admin-header-back-button"
-            title="Kembali"
-          >
-            <ArrowLeft className="w-4 h-4 text-zinc-600 dark:text-white" />
-          </button>
-
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-zinc-900 dark:text-white/80">
-            {pageTitle}
-          </span>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen w-full bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300 flex flex-col">
       {/* Main Responsive Layout Wrapper */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
         <Outlet context={{ 

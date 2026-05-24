@@ -30,13 +30,14 @@ export const listUsers = async (profile: UserProfile | null): Promise<UserProfil
 
 export const approveUser = async (adminProfile: UserProfile, targetUid: string, role: string, branchId: string) => {
     // Permission validation (done via hook/guard at component level, but enforce here for security)
-    if (adminProfile.role === ROLES.ADMIN_CABANG && adminProfile.branchId !== branchId) {
+    if (adminProfile.role === ROLES.STAFF && adminProfile.branchId !== branchId) {
         throw new Error("Cannot approve users for other branches.");
     }
     
     await updateUserProfile(targetUid, {
         status: 'approved',
         role,
+        roleIds: [role],
         branchId,
         approvedBy: adminProfile.uid,
         approvedAt: serverTimestamp() as any

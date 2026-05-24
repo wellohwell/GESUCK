@@ -289,7 +289,7 @@ export default function HomePage() {
   const roleGreeting = 
     roleLabel === 'OWNER' ? 'Owner Command Space 👑' :
     roleLabel === 'ADMIN' ? 'Global Admin Workspace 🛡️' :
-    roleLabel === 'ADMIN_CABANG' ? 'Branch Command Space 📡' :
+    roleLabel === 'STAFF' ? 'Branch Command Space 📡' :
     roleLabel === 'SPV' ? 'Supervisor Control Desk 📈' :
     'Operator Control Center ⚡';
 
@@ -383,7 +383,7 @@ export default function HomePage() {
         </div>
 
         {/* OWNER / ADMIN EXCLUSIVE ACTIVE OMSET CARD */}
-        {(roleLabel === 'OWNER' || roleLabel === 'ADMIN' || roleLabel === 'ADMIN_CABANG') && (
+        {(roleLabel === 'OWNER' || roleLabel === 'ADMIN' || roleLabel === 'STAFF') && (
           <div className="bg-gradient-to-r from-zinc-900 to-black text-white rounded-3xl p-6 shadow-xl border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
               <span className="text-[9px] font-black bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full uppercase tracking-widest">

@@ -14,7 +14,8 @@ export const resolveUserAccessState = (profile: UserProfile | null): AccessState
 
     // New Google users initially lack phone and/or branchId. 
     // They must complete the onboarding page first to supply these, even if their document status is 'pending'
-    const hasCompletedOnboarding = !!profile.phone && !!profile.branchId;
+    const isGlobal = profile.userType === 'global';
+    const hasCompletedOnboarding = isGlobal || (!!profile.phone && !!profile.branchId);
     if (!hasCompletedOnboarding) {
         return 'onboarding';
     }

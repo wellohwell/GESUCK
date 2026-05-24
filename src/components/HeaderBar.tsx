@@ -1,23 +1,58 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
-import { useUserProfile } from '../lib/services';
+import { useAuth } from '../providers/AuthProvider';
+import { useRuntime } from '../providers/RuntimeProvider';
 import { useNetwork } from '../hooks/use-network';
-import { Wifi, WifiOff, MapPin, Loader2 } from 'lucide-react';
+import { Wifi, WifiOff, MapPin, Loader2, Globe } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { MarketPlansHeaderAction } from './MarketPlansHeaderAction';
 
 export function HeaderBar() {
-  const { profile } = useUserProfile();
+  const { profile } = useAuth();
+  const { activeBranchContext, setBranchContext } = useRuntime();
+  const navigate = useNavigate();
   const { isOnline, isSlow } = useNetwork();
+  
+  const isGlobalUser = profile?.userType === 'global';
+
+  const handleReturnToCockpit = () => {
+    setBranchContext(null);
+    navigate('/global');
+  };
 
   return (
     <header className="sticky top-0 z-[60] w-full border-b border-zinc-100/80 dark:border-zinc-800/50 bg-background/80 backdrop-blur-md px-4 py-1.2 md:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Section: Scoped Workspace / Network Indicator */}
         <div className="flex items-center gap-3">
-          {profile?.branchId ? (
+          {isGlobalUser ? (
+            activeBranchContext ? (
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                  <MapPin className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest leading-none">
+                    Konteks: {activeBranchContext.toUpperCase()}
+                  </span>
+                </div>
+                <button 
+                  onClick={handleReturnToCockpit}
+                  type="button"
+                  className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-zinc-900 border border-zinc-800 text-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 rounded-lg hover:opacity-90 active:scale-95 transition-all"
+                >
+                  KOKPIT
+                </button>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d2f34c]/10 border border-[#d2f34c]/20 text-[#d2f34c]">
+                <Globe className="w-3.5 h-3.5 text-[#d2f34c]" />
+                <span className="text-[10px] font-extrabold uppercase tracking-widest leading-none">
+                  KONSENTER CENTRAL
+                </span>
+              </div>
+            )
+          ) : profile?.branchId ? (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/60 text-zinc-600 dark:text-zinc-350">
               <MapPin className="w-3.5 h-3.5 text-brand-primary" />
               <span className="text-[10px] font-extrabold uppercase tracking-widest leading-none">

@@ -1,18 +1,30 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchPricelist } from '../lib/sheets/fetchPricelist';
 import { Product } from '../types/pricelist';
-import { useAuth } from '../providers/AuthProvider';
+import { useRuntime } from '../providers/RuntimeProvider';
 
 export function usePricelist() {
-  const { spreadsheetId } = useAuth();
+  const { runtime, loading: runtimeLoading } = useRuntime();
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const exploreConfig = runtime?.modules?.explore;
+  const sheetId = exploreConfig?.datasource?.spreadsheetId || null;
+  const sheetName = exploreConfig?.datasource?.sheetName || null;
+
   useEffect(() => {
+    if (runtimeLoading) return;
+
+    if (!sheetId) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     setLoading(true);
-    fetchPricelist(spreadsheetId).then(res => {
+    fetchPricelist(sheetId, sheetName).then(res => {
       if (isMounted) {
         setData(res);
         setLoading(false);
@@ -24,7 +36,7 @@ export function usePricelist() {
       }
     });
     return () => { isMounted = false; };
-  }, [spreadsheetId]);
+  }, [sheetId, sheetName, runtimeLoading]);
 
   const categories = useMemo(() => {
     // Generate unique tags/category from data

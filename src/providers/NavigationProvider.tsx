@@ -106,6 +106,11 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // 2. Access control matching dynamically
   const isEligible = (item: DynamicNavItem): boolean => {
+    // Global users always bypass navigation gate structures
+    if (profile?.userType === 'global') {
+      return true;
+    }
+
     // A. Check base enablement
     if (!item.enabled || !item.visible) return false;
 

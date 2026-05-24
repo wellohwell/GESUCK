@@ -15,6 +15,8 @@ export const RequireApprovedUser: React.FC<{ children: React.ReactNode }> = ({ c
     if (loading) return null;
     if (!isAuthenticated) return <div>Please login.</div>;
     
+    if (profile?.userType === 'global') return <>{children}</>;
+    
     if (profile?.status === 'pending') return <PendingApprovalState />;
     if (profile?.status === 'suspended') return <SuspendedState />;
     if (profile?.status === 'rejected') return <RejectedState />;
@@ -27,10 +29,15 @@ export const RequireRole: React.FC<{ role?: Role, roles?: Role[], children: Reac
     const { profile, loading, isAuthenticated, isApproved } = useAuth();
     if (loading) return null;
     if (!isAuthenticated) return <div>Please login.</div>;
-    if (!isApproved) return <PendingApprovalState />;
     
     // Support legacy single role, or array of roles
     const allowedRoles = roles || (role ? [role] : []);
+    
+    if (profile?.userType === 'global') {
+        return <>{children}</>;
+    }
+    
+    if (!isApproved) return <PendingApprovalState />;
     
     if (!profile?.role || !allowedRoles.includes(profile.role)) {
         return <UnauthorizedState />;

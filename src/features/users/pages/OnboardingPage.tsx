@@ -12,7 +12,7 @@ export const OnboardingPage = () => {
         name: profile?.name || '',
         phone: '',
         branchId: '',
-        requestedRole: 'sales' as 'admin_cabang' | 'sales',
+        requestedRole: 'sales' as 'staff' | 'sales',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -148,10 +148,10 @@ export const OnboardingPage = () => {
                             <button
                                 type="button"
                                 disabled={isLoading}
-                                onClick={() => setFormData({...formData, requestedRole: 'admin_cabang'})}
+                                onClick={() => setFormData({...formData, requestedRole: 'staff'})}
                                 className={cn(
                                     "h-11 rounded-xl border flex flex-col justify-center items-center transition-all text-[10px] font-black uppercase tracking-wider",
-                                    formData.requestedRole === 'admin_cabang'
+                                    formData.requestedRole === 'staff'
                                         ? "bg-primary text-primary-foreground border-transparent shadow-[0_3px_10px_rgba(198,255,46,0.12)]"
                                         : "bg-background/40 hover:bg-background/80 border-border text-muted-foreground hover:text-foreground"
                                 )}

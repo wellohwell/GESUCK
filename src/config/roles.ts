@@ -1,7 +1,7 @@
 export const ROLES = {
   OWNER: 'owner',
   ADMIN: 'admin', // generic admin or branch admin
-  ADMIN_CABANG: 'admin_cabang',
+  STAFF: 'staff',
   SALES: 'sales',
   SURVEY: 'survey',
   GUDANG: 'gudang',

@@ -4,7 +4,7 @@ export interface UserRegistrationData {
     name: string;
     phone: string;
     branchId: string;
-    requestedRole: 'admin_cabang' | 'sales';
+    requestedRole: 'staff' | 'sales';
 }
 
 export type UserAction = 'approve' | 'reject' | 'suspend' | 'activate';

@@ -10,10 +10,13 @@ export interface UserProfile {
   phone: string | null;
   branchId: string | null;
   role: string | null;
+  roleIds?: string[];
   requestedRole: string | null;
   status: UserStatus;
   approvedBy: string | null;
   approvedAt: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  userType?: "branch" | "global" | null;
+  globalRole?: "owner" | "developer" | "superadmin" | null;
 }

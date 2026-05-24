@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRuntime } from '../providers/RuntimeProvider';
 
 export interface GeaGetraItem {
   filename: string;
@@ -43,16 +44,27 @@ const parseGoogleSheetJSON = (jsonString: string): { data: GeaGetraItem[], error
 };
 
 export function useGeaGetra() {
+  const { runtime, loading: runtimeLoading } = useRuntime();
   const [data, setData] = useState<GeaGetraItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const exploreConfig = runtime?.modules?.explore;
+  const sheetId = exploreConfig?.geaDatasource?.spreadsheetId || null;
+  const sheetName = encodeURIComponent(exploreConfig?.geaDatasource?.sheetName || "CACHE");
+
   useEffect(() => {
+    if (runtimeLoading) return;
+    if (!sheetId) {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('https://docs.google.com/spreadsheets/d/16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ/gviz/tq?tqx=out:json&sheet=CACHE');
+        const response = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const text = await response.text();
         const { data: parsedData, error: parseError } = parseGoogleSheetJSON(text);
@@ -71,7 +83,7 @@ export function useGeaGetra() {
       }
     };
     fetchData();
-  }, []);
+  }, [sheetId, sheetName, runtimeLoading]);
 
   return { data, loading, error };
 }

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useModules } from '../../providers/ModuleProvider';
 import { ROLES, Role } from '../../config/roles';
 import { ModuleConfig } from '../../config/modules';
+import { subscribeBranches } from '../../lib/services';
 import { 
   ShieldAlert, 
   Settings, 
@@ -20,7 +21,8 @@ import {
   RotateCcw,
   Search,
   Sliders,
-  HelpCircle
+  HelpCircle,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-toastify';
@@ -34,7 +36,6 @@ export default function ModulesPage() {
   
   // Modal / details editor states
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
-  const [branchInput, setBranchInput] = useState('');
 
   // Local draft states for module being edited
   const [enabled, setEnabled] = useState(true);
@@ -44,6 +45,16 @@ export default function ModulesPage() {
   const [betaMode, setBetaMode] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Branch data
+  const [availableBranches, setAvailableBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    const unsub = subscribeBranches(data => {
+      setAvailableBranches(data.filter(b => b.active !== false && !b.archived));
+    });
+    return () => unsub();
+  }, []);
 
   // Search filtered modules
   const filteredModules = (Object.values(typedModules) as ModuleConfig[]).filter(mod => {
@@ -63,7 +74,6 @@ export default function ModulesPage() {
     setAllowedBranches(mod.allowedBranches || []);
     setBetaMode(mod.betaMode || false);
     setMaintenanceMode(mod.maintenanceMode || false);
-    setBranchInput('');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -107,18 +117,6 @@ export default function ModulesPage() {
     }
   };
 
-  // Branch IDs tags helpers
-  const handleAddBranch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = branchInput.trim().toUpperCase();
-      if (val && !allowedBranches.includes(val)) {
-        setAllowedBranches([...allowedBranches, val]);
-        setBranchInput('');
-      }
-    }
-  };
-
   const removeBranch = (branch: string) => {
     setAllowedBranches(allowedBranches.filter(b => b !== branch));
   };
@@ -133,7 +131,7 @@ export default function ModulesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-50 pb-32 pt-6">
+    <div className="w-full bg-transparent text-zinc-900 dark:text-zinc-50 pb-32 pt-6">
       <div className="max-w-6xl mx-auto px-4 space-y-6">
         
         {/* Top Header Banner */}
@@ -426,42 +424,61 @@ export default function ModulesPage() {
                   <div className="space-y-3">
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 block">Eksperimentasi Kunci Cabang (Beta Rollout)</span>
                     <p className="text-[10px] text-zinc-500 leading-normal">
-                      Kosongkan untuk mengizinkan semua cabang. Ketik kode cabang (contoh: <span className="font-mono text-brand-primary">YK01</span>, <span className="font-mono text-brand-primary">SMG01</span>) lalu tekan tombol <strong>Enter</strong> untuk merumuskan batasan eksklusif.
+                      Pilih cabang yang diizinkan untuk mengakses modul ini. Kosongkan untuk mengizinkan seluruh cabang tanpa restriksi.
                     </p>
 
                     <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 space-y-3">
                       <div className="relative">
-                        <Plus className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-                        <input
-                          type="text"
-                          placeholder="Ketik kode cabang dan ketuk Enter..."
-                          value={branchInput}
-                          onChange={e => setBranchInput(e.target.value)}
-                          onKeyDown={handleAddBranch}
-                          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all text-zinc-850 dark:text-zinc-100"
-                        />
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val && !allowedBranches.includes(val)) {
+                              setAllowedBranches([...allowedBranches, val]);
+                            }
+                          }}
+                          className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-250 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all text-zinc-850 dark:text-zinc-100 appearance-none"
+                        >
+                          <option value="">+ Tambah Cabang yang Diizinkan...</option>
+                          {availableBranches
+                            .filter(b => !allowedBranches.includes(b.branchId))
+                            .map(branch => (
+                              <option key={branch.branchId} value={branch.branchId}>
+                                {branch.branchId} — {branch.branchName}
+                              </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                       </div>
 
                       {allowedBranches.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5 pt-1">
-                          {allowedBranches.map((branch) => (
-                            <span 
-                              key={branch} 
-                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary rounded-lg text-[10px] font-black uppercase font-mono tracking-tight"
-                            >
-                              {branch}
-                              <button
-                                type="button"
-                                onClick={() => removeBranch(branch)}
-                                className="text-brand-primary hover:text-red-500 transition-colors"
+                          {allowedBranches.map((branchId) => {
+                            const branchData = availableBranches.find(b => b.branchId === branchId);
+                            const label = branchData ? `${branchData.branchId} - ${branchData.branchName}` : branchId;
+                            return (
+                              <span 
+                                key={branchId} 
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary rounded-lg text-[10px] font-black uppercase tracking-tight"
                               >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </span>
-                          ))}
+                                {label}
+                                <button
+                                  type="button"
+                                  onClick={() => removeBranch(branchId)}
+                                  className="text-brand-primary hover:text-red-500 transition-colors bg-white/50 dark:bg-black/20 rounded-full p-0.5 ml-1"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            );
+                          })}
                         </div>
                       ) : (
-                        <p className="text-[9px] text-zinc-400 italic">Terbuka fungsional di seluruh wilayah cabang tanpa restriksi.</p>
+                        <div className="pt-2">
+                           <p className="text-[9px] text-zinc-400 font-medium italic bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl p-3 text-center">
+                             Terbuka fungsional di seluruh wilayah cabang tanpa restriksi.
+                           </p>
+                        </div>
                       )}
                     </div>
                   </div>

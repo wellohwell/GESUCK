@@ -2,15 +2,25 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
 import { useModules } from '../../providers/ModuleProvider';
+import { useRuntime } from '../../providers/RuntimeProvider';
 import { DEFAULT_WORKSPACES, FALLBACK_WORKSPACE } from '../../config/appShell';
 
 export const WorkspaceResolver: React.FC = () => {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
+  const { isGlobalWorkspace } = useRuntime();
   const { checkAccess, modules, isLoaded: modulesLoaded } = useModules();
 
   useEffect(() => {
-    if (authLoading || !modulesLoaded) return;
+    if (authLoading) return;
+
+    if (profile?.userType === 'global' && isGlobalWorkspace) {
+      console.log("[WorkspaceResolver] Routing Global User to Global Workspace dashboard");
+      navigate('/global', { replace: true });
+      return;
+    }
+
+    if (!modulesLoaded) return;
 
     const userRole = profile?.role || 'sales';
     const preferredRoute = DEFAULT_WORKSPACES[userRole];

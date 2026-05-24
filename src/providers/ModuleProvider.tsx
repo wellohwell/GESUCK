@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { collection, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { DEFAULT_MODULES, ModuleConfig } from '../config/modules';
 import { useAuth } from './AuthProvider';
+import { useRuntime } from './RuntimeProvider';
 import { ROLES } from '../config/roles';
 import { toast } from 'react-toastify';
 
@@ -28,6 +29,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [modules, setModules] = useState<Record<string, ModuleConfig>>(DEFAULT_MODULES);
   const [isLoaded, setIsLoaded] = useState(false);
   const { profile, firebaseUser, loading } = useAuth();
+  const { activeBranchContext } = useRuntime();
 
   // Subscribe to real-time updates from Firebase Modules collection
   useEffect(() => {
@@ -52,6 +54,21 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         Object.keys(DEFAULT_MODULES).forEach((key) => {
           const def = DEFAULT_MODULES[key];
           const override = dbModules[key] || {};
+          
+          // Legacy check for old role names in DB mapping
+          if (override.allowedRoles && Array.isArray(override.allowedRoles)) {
+            override.allowedRoles = override.allowedRoles.map(r => r === 'admin_cabang' ? 'staff' : r);
+          }
+          
+          if (key === 'adminUsers') {
+            if (!override.allowedRoles) {
+               override.allowedRoles = def.allowedRoles ? [...def.allowedRoles] : [];
+            }
+            if (!override.allowedRoles.includes('staff')) {
+               override.allowedRoles.push('staff');
+            }
+          }
+          
           merged[key] = {
             ...def,
             ...override,
@@ -111,7 +128,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   // Safe checks logic for role-based and branch-based access boundaries
-  const checkAccess = (moduleId: string) => {
+  const checkAccess = useCallback((moduleId: string) => {
     const mod = modules[moduleId];
     // If undefined or bypass route
     if (!mod) {
@@ -119,7 +136,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // Owner is a super role, bypasses almost all blocks EXCEPT complete module disable state
-    const isOwner = profile?.role === ROLES.OWNER;
+    const isOwner = profile?.role === ROLES.OWNER || profile?.userType === 'global';
 
     // 1. Is module generally enabled or active within the cockpit registry?
     if (!mod.enabled) {
@@ -137,7 +154,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // 3. User Role Authorization check
     if (mod.allowedRoles && mod.allowedRoles.length > 0) {
-      const userRole = profile?.role || 'sales';
+      const userRole = profile?.userType === 'global' ? 'owner' : (profile?.role || 'sales');
       if (!mod.allowedRoles.includes(userRole)) {
         return { allowed: false, reason: 'role' as AccessReason };
       }
@@ -145,14 +162,14 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // 4. Branch Specific Isolation check (beta features trial, rollout, etc)
     if (mod.allowedBranches && mod.allowedBranches.length > 0) {
-      const userBranch = profile?.branchId;
+      const userBranch = activeBranchContext || profile?.branchId;
       if (!userBranch || !mod.allowedBranches.includes(userBranch)) {
         return { allowed: false, reason: 'branch' as AccessReason };
       }
     }
 
     return { allowed: true, reason: 'ok' as AccessReason };
-  };
+  }, [modules, profile, activeBranchContext]);
 
   const value = useMemo(
     () => ({
@@ -162,7 +179,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateModule,
       resetToDefault,
     }),
-    [modules, isLoaded, profile]
+    [modules, isLoaded, profile, checkAccess]
   );
 
   return <ModuleContext.Provider value={value}>{children}</ModuleContext.Provider>;

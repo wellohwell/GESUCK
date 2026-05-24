@@ -29,6 +29,7 @@ import { ToastProvider } from "./providers/toast-provider";
 import { ModalProvider } from "./providers/modal-provider";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { AuthProvider } from "./providers/AuthProvider";
+import { RuntimeProvider } from "./providers/RuntimeProvider";
 import { ModuleProvider } from "./providers/ModuleProvider";
 import { NavigationProvider } from "./providers/NavigationProvider";
 import { ModuleGuard } from "./components/auth/ModuleGuard";
@@ -38,6 +39,7 @@ import NavigationPage from "./pages/admin/NavigationPage";
 import DocsPage from "./pages/admin/DocsPage";
 import OrgManagement from "./pages/admin/OrgManagement";
 import { UserLifecycleGuard } from "./components/auth/UserLifecycleGuard";
+import GlobalWorkspacePage from "./pages/GlobalWorkspacePage";
 
 import { AppLayout } from "./layouts/AppLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
@@ -95,39 +97,42 @@ function AppContent() {
             <Route path="/client" element={<ModuleGuard moduleId="client"><ClientPage /></ModuleGuard>} />
             <Route path="/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/global" element={<GlobalWorkspacePage />} />
             
             {/* Core Nested Admin Routes */}
             <Route 
               path="/admin" 
               element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.ADMIN_CABANG, ROLES.ADMIN]}>
+                <RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}>
                   <AdminLayoutPage />
                 </RequireRole>
               }
             >
               {/* Main dashboard & navigation index */}
-              <Route index element={<AdminHubPage />} />
+              <Route index element={<RequireRole roles={[ROLES.OWNER]}><AdminHubPage /></RequireRole>} />
               
               {/* Modular admin sub-features */}
-              <Route path="insight" element={<AdminInsightPage />} />
-              <Route path="user" element={<AdminUserPage />} />
-              <Route path="master" element={<AdminMasterPage />} />
+              <Route path="insight" element={<RequireRole roles={[ROLES.OWNER]}><AdminInsightPage /></RequireRole>} />
+              <Route path="user" element={<RequireRole roles={[ROLES.OWNER]}><AdminUserPage /></RequireRole>} />
+              <Route path="master" element={<RequireRole roles={[ROLES.OWNER]}><AdminMasterPage /></RequireRole>} />
               
-              <Route path="approvals" element={<AdminUserApprovalPage />} />
+              <Route path="approvals" element={<RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}><AdminUserApprovalPage /></RequireRole>} />
               
               <Route 
                 path="users" 
                 element={
                   <ModuleGuard moduleId="adminUsers">
-                    <UsersPage />
+                    <RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}>
+                      <UsersPage />
+                    </RequireRole>
                   </ModuleGuard>
                 } 
               />
 
-              <Route path="modules" element={<ModulesPage />} />
-              <Route path="branches" element={<OrgManagement />} />
-              <Route path="navigation" element={<NavigationPage />} />
-              <Route path="docs" element={<DocsPage />} />
+              <Route path="modules" element={<RequireRole roles={[ROLES.OWNER]}><ModulesPage /></RequireRole>} />
+              <Route path="branches" element={<RequireRole roles={[ROLES.OWNER]}><OrgManagement /></RequireRole>} />
+              <Route path="navigation" element={<RequireRole roles={[ROLES.OWNER]}><NavigationPage /></RequireRole>} />
+              <Route path="docs" element={<RequireRole roles={[ROLES.OWNER]}><DocsPage /></RequireRole>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
@@ -146,11 +151,13 @@ export default function App() {
         <ToastProvider>
           <ModalProvider>
             <AuthProvider>
-              <ModuleProvider>
-                <NavigationProvider>
-                  <AppContent />
-                </NavigationProvider>
-              </ModuleProvider>
+              <RuntimeProvider>
+                <ModuleProvider>
+                  <NavigationProvider>
+                    <AppContent />
+                  </NavigationProvider>
+                </ModuleProvider>
+              </RuntimeProvider>
             </AuthProvider>
           </ModalProvider>
         </ToastProvider>

@@ -74,7 +74,7 @@ export default function ToolsPage() {
   const userId = profile?.id || auth.currentUser?.uid || '';
   const userRole = profile?.role || 'sales';
   const branchId = profile?.branchId || null;
-  const isAdmin = profile?.role === 'owner' || profile?.role === 'admin' || profile?.role === 'admin_cabang';
+  const isAdmin = profile?.role === 'owner' || profile?.role === 'admin' || profile?.role === 'staff';
 
   // Tools Configuration
   const allTools: ToolItem[] = [

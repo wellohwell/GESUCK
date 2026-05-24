@@ -55,9 +55,9 @@ export default function OrgManagement() {
 
   useEffect(() => {
     // Check if user has admin/owner/branch admin permissions
-    const allowedRoles = ["OWNER", "ADMIN", "ADMIN_CABANG"];
+    const allowedRoles = ["OWNER", "ADMIN", "STAFF"];
     const currentRole = profile?.role?.toUpperCase() || "";
-    if (profile && !allowedRoles.includes(currentRole)) {
+    if (profile && profile.userType !== 'global' && !allowedRoles.includes(currentRole)) {
       navigate("/");
     }
   }, [profile, navigate]);
@@ -192,7 +192,7 @@ export default function OrgManagement() {
   };
 
   const getAdminNames = (adminArray: string[]) => {
-    if (!adminArray || adminArray.length === 0) return "Belum ada admin cabang";
+    if (!adminArray || adminArray.length === 0) return "Belum ada staff";
     return adminArray
       .map(id => users.find(u => u.id === id)?.name || id)
       .join(", ");
@@ -536,10 +536,10 @@ export default function OrgManagement() {
                 <div className="space-y-4 pt-4 border-t border-border">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                     <Users className="w-4 h-4 text-indigo-500" />
-                    Penugasan Admin Cabang (Multiple Admins)
+                    Penugasan Staff (Multiple Admins)
                   </h4>
                   <p className="text-[10px] text-muted-foreground -mt-2">
-                    Tentukan supervisor, admin cabang, atau pengguna yang berkuasa mengontrol penugasan khusus di wilayah Cabang ini.
+                    Tentukan supervisor, staff, atau pengguna yang berkuasa mengontrol penugasan khusus di wilayah Cabang ini.
                   </p>
 
                   <div className="relative">

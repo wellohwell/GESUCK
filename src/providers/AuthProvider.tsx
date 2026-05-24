@@ -69,9 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (list.length === 0) {
         // Fallback to local legacy branches if Firestore has none yet
         const legacyList = [
-          { branchId: 'YK01', branchName: 'Jogja', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' } },
-          { branchId: 'SL02', branchName: 'Solo', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' } },
-          { branchId: 'KLT03', branchName: 'Klaten', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' } }
+          { id: 'YK01', branchId: 'YK01', branchName: 'Jogja', name: 'Jogja', code: 'YK01', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' }, runtime: { modules: { explore: { enabled: true, datasource: { type: 'spreadsheet', spreadsheetId: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', sheetName: 'List Harga' }, geaDatasource: { type: 'spreadsheet', spreadsheetId: '16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ', sheetName: 'CACHE' } } } } },
+          { id: 'SL02', branchId: 'SL02', branchName: 'Solo', name: 'Solo', code: 'SL02', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' }, runtime: { modules: { explore: { enabled: true, datasource: { type: 'spreadsheet', spreadsheetId: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', sheetName: 'List Harga' }, geaDatasource: { type: 'spreadsheet', spreadsheetId: '16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ', sheetName: 'CACHE' } } } } },
+          { id: 'KLT03', branchId: 'KLT03', branchName: 'Klaten', name: 'Klaten', code: 'KLT03', active: true, archived: false, admins: [], spreadsheets: { explore: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', pricing: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', catalog: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc' }, runtime: { modules: { explore: { enabled: true, datasource: { type: 'spreadsheet', spreadsheetId: '16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc', sheetName: 'List Harga' }, geaDatasource: { type: 'spreadsheet', spreadsheetId: '16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ', sheetName: 'CACHE' } } } } }
         ];
         setBranchesList(legacyList);
         setBranchesLoading(false);
@@ -82,12 +82,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           for (const item of legacyList) {
             try {
               await setDoc(doc(db, "branches", item.branchId), {
+                id: item.id,
                 branchId: item.branchId,
+                name: item.name,
                 branchName: item.branchName,
+                code: item.code,
                 active: item.active,
                 archived: item.archived,
                 admins: item.admins,
                 spreadsheets: item.spreadsheets,
+                runtime: item.runtime,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
               });

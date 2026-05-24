@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   runTransaction,
   getDocs,
+  getDoc,
   updateDoc,
   orderBy,
   Timestamp,
@@ -21,6 +22,7 @@ import { useState, useEffect } from "react";
 import { auth, db } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { toTitleCase } from "../utils/format";
+import { normalizeUserProfile } from "../features/users/utils/normalizeUserProfile";
 
 export enum OperationType {
   CREATE = 'create',
@@ -257,7 +259,7 @@ export async function updateUser(userId: string, data: any) {
 
 export async function updateUserStatusAndRole(
   userId: string, 
-  data: { status?: string, role?: string, blockedReason?: string }
+  data: { status?: string, role?: string, blockedReason?: string, displayName?: string, name?: string }
 ) {
   try {
     const adminUid = auth.currentUser?.uid;
@@ -337,11 +339,14 @@ export async function removeUser(userId: string) {
   }
 }
 
-export function subscribeUsers(callback: (users: any[]) => void) {
-  const q = query(collection(db, "users"));
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  }, (error) => {
+export function subscribeUsers(callback: (users: any[]) => void, branchId?: string | null) {
+  let q: any = collection(db, "users");
+  if (branchId) {
+    q = query(q, where("branchId", "==", branchId));
+  }
+  return onSnapshot(q, (snapshot: any) => {
+    callback(snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })));
+  }, (error: any) => {
     handleFirestoreError(error, OperationType.LIST, "users");
   });
 }
@@ -380,11 +385,12 @@ export function useUserProfile() {
     }
 
     const unsubscribe = subscribeCurrentUser(user.uid, (p) => {
-      // Force OWNER role for specific email override
-      if (user.email === "wahyulaksanajayakusuma@gmail.com") {
-        setProfile({ ...p, role: "OWNER" });
+      if (p) {
+        // Enforce the same dynamic normalization
+        const normalized = normalizeUserProfile(user.uid, p);
+        setProfile(normalized);
       } else {
-        setProfile(p);
+        setProfile(null);
       }
       setLoading(false);
     });
@@ -1430,9 +1436,31 @@ export async function addBranch(branchData: {
 }) {
   try {
     const id = branchData.branchId.toUpperCase().trim();
+    const defaultRuntime = {
+      modules: {
+        explore: {
+          enabled: true,
+          datasource: {
+            type: "spreadsheet",
+            spreadsheetId: branchData.spreadsheets?.pricing || "",
+            sheetName: "List Harga"
+          },
+          geaDatasource: {
+            type: "spreadsheet",
+            spreadsheetId: branchData.spreadsheets?.catalog || "16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ",
+            sheetName: "CACHE"
+          }
+        }
+      }
+    };
+
     await setDoc(doc(db, "branches", id), {
       ...branchData,
+      id: id,
       branchId: id,
+      name: branchData.branchName,
+      branchName: branchData.branchName,
+      code: id,
       archived: false,
       admins: branchData.admins || [],
       spreadsheets: {
@@ -1440,6 +1468,7 @@ export async function addBranch(branchData: {
         pricing: branchData.spreadsheets?.pricing || "",
         catalog: branchData.spreadsheets?.catalog || "",
       },
+      runtime: defaultRuntime,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -1451,8 +1480,45 @@ export async function addBranch(branchData: {
 export async function updateBranch(branchId: string, updates: any) {
   try {
     const docRef = doc(db, "branches", branchId);
+    
+    // Prepare synchronized fields
+    const syncedUpdates: any = { ...updates };
+    if (updates.branchName) {
+      syncedUpdates.name = updates.branchName;
+    }
+    
+    if (updates.spreadsheets) {
+      const currentSnap = await getDoc(docRef);
+      if (currentSnap.exists()) {
+        const currentData = currentSnap.data();
+        const currentRuntime = currentData.runtime || {};
+        const currentModules = currentRuntime.modules || {};
+        const currentExplore = currentModules.explore || {};
+        
+        syncedUpdates.runtime = {
+          ...currentRuntime,
+          modules: {
+            ...currentModules,
+            explore: {
+              ...currentExplore,
+              datasource: {
+                type: currentExplore.datasource?.type || "spreadsheet",
+                spreadsheetId: updates.spreadsheets.pricing || currentExplore.datasource?.spreadsheetId || "",
+                sheetName: currentExplore.datasource?.sheetName || "List Harga"
+              },
+              geaDatasource: {
+                type: currentExplore.geaDatasource?.type || "spreadsheet",
+                spreadsheetId: updates.spreadsheets.catalog || currentExplore.geaDatasource?.spreadsheetId || "16ifxXxqttStNA4sYIJfDoV6Rw5fX0z8A5tcDd9U1BXQ",
+                sheetName: currentExplore.geaDatasource?.sheetName || "CACHE"
+              }
+            }
+          }
+        };
+      }
+    }
+
     await updateDoc(docRef, {
-      ...updates,
+      ...syncedUpdates,
       updatedAt: serverTimestamp(),
     });
   } catch (error) {

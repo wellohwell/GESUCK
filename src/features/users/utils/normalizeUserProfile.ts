@@ -5,9 +5,10 @@ const roleMap: Record<string, Role> = {
     'admin': ROLES.ADMIN,
     'superadmin': ROLES.OWNER,
     'super_admin': ROLES.OWNER,
-    'branch_admin': ROLES.ADMIN_CABANG,
-    'adminCabang': ROLES.ADMIN_CABANG,
-    'admin_cabang': ROLES.ADMIN_CABANG,
+    'branch_admin': ROLES.STAFF,
+    'adminCabang': ROLES.STAFF,
+    'admin_cabang': ROLES.STAFF,
+    'staff': ROLES.STAFF,
     'salesman': ROLES.SALES,
     'sales': ROLES.SALES,
     'owner': ROLES.OWNER,
@@ -50,8 +51,17 @@ export const normalizeUserProfile = (uid: string, rawData: any): UserProfile => 
     // HARDCODED OVERRIDE FOR ROOT ADMINS
     const isRootAdmin = ['admin@gmail.com', 'wahyulaksanajayakusuma@gmail.com'].includes(rawData.email?.toLowerCase());
 
-    const finalRole = isRootAdmin ? ROLES.OWNER : normalizeRole(rawData.role);
+    const rawUserType = rawData.userType || (isRootAdmin ? 'global' : null);
+    const isGlobal = rawUserType === 'global' || isRootAdmin || ['owner', 'developer', 'superadmin'].includes(rawData.globalRole || '');
+
+    const userType: "global" | "branch" = isGlobal ? 'global' : 'branch';
+    const globalRole: "owner" | "developer" | "superadmin" | null = isGlobal 
+        ? (rawData.globalRole || (isRootAdmin ? 'owner' : (rawData.role === 'owner' ? 'owner' : 'superadmin'))) 
+        : null;
+
+    const finalRole = isGlobal ? null : normalizeRole(rawData.role);
     const finalStatus = isRootAdmin ? 'approved' : normalizeStatus(rawData.status, rawData);
+    const branchId = isGlobal ? null : (rawData.branchId || null);
 
     return {
         uid,
@@ -59,7 +69,7 @@ export const normalizeUserProfile = (uid: string, rawData: any): UserProfile => 
         name: rawData.name || 'Unknown',
         photoURL: rawData.photoURL || '',
         phone: rawData.phone || null,
-        branchId: rawData.branchId || null,
+        branchId,
         role: finalRole,
         requestedRole: normalizeRole(rawData.requestedRole),
         status: finalStatus,
@@ -67,11 +77,18 @@ export const normalizeUserProfile = (uid: string, rawData: any): UserProfile => 
         approvedAt: rawData.approvedAt || null,
         createdAt: rawData.createdAt || { toDate: () => new Date() },
         updatedAt: rawData.updatedAt || { toDate: () => new Date() },
+        userType,
+        globalRole,
+        roleIds: isGlobal ? undefined : (rawData.roleIds && Array.isArray(rawData.roleIds) ? rawData.roleIds.map(normalizeRole) : (finalRole ? [finalRole] : []))
     };
 };
 
 export const getProfileCompleteness = (profile: UserProfile): { isComplete: boolean; missingFields: string[] } => {
     const missingFields: string[] = [];
+    
+    if (profile.userType === 'global') {
+        return { isComplete: true, missingFields: [] };
+    }
     
     if (!profile.role) missingFields.push('role');
     

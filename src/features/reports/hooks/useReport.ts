@@ -27,7 +27,7 @@ export function useOperationalReport(initialFilters: BaseReportFilters) {
         
         if (userProfile.role === ROLES.SALES || userProfile.role === ROLES.SURVEY) {
           scopedFilters.userId = userProfile.uid;
-        } else if (userProfile.role === ROLES.ADMIN_CABANG || userProfile.role === ROLES.SPV) {
+        } else if (userProfile.role === ROLES.STAFF || userProfile.role === ROLES.SPV) {
           scopedFilters.branchId = userProfile.branchId;
         }
         

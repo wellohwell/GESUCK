@@ -1,9 +1,6 @@
 /// <reference types="vite/client" />
 import { Product } from '../../types/pricelist';
 
-// Fallback ID GSheet, bisa diganti lewat environment VITE_PRICELIST_SHEET_ID
-const DEFAULT_SHEET_ID = "16MEtVRu3Vv3-6JEw46xndUisFy7Uo7ZMT86BucWeQOc"; 
-
 export function extractSpreadsheetId(idOrUrl: string): string {
   const clean = idOrUrl.trim();
   if (clean.includes('/d/')) {
@@ -15,12 +12,15 @@ export function extractSpreadsheetId(idOrUrl: string): string {
   return clean;
 }
 
-export async function fetchPricelist(customSpreadsheetId?: string | null): Promise<Product[]> {
-  const rawId = customSpreadsheetId || import.meta.env.VITE_PRICELIST_SHEET_ID || DEFAULT_SHEET_ID;
-  const sheetId = extractSpreadsheetId(rawId);
+export async function fetchPricelist(customSpreadsheetId?: string | null, customSheetName?: string | null): Promise<Product[]> {
+  if (!customSpreadsheetId) {
+    throw new Error("Konfigurasi spreadsheetId tidak ditemukan. Tidak dapat mengambil data.");
+  }
+  const sheetId = extractSpreadsheetId(customSpreadsheetId);
   
+  const sheetName = encodeURIComponent(customSheetName || "List Harga");
   // Menggunakan API GViz Google Docs untuk raw data tanpa publis JSON ribet
-  const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=List%20Harga`;
+  const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
   try {
     const response = await fetch(sheetUrl, {

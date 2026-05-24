@@ -45,7 +45,7 @@ export default function DocsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-50 pb-32 pt-6">
+    <div className="w-full bg-transparent text-zinc-900 dark:text-zinc-50 pb-32 pt-6">
       <div className="max-w-6xl mx-auto px-4 space-y-6">
         
         {/* Main Sticky Header */}
@@ -179,7 +179,7 @@ export default function DocsPage() {
                       <div className="space-y-1">
                         <span className="text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-200">Tahap 4: Persetujuan, Pengiriman & Jurnal Laporan</span>
                         <p className="text-[11px] text-zinc-400 leading-normal">
-                          Apabila di-approve oleh Admin Cabang atau Owner, data mengalir ke GUDANG untuk verifikasi pengeluaran barang. Transaksi beralih status ke aktif, konversi terkapitalisasi otomatis dalam modul <strong className="text-emerald-500 font-mono text-[10px]">/report</strong> dan terlog di ulasan aktivitas audit trail global.
+                          Apabila di-approve oleh Staff atau Owner, data mengalir ke GUDANG untuk verifikasi pengeluaran barang. Transaksi beralih status ke aktif, konversi terkapitalisasi otomatis dalam modul <strong className="text-emerald-500 font-mono text-[10px]">/report</strong> dan terlog di ulasan aktivitas audit trail global.
                         </p>
                       </div>
                     </div>
@@ -260,10 +260,10 @@ export default function DocsPage() {
                     <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase">ACCESS_SCOPE = ALL_BRANCHES</span>
                   </div>
 
-                  {/* Admin Cabang */}
+                  {/* Staff */}
                   <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
                     <div className="space-y-1">
-                      <span className="text-[9px] font-black uppercase tracking-widest bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded leading-none">ADMIN_CABANG (BRANCH_ADMIN)</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded leading-none">STAFF (BRANCH_ADMIN)</span>
                       <h4 className="text-sm font-bold block pt-1">Otoritas Wilayah Kerja</h4>
                       <p className="text-[11px] text-zinc-500 leading-normal">
                         Memiliki ijin fungsional luas di satu daerah operasional khusus (`branchId`). Berhak menyetujui, menyunting kuitansi pengajuan tenor order baru serta memimpin distribusi penugasan target harian wilayah.
@@ -408,7 +408,7 @@ export default function DocsPage() {
                         <div>
                           • displayName: string<br />
                           • email: string<br />
-                          • role: "owner" | "admin" | "admin_cabang" | "sales" | etc
+                          • role: "owner" | "admin" | "staff" | "sales" | etc
                         </div>
                         <div>
                           • status: "pending" | "approved" | "blocked"<br />
@@ -637,7 +637,7 @@ service cloud.firestore {
       return isSignedIn() && 
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "owner" ||
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin_cabang");
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "staff");
     }
 
     // Module restrictions

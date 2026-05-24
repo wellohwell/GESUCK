@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { useModules } from '../../providers/ModuleProvider';
 import { DynamicNavItem, ICON_DICTIONARY, getIconComponent } from '../../config/appShell';
 import { ROLES } from '../../config/roles';
+import { subscribeBranches } from '../../lib/services';
 import { 
   Sliders, 
   RefreshCw, 
@@ -23,7 +24,8 @@ import {
   Sparkles, 
   AlertTriangle,
   RotateCcw,
-  Link2
+  Link2,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-toastify';
@@ -34,7 +36,6 @@ export default function NavigationPage() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [branchInput, setBranchInput] = useState('');
 
   // Draft editing states
   const [draftLabel, setDraftLabel] = useState('');
@@ -49,6 +50,16 @@ export default function NavigationPage() {
   const [draftBadge, setDraftBadge] = useState<'none' | 'beta' | 'new' | 'maintenance'>('none');
   const [draftModuleId, setDraftModuleId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Branch data
+  const [availableBranches, setAvailableBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    const unsub = subscribeBranches(data => {
+      setAvailableBranches(data.filter(b => b.active !== false && !b.archived));
+    });
+    return () => unsub();
+  }, []);
 
   // Search filtered nav items
   const filteredNavItems = navItems.filter(item => {
@@ -71,7 +82,6 @@ export default function NavigationPage() {
     setDraftDesktopOnly(item.desktopOnly || false);
     setDraftBadge(item.badge || 'none');
     setDraftModuleId(item.moduleId || '');
-    setBranchInput('');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -109,14 +119,6 @@ export default function NavigationPage() {
     }
   };
 
-  const addBranch = () => {
-    const clean = branchInput.trim().toUpperCase();
-    if (clean && !draftAllowedBranches.includes(clean)) {
-      setDraftAllowedBranches([...draftAllowedBranches, clean]);
-      setBranchInput('');
-    }
-  };
-
   const removeBranch = (branch: string) => {
     setDraftAllowedBranches(draftAllowedBranches.filter(b => b !== branch));
   };
@@ -144,7 +146,7 @@ export default function NavigationPage() {
   const activeMobileNavCount = navItems.filter(item => item.enabled && item.visible && !item.desktopOnly).length;
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-zinc-100 p-4 sm:p-6 pb-24 md:pb-8">
+    <main className="w-full bg-white dark:bg-transparent text-zinc-900 dark:text-zinc-100 p-4 sm:p-6 pb-24 md:pb-8 rounded-3xl">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header Dashboard section */}
@@ -588,42 +590,52 @@ export default function NavigationPage() {
                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block font-sans">Batasan Kode Cabang</label>
                   <p className="text-[9px] text-zinc-500 leading-none">Saring navigasi agar hanya terlihat di cabang tertentu harian.</p>
                   
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Contoh: KDR-MTR"
-                      value={branchInput}
-                      onChange={(e) => setBranchInput(e.target.value)}
-                      className="bg-zinc-900/60 border border-zinc-850/80 text-xs text-white uppercase rounded-xl px-3 py-2 flex-grow focus:outline-none focus:border-primary/40 transition-all font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={addBranch}
-                      className="px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-bold text-white transition-all cursor-pointer"
+                  <div className="relative">
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val && !draftAllowedBranches.includes(val)) {
+                          setDraftAllowedBranches([...draftAllowedBranches, val]);
+                        }
+                      }}
+                      className="w-full pl-4 pr-10 py-2 bg-zinc-900/60 border border-zinc-850/80 rounded-xl text-xs font-bold outline-none focus:outline-none focus:border-primary/40 transition-all text-white appearance-none"
                     >
-                      Tambah
-                    </button>
+                      <option value="">+ Tambah Cabang yang Diizinkan...</option>
+                      {availableBranches
+                        .filter(b => !draftAllowedBranches.includes(b.branchId))
+                        .map(branch => (
+                          <option key={branch.branchId} value={branch.branchId}>
+                             {branch.branchId} — {branch.branchName}
+                          </option>
+                        ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {draftAllowedBranches.length === 0 ? (
                       <span className="text-[10px] font-sans font-semibold text-zinc-500 italic">Buka untuk umum (Semua Cabang)</span>
                     ) : (
-                      draftAllowedBranches.map(branch => (
-                        <span
-                          key={branch}
-                          className="flex items-center gap-1 text-[10px] font-mono font-black text-purple-400 bg-purple-950/20 border border-purple-500/20 px-2 py-1 rounded-xl"
-                        >
-                          {branch}
-                          <button
-                            type="button"
-                            onClick={() => removeBranch(branch)}
-                            className="text-purple-400 hover:text-red-400 transition-colors ml-0.5 focus:outline-none"
+                      draftAllowedBranches.map(branchId => {
+                        const branchData = availableBranches.find(b => b.branchId === branchId);
+                        const label = branchData ? `${branchData.branchId} - ${branchData.branchName}` : branchId;
+                        return (
+                          <span
+                            key={branchId}
+                            className="flex items-center gap-1.5 text-[10px] font-mono font-black text-purple-400 bg-purple-950/20 border border-purple-500/20 px-2.5 py-1.5 rounded-xl uppercase tracking-tight"
                           >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))
+                            {label}
+                            <button
+                              type="button"
+                              onClick={() => removeBranch(branchId)}
+                              className="text-purple-400 hover:text-red-400 transition-colors ml-0.5 focus:outline-none bg-black/20 rounded-full p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        );
+                      })
                     )}
                   </div>
                 </div>

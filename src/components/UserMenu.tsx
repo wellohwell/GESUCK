@@ -2,19 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { auth } from '../firebase/config';
 import { signOut } from 'firebase/auth';
-import { useUserProfile } from '../lib/services';
+import { useAuth } from '../providers/AuthProvider';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogOut, ChevronDown, Settings, Sliders } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ROLES } from '../config/roles';
 
 export function UserMenu() {
-  const { profile } = useUserProfile();
+  const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const isHighLevelAdmin = profile?.role === ROLES.OWNER || profile?.role === ROLES.ADMIN_CABANG || profile?.role === ROLES.ADMIN;
+  const isHighLevelAdmin = profile?.role === ROLES.OWNER;
+  const isStaff = profile?.role === ROLES.STAFF;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,12 +71,24 @@ export function UserMenu() {
             className="absolute right-0 mt-3 w-56 bg-white dark:bg-zinc-900 shadow-2xl p-2 z-[100] rounded-sm"
           >
             <div className="px-4 py-3 mb-2 border-b border-zinc-100 dark:border-zinc-800">
-               <p className="text-xs font-black text-brand-primary uppercase tracking-widest">{profile?.role || 'Member'}</p>
+               <p className="text-xs font-black text-brand-primary uppercase tracking-widest">
+                 {profile?.userType === 'global' ? `Global ${profile?.globalRole || 'Owner'}` : (profile?.role || 'Member')}
+               </p>
                <p className="text-sm font-black truncate">{profile?.displayName || profile?.nama || 'User'}</p>
                <p className="text-[10px] text-muted-foreground truncate italic">{profile?.email}</p>
             </div>
 
             <div className="space-y-1">
+              {profile?.userType === 'global' && (
+                <Link 
+                  to="/global" 
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black bg-[#d2f34c]/10 text-brand-primary hover:bg-[#d2f34c] hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                >
+                  Global Cockpit
+                </Link>
+              )}
+
               <Link 
                 to="/profile" 
                 onClick={() => setIsOpen(false)}
@@ -126,6 +139,16 @@ export function UserMenu() {
                     Arsitektur & Standar
                   </Link>
                 </>
+              )}
+
+              {isStaff && (
+                <Link 
+                  to="/admin/users" 
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                >
+                  Manajemen User & Approval
+                </Link>
               )}
               
               <button 
