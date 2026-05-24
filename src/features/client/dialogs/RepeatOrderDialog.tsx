@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, Search, ShoppingBag, Clock } from 'lucide-react';
 import { IconButton } from '../../../components/ui/buttons';
 import { ClientForm } from '../components/ClientForm';
-import { clientService } from '../services/client.service';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../../../firebase/config';
+import { handleFirestoreError, OperationType } from '../../../lib/services';
 import { toast } from 'react-toastify';
 import { cn, formatRelativeTime } from '../../../lib/utils';
 import { useClientData } from '../hooks/useClientData';
@@ -35,25 +37,75 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
 
   const handleCreateRepeatOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClient || !repeatOrderForm.barang) {
-      toast.error("Barang wajib diisi");
+    console.log("Repeat order process started...", repeatOrderForm);
+
+    if (!selectedClient) {
+      toast.error("Konsumen belum dipilih");
       return;
     }
+
+    // 1. Validation
+    if (!repeatOrderForm.barang || !repeatOrderForm.angsuran || !repeatOrderForm.tenor) {
+      toast.error("Mohon lengkapi detail order (Barang, Angsuran, Tenor)");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await clientService.createRepeatOrder(selectedClient.id, {
-        ...repeatOrderForm,
-        angsuran: Number(repeatOrderForm.angsuran.replace(/\D/g, '')),
-        tenor: Number(repeatOrderForm.tenor)
-      });
-      toast.success("Repeat Order berhasil didaftarkan");
-      onClose();
+      const uid = auth.currentUser?.uid;
+      if (!uid) throw new Error("Unauthorized");
+
+      // Fetch user branch context for security rules
+      const userDoc = await getDoc(doc(db, "users", uid));
+      const branchId = userDoc.exists() ? userDoc.data().branchId : null;
+
+      const angsuranNum = Number(repeatOrderForm.angsuran.replace(/\D/g, ''));
+      const tenorNum = Number(repeatOrderForm.tenor);
+      const omset = angsuranNum * tenorNum;
+
+      // 2. Data Structure as requested
+      const payload = {
+        nama: selectedClient.nama,
+        nomor: selectedClient.nomor,
+        usaha: selectedClient.usaha || "",
+        alamat: selectedClient.alamat || "",
+        produk: repeatOrderForm.barang, // mapped to produk
+        angsuran: angsuranNum,
+        tenor: tenorNum,
+        tenorType: repeatOrderForm.tenorType,
+        omset: omset,
+        proses: "", // initialized as empty
+        stage: "pipeline",
+        status: "survey",
+        note: "",
+        ownerId: uid,
+        branchId: branchId,
+        kategori: "repeat",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      console.log("Saving repeat order payload to Firestore 'clients' collection:", payload);
+
+      // 3. Save to Firestore
+      const docRef = await addDoc(collection(db, "clients"), payload);
+      console.log("Successfully saved repeat order with ID:", docRef.id);
+
+      toast.success("Repeat Order Berhasil Disimpan");
+      
+      // 4. Reset & Close
       setSelectedClient(null);
+      setShowRepeatOrderForm(false);
       setRepeatOrderForm({
-        barang: '', angsuran: '', tenor: '30', tenorType: 'hari'
+        barang: '', 
+        angsuran: '', 
+        tenor: '30', 
+        tenorType: 'hari'
       });
+      onClose();
     } catch (err) {
-      toast.error("Gagal mendaftarkan repeat order");
+      console.error("Firestore submission error (RO):", err);
+      handleFirestoreError(err, OperationType.CREATE, "clients");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +149,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Hasil Pencarian ({filteredClients.length})</p>
+                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest ml-1">Hasil Pencarian ({filteredClients.length})</p>
                     {filteredClients.map(client => (
                       <div 
                         key={client.id}
@@ -113,7 +165,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
               ) : (
                 <div className="space-y-5">
                   <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
-                    <p className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">Pilih Client:</p>
+                    <p className="text-[10px] font-bold text-brand-primary tracking-widest mb-1">Pilih Konsumen:</p>
                     <h3 className="text-base font-semibold">{selectedClient.nama}</h3>
                     <p className="text-xs text-zinc-500">{selectedClient.nomor}</p>
                   </div>
@@ -124,7 +176,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
                     onSubmit={handleCreateRepeatOrder}
                     isSubmitting={isSubmitting}
                     title="Repeat Order"
-                    submitLabel="BUAT REPEAT ORDER"
+                    submitLabel="Simpan"
                     isRepeat
                   />
                 </div>

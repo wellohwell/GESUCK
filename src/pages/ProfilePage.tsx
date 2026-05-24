@@ -12,6 +12,7 @@ import {
   CalendarDays,
   Clock
 } from 'lucide-react';
+import { updateUser } from '../lib/services';
 import { toTitleCase } from '../utils/format';
 import { toast } from '../hooks/use-toast';
 import { useModal } from '../hooks/use-modal';
@@ -36,9 +37,9 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast.success('Berhasil keluar');
+      toast('Berhasil keluar');
     } catch (e) {
-      toast.error('Gagal keluar');
+      toast('Gagal keluar');
     }
   };
 
@@ -115,13 +116,15 @@ export default function ProfilePage() {
 
         <div className="mt-3 text-center">
           <div className="flex flex-col items-center justify-center gap-1.5">
-            <h1 className="text-xl font-bold text-foreground">
-              {toTitleCase(userProfile.displayName || "User")}
-            </h1>
+            <div className="flex items-center justify-center">
+              <h1 className="text-xl font-bold text-foreground">{toTitleCase(userProfile.displayName || "User")}</h1>
+            </div>
             {userProfile.role && (
-              <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-sm inline-block">
-                {userProfile.role}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-sm inline-block">
+                  {userProfile.role}
+                </span>
+              </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1.5">{userProfile.email || 'No email'}</p>

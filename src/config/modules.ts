@@ -132,7 +132,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: false,
-    allowedRoles: [ROLES.OWNER, ROLES.STAFF],
+    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,

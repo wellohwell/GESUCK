@@ -79,16 +79,6 @@ export function UserMenu() {
             </div>
 
             <div className="space-y-1">
-              {profile?.userType === 'global' && (
-                <Link 
-                  to="/global" 
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black bg-[#d2f34c]/10 text-brand-primary hover:bg-[#d2f34c] hover:text-black transition-all group animate-in slide-in-from-left duration-200"
-                >
-                  Global Cockpit
-                </Link>
-              )}
-
               <Link 
                 to="/profile" 
                 onClick={() => setIsOpen(false)}

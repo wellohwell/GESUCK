@@ -21,13 +21,13 @@ const formatIDR = (val: string | number) => {
 };
 
 export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submitLabel, isRepeat }: ClientFormProps) {
-  const inputClass = "w-full px-4 h-11 bg-zinc-100 dark:bg-zinc-900/50 border border-transparent focus:border-brand-primary/40 focus:bg-white dark:focus:bg-zinc-950/80 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold placeholder:text-zinc-400 dark:placeholder:text-zinc-650";
+  const inputClass = "w-full px-4 h-11 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.05] focus:border-primary/40 focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold placeholder:text-zinc-400 dark:placeholder:text-zinc-650";
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       {!isRepeat && (
         <div className="space-y-3">
-          <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">Data Diri</p>
+          <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 tracking-widest ml-1">Data Diri</p>
           <div className="space-y-2">
             <input 
               type="text" 
@@ -48,7 +48,7 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
               />
               <input 
                 type="text" 
-                placeholder="Unit Usaha" 
+                placeholder="Usaha" 
                 value={form.usaha} 
                 onChange={e => setForm({...form, usaha: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={inputClass} 
@@ -67,11 +67,11 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
       )}
 
       <div className="space-y-y space-y-3 pt-5 border-t border-zinc-150/60 dark:border-zinc-800/60">
-        <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">Proposal Order</p>
+        <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 tracking-widest ml-1">Order Detail</p>
         <div className="space-y-2">
           <input 
             type="text" 
-            placeholder="Barang / Paket *" 
+            placeholder="Barang" 
             required 
             value={form.barang} 
             onChange={e => setForm({...form, barang: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
@@ -85,28 +85,48 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
             className={inputClass} 
           />
           <div className="grid grid-cols-2 gap-2">
-            <input 
-              type="number" 
-              placeholder="Tenor" 
+            <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-white/[0.05] h-11">
+              {[
+                { id: 'hari', label: 'Hari' },
+                { id: 'bulan', label: 'Bulan' }
+              ].map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setForm({ ...form, tenorType: type.id, tenor: '' })}
+                  className={`flex-1 flex items-center justify-center rounded-xl text-[10px] font-bold transition-all ${
+                    form.tenorType === type.id
+                      ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm border border-zinc-200 dark:border-white/10'
+                      : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                  }`}
+                >
+                  {type.label}
+                </button>
+              ))}
+            </div>
+            <select 
               value={form.tenor} 
               onChange={e => setForm({...form, tenor: e.target.value})} 
               className={inputClass} 
-            />
-            <select 
-              value={form.tenorType} 
-              onChange={e => setForm({...form, tenorType: e.target.value})}
-              className={inputClass}
             >
-              <option value="hari">HARI</option>
-              <option value="bulan">BULAN</option>
+              <option value="" disabled>Tenor</option>
+              {form.tenorType === 'hari' ? (
+                ['30', '60', '90', '120', '150', '180'].map(v => (
+                  <option key={v} value={v}>{v}</option>
+                ))
+              ) : (
+                ['1', '2', '3', '4', '5', '6', '7'].map(v => (
+                  <option key={v} value={v}>{v}</option>
+                ))
+              )}
             </select>
           </div>
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-white dark:bg-zinc-950 pt-4 pb-2">
+      <div className="sticky bottom-0 bg-white dark:bg-black pt-4 pb-2">
         <PrimaryButton type="submit" isLoading={isSubmitting} className="w-full">
-          SIMPAN
+          {submitLabel || 'Simpan'}
         </PrimaryButton>
       </div>
     </form>

@@ -155,15 +155,20 @@ export function subscribeActivities(role: string, uid: string, callback: (activi
   const r = role?.toUpperCase();
   const constraints: any[] = [];
 
+  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
   if (r === "SURVEY") {
     constraints.push(where("category", "in", ["task", "workflow", "system"]));
   } else if (r === "GUDANG") {
     constraints.push(where("category", "in", ["task", "workflow", "order"]));
-  } else if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+  }
+
+  if (!isAdmin && !isBranchRestricted) {
     constraints.push(where("actorId", "==", uid));
   }
 
-  if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+  if (branchId && !isAdmin) {
     constraints.push(where("branchId", "==", branchId));
   }
 
@@ -186,7 +191,6 @@ export async function syncUser() {
   if (!auth.currentUser) return;
   const userRef = doc(db, "users", auth.currentUser.uid);
   try {
-    const { getDoc } = await import("firebase/firestore");
     const userDoc = await getDoc(userRef);
     
     if (!userDoc.exists()) {
@@ -259,7 +263,7 @@ export async function updateUser(userId: string, data: any) {
 
 export async function updateUserStatusAndRole(
   userId: string, 
-  data: { status?: string, role?: string, blockedReason?: string, displayName?: string, name?: string }
+  data: { status?: string, role?: string, blockedReason?: string }
 ) {
   try {
     const adminUid = auth.currentUser?.uid;
@@ -341,8 +345,9 @@ export async function removeUser(userId: string) {
 
 export function subscribeUsers(callback: (users: any[]) => void, branchId?: string | null) {
   let q: any = collection(db, "users");
-  if (branchId) {
-    q = query(q, where("branchId", "==", branchId));
+  const cleanBranchId = branchId?.trim();
+  if (cleanBranchId) {
+    q = query(q, where("branchId", "==", cleanBranchId));
   }
   return onSnapshot(q, (snapshot: any) => {
     callback(snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })));
@@ -412,12 +417,12 @@ export const ROLE_PERMISSIONS = {
 
 export function canAccessAll(role?: string) {
   const r = role?.toUpperCase();
-  return r === 'OWNER' || r === 'ADMIN';
+  return r === 'OWNER' || r === 'ADMIN' || r === 'STAFF';
 }
 
 export function canAccessTeam(role?: string) {
   const r = role?.toUpperCase();
-  return r === 'OWNER' || r === 'ADMIN' || r === 'SPV';
+  return r === 'OWNER' || r === 'ADMIN' || r === 'SPV' || r === 'STAFF';
 }
 
 // Market Plan Service
@@ -482,15 +487,74 @@ export function subscribeMarketPlansByMonth(month: string, callback: (plans: any
 }
 
 // Client Service
+export function subscribeClientsByStage(stage: string, role: string, uid: string, callback: (clients: any[]) => void, branchId?: string | null) {
+  const r = role?.toUpperCase();
+  const constraints: any[] = [where("stage", "==", stage)];
+  
+  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
+  if (!isAdmin && !isBranchRestricted) {
+    constraints.push(where("ownerId", "==", uid));
+  }
+
+  if (branchId && !isAdmin) {
+    constraints.push(where("branchId", "==", branchId));
+  }
+  
+  const q = query(
+    collection(db, "clients"), 
+    ...constraints,
+    orderBy("createdAt", "desc"), 
+    limit(100)
+  );
+  
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, `clients/${stage}`);
+  });
+}
+
+export function subscribeClientHistory(nomor: string, role: string, uid: string, callback: (history: any[]) => void, branchId?: string | null) {
+  const r = role?.toUpperCase();
+  const isAdmin = r === 'ADMIN' || r === 'OWNER';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
+  const constraints: any[] = [
+    where("nomor", "==", nomor),
+    orderBy("createdAt", "desc")
+  ];
+
+  if (!isAdmin && !isBranchRestricted) {
+    constraints.push(where("ownerId", "==", uid));
+  }
+
+  if (branchId && !isAdmin) {
+    constraints.push(where("branchId", "==", branchId));
+  }
+  
+  const q = query(collection(db, "clients"), ...constraints);
+  
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, "clients/history");
+  });
+}
+
 export function subscribeClients(role: string, uid: string, callback: (clients: any[]) => void, branchId?: string | null) {
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
-  if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
+  if (!isAdmin && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+  if (branchId && !isAdmin) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
@@ -513,11 +577,14 @@ export function subscribeOrders(role: string, uid: string, callback: (orders: an
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
-  if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
+  if (!isAdmin && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+  if (branchId && !isAdmin) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
@@ -551,6 +618,9 @@ export async function submitHybridOrder(data: {
   if (!uid) throw new Error("Unauthorized");
 
   try {
+    const userRoleSnap = await getDoc(doc(db, "users", uid));
+    const branchId = userRoleSnap.exists() ? userRoleSnap.data().branchId : null;
+
     // 1. CLIENT CHECK
     const clientRef = collection(db, "clients");
     const q = query(clientRef, where("nomor", "==", data.nomor), where("ownerId", "==", uid));
@@ -586,6 +656,7 @@ export async function submitHybridOrder(data: {
       // Create new client
       const newClientDoc = await addDoc(clientRef, {
         ownerId: uid,
+        branchId,
         nama: data.nama,
         nomor: data.nomor,
         usaha: data.usaha || "",
@@ -605,6 +676,7 @@ export async function submitHybridOrder(data: {
     const orderDoc = await addDoc(collection(db, "orders"), {
       clientId,
       ownerId: uid,
+      branchId,
       nama: data.nama,
       nomor: data.nomor,
       usaha: data.usaha || "",
@@ -640,6 +712,7 @@ export async function submitHybridOrder(data: {
       orderId: orderDoc.id,
       clientId,
       ownerId: uid,
+      branchId,
       type: "survey",
       assignedRole: "survey",
       title: "Survey order baru",
@@ -659,6 +732,10 @@ export async function updateOrderStatus(orderId: string, newStatus: string, orde
   if (!uid) throw new Error("Unauthorized");
 
   try {
+    const userRoleSnap = await getDoc(doc(db, "users", uid));
+    const branchId = userRoleSnap.exists() ? userRoleSnap.data().branchId : null;
+    const resolvedBranchId = orderData?.branchId || branchId;
+
     const now = serverTimestamp();
     const ownerToNotify = orderData?.ownerId || uid;
     
@@ -692,7 +769,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string, orde
     if (newStatus === 'approved') {
       await sendSysNotification({
         userIds: [ownerToNotify],
-        roleTargets: ['GUDANG', 'ADMIN'],
+        roleTargets: ['GUDANG', 'ADMIN', 'STAFF'],
         type: "order_approved",
         title: "Order diapprove",
         message: "Order siap diproses pengiriman",
@@ -735,6 +812,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string, orde
         orderId,
         clientId: orderData?.clientId || "",
         ownerId: ownerToNotify,
+        branchId: resolvedBranchId,
         assignedRole: "gudang",
         type: "delivery",
         title: "Siapkan pengiriman barang",
@@ -753,6 +831,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string, orde
         orderId,
         clientId: orderData?.clientId || "",
         ownerId: ownerToNotify,
+        branchId: resolvedBranchId,
         assignedTo: ownerToNotify,
         type: "reminder",
         title: "Reminder follow-up konsumen",
@@ -769,6 +848,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string, orde
         orderId,
         clientId: orderData?.clientId || "",
         ownerId: ownerToNotify,
+        branchId: resolvedBranchId,
         assignedTo: ownerToNotify,
         type: "followup",
         title: "Follow-up repeat order",
@@ -800,6 +880,7 @@ async function createAutoTask(taskData: any) {
   
   const docRef = await addDoc(collection(db, "tasks"), {
     ...taskData,
+    branchId: taskData.branchId || null,
     createdAt: serverTimestamp()
   });
 
@@ -828,15 +909,20 @@ export function subscribeTasks(role: string, uid: string, callback: (tasks: any[
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
+  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
+
   if (r === 'SURVEY') {
     baseConstraints.push(where("type", "==", "survey"));
   } else if (r === 'GUDANG') {
     baseConstraints.push(where("type", "==", "delivery"));
-  } else if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+  }
+
+  if (!isAdmin && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+  if (branchId && !isAdmin) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
@@ -882,7 +968,7 @@ async function checkOverdueTasks(tasks: any[]) {
           };
           if (task.assignedTo) targets.userIds = [task.assignedTo];
           else if (task.ownerId) targets.userIds = [task.ownerId];
-          if (task.assignedRole) targets.roleTargets = [task.assignedRole.toUpperCase(), 'SPV', 'ADMIN'];
+          if (task.assignedRole) targets.roleTargets = [task.assignedRole.toUpperCase(), 'SPV', 'ADMIN', 'STAFF'];
 
           await sendSysNotification(targets);
         } catch (error) {
@@ -898,7 +984,6 @@ export async function updateTaskStatus(taskId: string, newStatus: string) {
   if (!uid) throw new Error("Unauthorized");
 
   try {
-    const { getDoc } = await import("firebase/firestore");
     const taskSnap = await getDoc(doc(db, "tasks", taskId));
     const taskData = taskSnap.exists() ? taskSnap.data() : null;
 
@@ -953,11 +1038,14 @@ export async function createClientAndOrder(data: {
   if (!uid) throw new Error("Unauthorized");
 
   try {
+    const userRoleSnap = await getDoc(doc(db, "users", uid));
+    const branchId = userRoleSnap.exists() ? userRoleSnap.data().branchId : null;
     const now = serverTimestamp();
     
     // 1. Create Client
     const clientRef = await addDoc(collection(db, "clients"), {
       ownerId: uid,
+      branchId,
       nama: data.nama,
       nomor: data.nomor,
       usaha: data.usaha || "",
@@ -973,6 +1061,7 @@ export async function createClientAndOrder(data: {
     const orderRef = await addDoc(collection(db, "orders"), {
       clientId: clientRef.id,
       ownerId: uid,
+      branchId,
       nama: data.nama, // denormalized for easy listing
       nomor: data.nomor,
       usaha: data.usaha,
@@ -1014,7 +1103,9 @@ export async function createRepeatOrder(clientId: string, data: {
   if (!uid) throw new Error("Unauthorized");
 
   try {
-    const { getDoc } = await import("firebase/firestore");
+    const userRoleSnap = await getDoc(doc(db, "users", uid));
+    const branchId = userRoleSnap.exists() ? userRoleSnap.data().branchId : null;
+
     const clientSnap = await getDoc(doc(db, "clients", clientId));
     if (!clientSnap.exists()) throw new Error("Client not found");
     const clientData = clientSnap.data();
@@ -1031,13 +1122,15 @@ export async function createRepeatOrder(clientId: string, data: {
       orderCount,
       lastOrderAt: now,
       customerType,
-      updatedAt: now
+      updatedAt: now,
+      branchId: branchId || clientData.branchId || null
     });
 
     // 2. Create Order
     const orderRef = await addDoc(collection(db, "orders"), {
       clientId,
       ownerId: uid,
+      branchId: branchId || clientData.branchId || null,
       nama: clientData.nama,
       nomor: clientData.nomor,
       usaha: clientData.usaha,
@@ -1072,7 +1165,7 @@ export function subscribeClientOrders(clientId: string, callback: (orders: any[]
   const r = role?.toUpperCase();
   let q;
   
-  if (r === 'OWNER' || r === 'ADMIN' || r === 'SPV') {
+  if (r === 'OWNER' || r === 'ADMIN' || r === 'SPV' || r === 'STAFF') {
     q = query(
       collection(db, "orders"), 
       where("clientId", "==", clientId), 
@@ -1226,7 +1319,7 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
   }));
 
   // 2. Role specific notifications
-  if (r && r !== 'OWNER' && r !== 'ADMIN') {
+  if (r && r !== 'OWNER' && r !== 'ADMIN' && r !== 'STAFF') {
     const qRole = query(collection(db, "notifications"), where("roleTarget", "==", r));
     listeners.push(onSnapshot(qRole, (snap) => {
       roleNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1237,7 +1330,7 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
   }
 
   // 3. Global / Owner notifications (Owner/Admin sees all or Global)
-  if (r === 'OWNER' || r === 'ADMIN') {
+  if (r === 'OWNER' || r === 'ADMIN' || r === 'STAFF') {
     const qAll = query(collection(db, "notifications"));
     listeners.push(onSnapshot(qAll, (snap) => {
       allNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1294,11 +1387,11 @@ export async function getClientsPaginated(options: {
     const r = role?.toUpperCase();
     const constraints: any[] = [];
 
-    if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+    if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV' && r !== 'STAFF') {
       constraints.push(where("ownerId", "==", uid));
     }
 
-    if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+    if (branchId && r !== 'OWNER' && r !== 'ADMIN' && r !== 'STAFF') {
       constraints.push(where("branchId", "==", branchId));
     }
 
@@ -1334,11 +1427,11 @@ export async function getOrdersPaginated(options: {
     const r = role?.toUpperCase();
     const constraints: any[] = [];
 
-    if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+    if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV' && r !== 'STAFF') {
       constraints.push(where("ownerId", "==", uid));
     }
 
-    if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+    if (branchId && r !== 'OWNER' && r !== 'ADMIN' && r !== 'STAFF') {
       constraints.push(where("branchId", "==", branchId));
     }
 
@@ -1386,11 +1479,11 @@ export async function getActivitiesPaginated(options: {
       constraints.push(where("category", "in", ["task", "workflow", "system"]));
     } else if (r === "GUDANG") {
       constraints.push(where("category", "in", ["task", "workflow", "order"]));
-    } else if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV') {
+    } else if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV' && r !== 'STAFF') {
       constraints.push(where("actorId", "==", uid));
     }
 
-    if (branchId && r !== 'OWNER' && r !== 'ADMIN') {
+    if (branchId && r !== 'OWNER' && r !== 'ADMIN' && r !== 'STAFF') {
       constraints.push(where("branchId", "==", branchId));
     }
 

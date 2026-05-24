@@ -57,8 +57,12 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() == "OWNER";
     }
 
+    function isStaff() {
+      return isSignedIn() && getUserRole() == "STAFF";
+    }
+
     function hasBranchAccess(docData) {
-      return isOwner() || (isSignedIn() && docData.keys().hasAll(["branchId"]) && docData.branchId == getUserBranch());
+      return isAdmin() || (isSignedIn() && (!docData.keys().hasAll(["branchId"]) || docData.branchId == getUserBranch()));
     }
 
     function isSPV() {
@@ -81,7 +85,7 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin() || (isStaff() && hasBranchAccess(existing())));
       allow delete: if isAdmin();
     }
 
@@ -105,9 +109,16 @@ service cloud.firestore {
 
     match /clients/{clientId} {
       allow get: if isSignedIn() && hasBranchAccess(existing());
-      allow list: if isSignedIn() && hasBranchAccess(resource.data) && (isAdmin() || isSPV() || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && hasBranchAccess(resource.data) && (
+        isAdmin() || isSPV() || isStaff() || isSurvey() || isGudang() || resource.data.ownerId == request.auth.uid
+      );
       allow create: if isSignedIn() && hasBranchAccess(incoming()) && incoming().ownerId == request.auth.uid;
-      allow update: if isSignedIn() && hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (isAdmin() || isSPV() || existing().ownerId == request.auth.uid);
+      allow update: if isSignedIn() && hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
+        isAdmin() || isOwner() || isStaff() ||
+        (isSurvey() && existing().stage == "pipeline") ||
+        (isGudang() && existing().stage == "client") ||
+        existing().ownerId == request.auth.uid
+      );
       allow delete: if isAdmin() && hasBranchAccess(existing());
     }
 
@@ -124,6 +135,7 @@ service cloud.firestore {
       allow list: if isSignedIn() && hasBranchAccess(resource.data) && (
         isAdmin() || 
         isSPV() || 
+        isStaff() || 
         (isSurvey() && resource.data.type == "survey") ||
         (isGudang() && resource.data.type == "delivery") ||
         resource.data.ownerId == request.auth.uid
@@ -157,11 +169,12 @@ service cloud.firestore {
       allow read: if isSignedIn() && hasBranchAccess(resource.data) && (
         isAdmin() || 
         isSPV() || 
+        isStaff() || 
         (isSurvey() && resource.data.category in ["task", "workflow", "system"]) ||
         (isGudang() && resource.data.category in ["task", "workflow", "order"]) ||
         resource.data.actorId == request.auth.uid
       );
-      allow create: if isSignedIn() && hasBranchAccess(incoming());
+      allow create: if isSignedIn() && (hasBranchAccess(incoming()) || isStaff());
       allow update, delete: if isAdmin() && hasBranchAccess(existing());
     }
 

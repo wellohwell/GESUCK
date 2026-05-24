@@ -17,10 +17,6 @@ export function HeaderBar() {
   
   const isGlobalUser = profile?.userType === 'global';
 
-  const handleReturnToCockpit = () => {
-    setBranchContext(null);
-    navigate('/global');
-  };
 
   return (
     <header className="sticky top-0 z-[60] w-full border-b border-zinc-100/80 dark:border-zinc-800/50 bg-background/80 backdrop-blur-md px-4 py-1.2 md:px-8">
@@ -36,13 +32,6 @@ export function HeaderBar() {
                     Konteks: {activeBranchContext.toUpperCase()}
                   </span>
                 </div>
-                <button 
-                  onClick={handleReturnToCockpit}
-                  type="button"
-                  className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-zinc-900 border border-zinc-800 text-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 rounded-lg hover:opacity-90 active:scale-95 transition-all"
-                >
-                  KOKPIT
-                </button>
               </div>
             ) : (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d2f34c]/10 border border-[#d2f34c]/20 text-[#d2f34c]">

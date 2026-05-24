@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { IconButton } from '../../../components/ui/buttons';
 import { ClientForm } from '../components/ClientForm';
-import { clientService } from '../services/client.service';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../../../firebase/config';
+import { handleFirestoreError, OperationType } from '../../../lib/services';
 import { toast } from 'react-toastify';
 
 interface NewClientDialogProps {
@@ -26,25 +28,73 @@ export function NewClientDialog({ isOpen, onClose }: NewClientDialogProps) {
 
   const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newOrderForm.nama || !newOrderForm.nomor || !newOrderForm.barang) {
-      toast.error("Nama, Nomor, dan Barang wajib diisi");
+    console.log("Submit process started...", newOrderForm);
+
+    // 1. Validation
+    if (!newOrderForm.nama || !newOrderForm.nomor || !newOrderForm.alamat || !newOrderForm.barang || !newOrderForm.angsuran || !newOrderForm.tenor) {
+      toast.error("Mohon lengkapi semua field wajib (*)");
       return;
     }
+
     setIsSubmitting(true);
     try {
-      await clientService.createClientAndOrder({
-        ...newOrderForm,
-        angsuran: Number(newOrderForm.angsuran.replace(/\D/g, '')),
-        tenor: Number(newOrderForm.tenor)
-      });
-      toast.success("Konsumen baru & Order berhasil didaftarkan");
-      onClose();
+      const uid = auth.currentUser?.uid;
+      if (!uid) throw new Error("Unauthorized: Anda harus login untuk menyimpan data.");
+
+      // Fetch user branch context for security rules
+      const userDoc = await getDoc(doc(db, "users", uid));
+      const branchId = userDoc.exists() ? userDoc.data().branchId : null;
+
+      const angsuranNum = Number(newOrderForm.angsuran.replace(/\D/g, ''));
+      const tenorNum = Number(newOrderForm.tenor);
+      const omset = angsuranNum * tenorNum;
+
+      // 2. Data Structure as requested
+      const payload = {
+        nama: newOrderForm.nama,
+        nomor: newOrderForm.nomor,
+        usaha: newOrderForm.usaha || "",
+        alamat: newOrderForm.alamat,
+        produk: newOrderForm.barang, // mapped to produk as requested
+        angsuran: angsuranNum,
+        tenor: tenorNum,
+        tenorType: newOrderForm.tenorType,
+        omset: omset,
+        proses: "", // initialized as empty string as requested
+        stage: "pipeline",
+        status: "survey",
+        note: "",
+        ownerId: uid, // for security rules
+        branchId: branchId, // for security rules
+        kategori: "baru",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      console.log("Saving payload to Firestore 'clients' collection:", payload);
+
+      // 3. Save to Firestore
+      const docRef = await addDoc(collection(db, "clients"), payload);
+      console.log("Successfully saved with ID:", docRef.id);
+
+      toast.success("Konsumen & Order Berhasil Disimpan");
+      
+      // 4. Reset Form
       setNewOrderForm({
-        nama: '', nomor: '', usaha: '', alamat: '', barang: '', 
-        angsuran: '', tenor: '30', tenorType: 'hari'
+        nama: '', 
+        nomor: '', 
+        usaha: '', 
+        alamat: '', 
+        barang: '', 
+        angsuran: '', 
+        tenor: '30', 
+        tenorType: 'hari'
       });
+      
+      onClose();
     } catch (err) {
-      toast.error("Gagal mendaftarkan konsumen");
+      console.error("Firestore submission error:", err);
+      handleFirestoreError(err, OperationType.CREATE, "clients");
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +127,7 @@ export function NewClientDialog({ isOpen, onClose }: NewClientDialogProps) {
                 onSubmit={handleCreateOrder}
                 isSubmitting={isSubmitting}
                 title="Konsumen Baru"
-                submitLabel="DAFTARKAN KONSUMEN"
+                submitLabel="Simpan"
               />
             </div>
           </motion.div>

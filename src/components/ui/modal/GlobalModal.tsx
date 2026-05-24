@@ -56,7 +56,7 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
         exit={{ opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
-          "relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px] max-md:rounded-t-[28px] max-md:rounded-b-none",
+          "relative flex flex-col bg-white dark:bg-black border border-zinc-200/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px] max-md:rounded-t-[28px] max-md:rounded-b-none",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
           "md:w-[85vw]", sizeClasses[modal.size || 'md'],

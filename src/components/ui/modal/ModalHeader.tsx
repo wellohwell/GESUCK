@@ -15,10 +15,10 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   showCloseButton = true
 }) => {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/50 dark:border-white/[0.05]">
+    <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white dark:bg-black border-b border-zinc-200/50 dark:border-white/[0.05]">
       <div className="flex flex-col pr-4">
         {title && (
-          <h2 className="text-sm md:text-base font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-sans">
+          <h2 className="text-sm md:text-base font-bold text-zinc-900 dark:text-zinc-100 font-sans">
             {title}
           </h2>
         )}

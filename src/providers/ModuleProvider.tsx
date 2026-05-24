@@ -146,7 +146,7 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 2. Is index under scheduled maintenance?
     if (mod.maintenanceMode) {
       // Owner and generic admin can bypass maintenance for testing purposes
-      if (isOwner || profile?.role === ROLES.ADMIN) {
+      if (isOwner || profile?.role === ROLES.ADMIN || profile?.role === ROLES.STAFF) {
         return { allowed: true, reason: 'ok' as AccessReason };
       }
       return { allowed: false, reason: 'maintenance' as AccessReason };

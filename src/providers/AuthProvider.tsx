@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Try to seed database ONLY if the current logged-in user role is OWNER or ADMIN
         const userRole = profile?.role?.toUpperCase() || "";
-        if (userRole === "OWNER" || userRole === "ADMIN") {
+        if (userRole === "OWNER" || userRole === "ADMIN" || userRole === "STAFF") {
           for (const item of legacyList) {
             try {
               await setDoc(doc(db, "branches", item.branchId), {

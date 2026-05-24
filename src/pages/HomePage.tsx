@@ -333,7 +333,7 @@ export default function HomePage() {
 
         {/* METRICS DASHBOARD ROW */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
             <div className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center">
               <ShoppingBag className="w-4 h-4 text-indigo-500" />
             </div>
@@ -344,7 +344,7 @@ export default function HomePage() {
             <p className="text-[9px] text-zinc-400 font-medium mt-3">Pipeline operasional berjalan</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
             <div className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
               <Plus className="w-4 h-4 text-amber-500" />
             </div>
@@ -355,7 +355,7 @@ export default function HomePage() {
             <p className="text-[9px] text-zinc-400 font-medium mt-3">Menunggu verifikasi lapangan</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
             <div className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center">
               <Truck className="w-4 h-4 text-purple-500" />
             </div>
@@ -368,7 +368,7 @@ export default function HomePage() {
             <p className="text-[9px] text-zinc-400 font-medium mt-3">Persiapan & pengiriman barang</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/60 dark:border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden group">
             <div className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center ${stats.overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 animate-pulse' : 'bg-green-50 dark:bg-green-950/40'}`}>
               <AlertTriangle className={`w-4 h-4 ${stats.overdueCount > 0 ? 'text-red-500' : 'text-green-500'}`} />
             </div>

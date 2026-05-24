@@ -49,12 +49,26 @@
       "type": "object",
       "properties": {
         "ownerId": { "type": "string" },
+        "branchId": { "type": "string" },
         "nama": { "type": "string" },
         "nomor": { "type": "string" },
         "usaha": { "type": "string" },
         "alamat": { "type": "string" },
-        "kategori": { "type": "string", "enum": ["baru", "eks", "langgan"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "produk": { "type": "string" },
+        "angsuran": { "type": "number" },
+        "tenor": { "type": "number" },
+        "tenorType": { "type": "string" },
+        "omset": { "type": "number" },
+        "proses": { "type": "string" },
+        "stage": { "type": "string", "enum": ["pipeline", "client", "arsip"] },
+        "status": { "type": "string", "enum": ["survey", "acc", "pending", "reject", "pending_gudang", "terkirim"] },
+        "note": { "type": "string" },
+        "kategori": { "type": "string", "enum": ["baru", "eks", "langgan", "repeat"] },
+        "ownerId": { "type": "string" },
+        "branchId": { "type": "string" },
+        "autoDeleteAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       }
     },
     "Order": {
@@ -64,6 +78,7 @@
       "properties": {
         "clientId": { "type": "string" },
         "ownerId": { "type": "string" },
+        "branchId": { "type": "string" },
         "barang": { "type": "string" },
         "angsuran": { "type": "number" },
         "tenorDays": { "type": "number" },

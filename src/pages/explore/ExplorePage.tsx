@@ -287,8 +287,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveTab('pricelist')}
                 className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
                   activeTab === 'pricelist' 
-                    ? 'bg-card shadow-soft text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground scale-105' 
+                    : 'text-muted-foreground hover:text-primary'
                 }`}
               >
                 Pricelist
@@ -297,8 +297,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveTab('gea')}
                 className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
                   activeTab === 'gea' 
-                    ? 'bg-card shadow-soft text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground scale-105' 
+                    : 'text-muted-foreground hover:text-primary'
                 }`}
               >
                 Gea & Getra
