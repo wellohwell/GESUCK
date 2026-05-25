@@ -10,13 +10,17 @@ import AdminHubPage from "./pages/admin/AdminHub";
 import AdminInsightPage from "./pages/admin/Insight";
 import AdminUserPage from "./pages/admin/User";
 import AdminMasterPage from "./pages/admin/Master";
+import AdminMigrationPage from "./pages/admin/Migration";
 import OperationalReportPage from "./features/reports/pages/OperationalReportPage";
 import PendingApproval from "./pages/PendingApproval";
 import Blocked from "./pages/Blocked";
 import { OnboardingPage } from "./features/users/pages/OnboardingPage";
 import { AdminUserApprovalPage } from "./features/users/pages/AdminUserApprovalPage";
-import { RequireRole } from "./components/auth/guards";
+import { StaffLayout } from "./pages/workspace/StaffLayout";
+import { WorkspaceDashboard, WorkspaceExplore, WorkspaceClients, WorkspaceVisit, WorkspaceTasks, WorkspaceProfile } from "./pages/workspace/WorkspacePages";
+import { RequireRole, RequireAdminAccess, RequirePermission } from "./components/auth/guards";
 import { ROLES } from "./config/roles";
+import { PERMISSIONS } from "./config/permissions";
 import ExplorePage from "./pages/explore/ExplorePage";
 import ToolsPage from "./pages/Tools";
 import CalculatorPage from "./pages/CalculatorPage";
@@ -88,47 +92,79 @@ function AppContent() {
           {/* Operational App Routes */}
           <Route element={<AppLayout />}>
             <Route path="/" element={<WorkspaceResolver />} />
-            <Route path="/home" element={<ModuleGuard moduleId="home"><HomePage /></ModuleGuard>} />
-            <Route path="/explore" element={<ModuleGuard moduleId="explore"><ExplorePage /></ModuleGuard>} />
-            <Route path="/Market-Plans" element={<ModuleGuard moduleId="marketPlans"><MarketPlans isAdmin={false} /></ModuleGuard>} />
-            <Route path="/report" element={<ModuleGuard moduleId="report"><OperationalReportPage /></ModuleGuard>} />
-            <Route path="/tools" element={<ModuleGuard moduleId="tools"><ToolsPage /></ModuleGuard>} />
-            <Route path="/tools/calculator" element={<ModuleGuard moduleId="tools"><CalculatorPage /></ModuleGuard>} />
-            <Route path="/client" element={<ModuleGuard moduleId="client"><ClientPage /></ModuleGuard>} />
-            <Route path="/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
+            
+            {/* STAFF / WORKSPACE ROUTES */}
+            <Route path="/workspace/home" element={<ModuleGuard moduleId="home"><HomePage /></ModuleGuard>} />
+            <Route path="/workspace/explore" element={<ModuleGuard moduleId="explore"><ExplorePage /></ModuleGuard>} />
+            <Route path="/workspace/Market-Plans" element={<ModuleGuard moduleId="marketPlans"><MarketPlans isManager={false} /></ModuleGuard>} />
+            <Route path="/workspace/report" element={<ModuleGuard moduleId="report"><OperationalReportPage /></ModuleGuard>} />
+            <Route path="/workspace/tools" element={<ModuleGuard moduleId="tools"><ToolsPage /></ModuleGuard>} />
+            <Route path="/workspace/tools/calculator" element={<ModuleGuard moduleId="tools"><CalculatorPage /></ModuleGuard>} />
+            <Route path="/workspace/client" element={<ModuleGuard moduleId="client"><ClientPage /></ModuleGuard>} />
+            <Route path="/workspace/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
+            
+            {/* NEW STAFF WORKSPACE V2 */}
+            <Route path="/workspace" element={<StaffLayout />}>
+              <Route index element={<WorkspaceDashboard />} />
+              <Route path="explore" element={<WorkspaceExplore />} />
+              <Route path="clients" element={<WorkspaceClients />} />
+              <Route path="visit" element={<WorkspaceVisit />} />
+              <Route path="tasks" element={<WorkspaceTasks />} />
+              <Route path="profile" element={<WorkspaceProfile />} />
+            </Route>
+            
+            {/* Legacy Fallbacks */}
+            <Route path="/home" element={<Navigate to="/workspace/home" replace />} />
+            <Route path="/explore" element={<Navigate to="/workspace/explore" replace />} />
+            <Route path="/Market-Plans" element={<Navigate to="/workspace/Market-Plans" replace />} />
+            <Route path="/report" element={<Navigate to="/workspace/report" replace />} />
+            <Route path="/tools" element={<Navigate to="/workspace/tools" replace />} />
+            <Route path="/tools/calculator" element={<Navigate to="/workspace/tools/calculator" replace />} />
+            <Route path="/client" element={<Navigate to="/workspace/client" replace />} />
+            <Route path="/timeline" element={<Navigate to="/workspace/timeline" replace />} />
+
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/global" element={<GlobalWorkspacePage />} />
             
-            {/* Core Nested Admin Routes */}
+            {/* Core Nested Admin / Manager Routes */}
             <Route 
               path="/admin" 
               element={
-                <RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}>
+                <RequireAdminAccess>
+                  <AdminLayoutPage />
+                </RequireAdminAccess>
+              }
+            >
+              <Route index element={<RequireAdminAccess><AdminHubPage /></RequireAdminAccess>} />
+              <Route path="insight" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.VIEW_INSIGHT}><AdminInsightPage /></RequirePermission></RequireAdminAccess>} />
+              <Route path="master" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.MARKET_EDIT}><AdminMasterPage /></RequirePermission></RequireAdminAccess>} />
+              <Route path="approvals" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.USER_APPROVAL}><AdminUserApprovalPage /></RequirePermission></RequireAdminAccess>} />
+              <Route 
+                path="users" 
+                element={
+                  <RequireAdminAccess>
+                    <RequirePermission permission={PERMISSIONS.USER_MANAGEMENT}>
+                      <ModuleGuard moduleId="adminUsers">
+                          <UsersPage />
+                      </ModuleGuard>
+                    </RequirePermission>
+                  </RequireAdminAccess>
+                } 
+              />
+            </Route>
+
+            {/* OWNER ONLY ROUTES */}
+            <Route 
+              path="/owner" 
+              element={
+                <RequireRole roles={[ROLES.OWNER]}>
                   <AdminLayoutPage />
                 </RequireRole>
               }
             >
-              {/* Main dashboard & navigation index */}
               <Route index element={<RequireRole roles={[ROLES.OWNER]}><AdminHubPage /></RequireRole>} />
-              
-              {/* Modular admin sub-features */}
-              <Route path="insight" element={<RequireRole roles={[ROLES.OWNER]}><AdminInsightPage /></RequireRole>} />
               <Route path="user" element={<RequireRole roles={[ROLES.OWNER]}><AdminUserPage /></RequireRole>} />
-              <Route path="master" element={<RequireRole roles={[ROLES.OWNER]}><AdminMasterPage /></RequireRole>} />
-              
-              <Route path="approvals" element={<RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}><AdminUserApprovalPage /></RequireRole>} />
-              
-              <Route 
-                path="users" 
-                element={
-                  <ModuleGuard moduleId="adminUsers">
-                    <RequireRole roles={[ROLES.OWNER, ROLES.STAFF]}>
-                      <UsersPage />
-                    </RequireRole>
-                  </ModuleGuard>
-                } 
-              />
-
+              <Route path="migration" element={<RequireRole roles={[ROLES.OWNER]}><AdminMigrationPage /></RequireRole>} />
               <Route path="modules" element={<RequireRole roles={[ROLES.OWNER]}><ModulesPage /></RequireRole>} />
               <Route path="branches" element={<RequireRole roles={[ROLES.OWNER]}><OrgManagement /></RequireRole>} />
               <Route path="navigation" element={<RequireRole roles={[ROLES.OWNER]}><NavigationPage /></RequireRole>} />

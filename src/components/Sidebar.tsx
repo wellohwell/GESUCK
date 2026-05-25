@@ -40,7 +40,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 no-scrollbar">
         {activeNavItems.map((item) => {
           const isActive = pathname === item.route || 
-                          (item.route !== '/home' && item.route !== '/' && pathname.startsWith(item.route));
+                          (item.route !== '/workspace/home' && item.route !== '/' && pathname.startsWith(item.route));
 
           const IconComponent = getIconComponent(item.icon);
 

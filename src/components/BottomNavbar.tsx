@@ -6,7 +6,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { useNavigation } from '../providers/NavigationProvider';
 import { getIconComponent } from '../config/appShell';
 
-export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function BottomNavbar({ isManager = false }: { isManager?: boolean }) {
   const location = useLocation();
   const pathname = location.pathname;
   const [shouldHideFromModal, setShouldHideFromModal] = React.useState(false);
@@ -45,7 +45,7 @@ export function BottomNavbar({ isAdmin = false }: { isAdmin?: boolean }) {
         <div className="flex items-center justify-center gap-1.5 relative">
           {activeNavItems.map((item) => {
             const isActive = pathname === item.route || 
-                           (item.route !== '/home' && item.route !== '/' && pathname.startsWith(item.route));
+                           (item.route !== '/workspace/home' && item.route !== '/' && pathname.startsWith(item.route));
 
             const IconComponent = getIconComponent(item.icon);
 

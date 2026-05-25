@@ -10,7 +10,7 @@ interface ReportFilterBarProps {
 
 export function ReportFilterBar({ filters, onChange }: ReportFilterBarProps) {
   const { userProfile } = useAuth();
-  const canSeeBranches = userProfile?.role === ROLES.OWNER || userProfile?.role === ROLES.ADMIN || userProfile?.role === ROLES.STAFF;
+  const canSeeBranches = userProfile?.role === ROLES.OWNER || userProfile?.role === ROLES.MANAGER || userProfile?.role === ROLES.STAFF;
 
   return (
     <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card text-card-foreground p-4 rounded-xl border border-border/50">

@@ -130,7 +130,7 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                             onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
                             className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
                           >
-                            <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
+                            <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
                             <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
                             <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
                           </select>
@@ -247,7 +247,7 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                           onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "approved")}
                           className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
                         >
-                          <option value="Admin" className="bg-zinc-900 text-white">Admin</option>
+                          <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
                           <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
                           <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
                         </select>

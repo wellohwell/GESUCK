@@ -24,8 +24,15 @@ service cloud.firestore {
         request.auth.token.email == "wahyulaksanajayakusuma@gmail.com" || 
         request.auth.token.email == "admin@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() in ["ADMIN", "OWNER"])
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() in ["MANAGER", "OWNER", "ADMIN"])
       );
+    }
+
+    function hasPermission(permission) {
+      let doc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             doc.data.keys().hasAll(["permissions"]) &&
+             permission in doc.data.permissions;
     }
 
     function isValidId(id) {
@@ -191,6 +198,11 @@ service cloud.firestore {
     match /branches/{branchId} {
       allow read: if true;
       allow write: if isAdmin();
+
+      match /master_markets/{marketId} {
+        allow get, list: if isSignedIn() && (isAdmin() || getUserBranch() == branchId || getUserBranch() == null);
+        allow write: if isAdmin();
+      }
     }
   }
 }

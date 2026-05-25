@@ -194,6 +194,10 @@
       "schema": "Branch",
       "description": "Multi-branch operational register"
     },
+    "/branches/{branchId}/master_markets/{marketId}": {
+      "schema": "Market",
+      "description": "Branch-specific master markets data"
+    },
     "/users/{userId}": {
       "schema": "User",
       "description": "User profiles"

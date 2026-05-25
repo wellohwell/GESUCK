@@ -22,7 +22,7 @@ export function AppLayout() {
 
       {/* Mobile only bottom navigation */}
       <div id="global-bottom-nav" className="md:hidden">
-        <BottomNavbar isAdmin={false} />
+        <BottomNavbar isManager={false} />
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import React from 'react';
 import { useAuth } from '../../providers/AuthProvider';
 import { UnauthorizedState, PendingApprovalState, SuspendedState, RejectedState } from '../system/AccessStates';
 import { Role } from '../../config/roles';
+import { Permission } from '../../config/permissions';
+import { hasRole, hasPermission, canAccessAdmin } from '../../lib/permissions';
 
 export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
@@ -30,7 +32,6 @@ export const RequireRole: React.FC<{ role?: Role, roles?: Role[], children: Reac
     if (loading) return null;
     if (!isAuthenticated) return <div>Please login.</div>;
     
-    // Support legacy single role, or array of roles
     const allowedRoles = roles || (role ? [role] : []);
     
     if (profile?.userType === 'global') {
@@ -39,7 +40,37 @@ export const RequireRole: React.FC<{ role?: Role, roles?: Role[], children: Reac
     
     if (!isApproved) return <PendingApprovalState />;
     
-    if (!profile?.role || !allowedRoles.includes(profile.role)) {
+    const passed = allowedRoles.some(r => hasRole(profile, r));
+    
+    if (!passed) {
+        return <UnauthorizedState />;
+    }
+    
+    return <>{children}</>;
+};
+
+export const RequirePermission: React.FC<{ permission: Permission, fallback?: React.ReactNode, children: React.ReactNode }> = ({ permission, fallback = <UnauthorizedState />, children }) => {
+    const { profile, loading, isAuthenticated, isApproved } = useAuth();
+    if (loading) return null;
+    if (!isAuthenticated) return fallback as React.ReactElement;
+    if (profile?.userType === 'global') return <>{children}</>;
+    if (!isApproved) return <PendingApprovalState />;
+    
+    if (!hasPermission(profile, permission)) {
+        return fallback as React.ReactElement;
+    }
+    
+    return <>{children}</>;
+};
+
+export const RequireAdminAccess: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { profile, loading, isAuthenticated, isApproved } = useAuth();
+    if (loading) return null;
+    if (!isAuthenticated) return <UnauthorizedState />;
+    if (profile?.userType === 'global') return <>{children}</>;
+    if (!isApproved) return <PendingApprovalState />;
+    
+    if (!canAccessAdmin(profile)) {
         return <UnauthorizedState />;
     }
     

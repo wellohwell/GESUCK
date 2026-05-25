@@ -1,70 +1,516 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
-import { Search, Plus, ChevronDown, Edit2, Trash2, Layers, CheckCircle2, Clock } from "lucide-react";
-import { cn } from "../../lib/utils";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Search, Plus, Filter, Download, Upload, MoreVertical, Edit2, Trash2, CheckCircle2, XCircle, FileJson, X, AlignLeft, Building2, MapPin, Loader2, SearchX, ChevronDown, Layers, Clock } from "lucide-react";
+import { db } from "../../firebase/config";
+import { collection, doc, writeBatch, query, onSnapshot, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
+import { useRuntime } from "../../providers/RuntimeProvider";
+import { useAuth } from "../../providers/AuthProvider";
 import { toast } from "../../hooks/use-toast";
-import { addMarket, updateMarket, removeMarket } from "../../lib/services";
+import { cn } from "../../lib/utils";
 import { toTitleCase } from "../../utils/format";
-import { useOutletContext } from "react-router-dom";
+
+// Models
+export interface MarketMaster {
+  id: string;
+  name: string;
+  city: string;
+  district: string;
+  type: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  // Legacy backward compat fields
+  nama_pasar?: string;
+  wilayah?: string;
+}
 
 export default function AdminMasterPage() {
-  const { 
-    markets, 
-    handleDeleteMarket, 
-    search, 
-    setSearch, 
-    filterWilayah, 
-    setFilterWilayah, 
-    filterKategori, 
-    setFilterKategori, 
-    filterPasaran, 
-    setFilterPasaran, 
-    filteredMarkets 
-  } = useOutletContext<any>();
+  const { activeBranchContext } = useRuntime();
+  const { profile } = useAuth();
+  
+  const [data, setData] = useState<MarketMaster[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [search, setSearch] = useState("");
+  const [filterActive, setFilterActive] = useState<"all"|"active"|"inactive">("all");
+  
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MarketMaster | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [marketToEdit, setMarketToEdit] = useState<any>(null);
+  useEffect(() => {
+    if (!activeBranchContext) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    const path = `branches/${activeBranchContext}/master_markets`;
+    const q = query(collection(db, path));
+    
+    const unsub = onSnapshot(q, (snap) => {
+      const items = snap.docs.map(d => {
+        const docData = d.data();
+        return {
+          id: d.id,
+          name: docData.name || docData.nama_pasar || "Unnamed Market",
+          city: docData.city || docData.wilayah || "-",
+          district: docData.district || "-",
+          type: docData.type || docData.kategori || "Umum",
+          active: docData.active ?? true,
+          createdAt: docData.createdAt || docData.created_at || new Date().toISOString(),
+          updatedAt: docData.updatedAt || docData.updated_at || new Date().toISOString(),
+          createdBy: docData.createdBy || "System"
+        } as MarketMaster;
+      });
 
-  const handleOpenForm = (market: any = null) => {
-    setMarketToEdit(market);
-    setIsFormOpen(true);
+      // Sort: Active first, then name
+      items.sort((a,b) => {
+        if(a.active === b.active) return a.name.localeCompare(b.name);
+        return a.active ? -1 : 1;
+      });
+      
+      setData(items);
+      setLoading(false);
+    }, (error) => {
+      toast.error("Gagal memuat master data");
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, [activeBranchContext]);
+
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      const q = search.toLowerCase();
+      const matchSearch = item.name.toLowerCase().includes(q) || item.city.toLowerCase().includes(q) || item.district.toLowerCase().includes(q);
+      const matchActive = filterActive === "all" ? true : filterActive === "active" ? item.active : !item.active;
+      return matchSearch && matchActive;
+    });
+  }, [data, search, filterActive]);
+
+  const handleToggleActive = async (item: MarketMaster) => {
+    if (!activeBranchContext) return;
+    try {
+      const ref = doc(db, `branches/${activeBranchContext}/master_markets`, item.id);
+      await setDoc(ref, { active: !item.active, updatedAt: new Date().toISOString() }, { merge: true });
+      toast.info(`Status ${item.name} diperbarui`);
+    } catch {
+      toast.error("Gagal memperbarui status");
+    }
   };
 
-  const handleCloseForm = () => {
-    setMarketToEdit(null);
-    setIsFormOpen(false);
+  const handleDelete = async (item: MarketMaster) => {
+    if (!activeBranchContext) return;
+    if (!window.confirm(`PERHATIAN!\nHapus permanen master data pasar:\n${item.name}?\nTindakan ini tidak dapat dibatalkan.`)) return;
+    try {
+      await deleteDoc(doc(db, `branches/${activeBranchContext}/master_markets`, item.id));
+      toast.success("Data berhasil dihapus");
+    } catch {
+      toast.error("Gagal menghapus data");
+    }
   };
 
-  if (isFormOpen) {
-    return (
-      <div className="w-full">
-        <MarketFormContent 
-          market={marketToEdit} 
-          onClose={handleCloseForm} 
-        />
-      </div>
-    );
-  }
+  const handleExport = () => {
+    if(data.length === 0) return toast.info("Tidak ada data untuk diexport");
+    const exportData = data.map(({ id, ...rest }) => rest); // Exclude ID to allow clean re-import
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = `MasterMarkets_${activeBranchContext}_${new Date().getTime()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!activeBranchContext) return toast.error("Konteks Cabang tidak valid");
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (!Array.isArray(parsed)) throw new Error("Format berkas JSON tidak valid (harus berupa Array).");
+
+        const existingNames = new Set(data.map(d => d.name.toLowerCase()));
+        
+        let validRows = 0;
+        let skippedRows = 0;
+
+        const batch = writeBatch(db);
+        const colPath = `branches/${activeBranchContext}/master_markets`;
+
+        parsed.forEach(row => {
+          const nm = row.name || row.nama_pasar;
+          if(!nm) {
+             skippedRows++;
+             return;
+          }
+          if (existingNames.has(nm.toLowerCase())) {
+             skippedRows++;
+             return;
+          }
+          
+          validRows++;
+          existingNames.add(nm.toLowerCase());
+          const docRef = doc(collection(db, colPath));
+          batch.set(docRef, {
+            name: nm,
+            nama_pasar: nm, // Legacy support
+            city: row.city || row.wilayah || "",
+            wilayah: row.city || row.wilayah || "", // Legacy support
+            district: row.district || "",
+            type: row.type || row.kategori || "Umum",
+            active: row.active ?? true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: profile?.email || "System JSON Import",
+          });
+        });
+
+        if (validRows === 0) {
+          toast.info(`Proses dibatalkan. Menemukan ${skippedRows} baris invalid atau sudah ada (duplikat).`);
+          return;
+        }
+
+        const confirmMsg = `RINGKASAN IMPORT:\n- Data Valid Tersimpan: ${validRows}\n- Dokumen Dilewati (Duplikat/Invalid): ${skippedRows}\n\nPerlu diingat, import akan langsung ditulis ke cabang aktif.\nLanjutkan proses Bulk Insert?`;
+
+        if (!window.confirm(confirmMsg)) return;
+
+        await batch.commit();
+        toast.success(`Import selesai! Berhasil memuat ${validRows} data master baru.`);
+      } catch (err: any) {
+        toast.error("Gagal membaca berkas import: " + err.message);
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const openEditor = (item?: MarketMaster) => {
+    setEditingItem(item || null);
+    setIsEditorOpen(true);
+  };
+
+  const closeEditor = () => {
+    setIsEditorOpen(false);
+    setEditingItem(null);
+  };
 
   return (
-    <MasterDataView
-      markets={filteredMarkets}
-      onAdd={() => handleOpenForm()}
-      onEdit={handleOpenForm}
-      onDelete={handleDeleteMarket}
-      search={search}
-      setSearch={setSearch}
-      filters={{
-        wilayah: filterWilayah,
-        setWilayah: setFilterWilayah,
-        kategori: filterKategori,
-        setKategori: setFilterKategori,
-        pasaran: filterPasaran,
-        setPasaran: setFilterPasaran,
-      }}
-    />
+    <div className="w-full flex-1 flex flex-col pt-2 pb-24">
+      {/* Sticky Action Bar */}
+      <div className="sticky top-4 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-white/95 dark:bg-black/95 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-2xl md:rounded-3xl shadow-sm md:items-center justify-between mb-6">
+        <div className="flex-1 flex items-center gap-2 relative">
+          <Search className="absolute left-3 w-4 h-4 text-zinc-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari master pasar..."
+            className="w-full h-10 md:h-11 bg-zinc-50 dark:bg-white/5 border-transparent focus:border-zinc-300 dark:focus:border-white/20 rounded-xl pl-9 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all"
+          />
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+          <select 
+            value={filterActive}
+            onChange={(e) => setFilterActive(e.target.value as any)}
+            className="h-10 md:h-11 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-semibold outline-none cursor-pointer text-zinc-700 dark:text-zinc-300 flex-shrink-0"
+          >
+            <option value="all">Semua Status</option>
+            <option value="active">Aktif Saja</option>
+            <option value="inactive">Nonaktif</option>
+          </select>
+          
+          <button 
+            onClick={handleExport}
+            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors flex-shrink-0"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden md:inline">Eksport</span>
+          </button>
+          
+          <div className="relative flex-shrink-0">
+             <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+             <button className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors pointer-events-none">
+              <Upload className="w-4 h-4" />
+              <span className="hidden md:inline">Import</span>
+             </button>
+          </div>
+
+          <button 
+            onClick={() => openEditor()}
+            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-sm flex-shrink-0"
+          >
+            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden md:inline">Baru</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="px-4 md:px-0">
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-20 bg-zinc-100 dark:bg-white/5 animate-pulse rounded-2xl w-full" />
+            ))}
+          </div>
+        ) : filteredData.length === 0 ? (
+          <div className="py-20 text-center flex flex-col items-center justify-center">
+             <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                <SearchX className="w-8 h-8 text-zinc-400" />
+             </div>
+             <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Data Master Kosong</h3>
+             <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">Tidak ditemukan data pasar pada cabang terpilih.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+             {filteredData.map(item => (
+                <div 
+                  key={item.id} 
+                  className={cn(
+                    "group relative overflow-hidden bg-white dark:bg-[#0A0A0A] border rounded-2xl p-4 transition-all hover:shadow-lg",
+                    item.active 
+                      ? "border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20" 
+                      : "border-dashed border-zinc-200 dark:border-white/5 opacity-75"
+                  )}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                     <div className="space-y-1 pr-8">
+                       <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
+                         {item.name}
+                       </h3>
+                       <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                          <MapPin className="w-3 h-3 text-zinc-400" />
+                          <span>{item.city} {item.district ? `• ${item.district}` : ''}</span>
+                       </div>
+                     </div>
+                     <div className="absolute top-4 right-4 flex items-center gap-1">
+                       <button
+                         onClick={() => handleToggleActive(item)}
+                         title={item.active ? "Nonaktifkan" : "Aktifkan"}
+                         className={cn(
+                           "p-1.5 rounded-lg border flex items-center justify-center transition-colors",
+                           item.active 
+                             ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" 
+                             : "bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                         )}
+                       >
+                         {item.active ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                       </button>
+                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 dark:border-white/5">
+                     <div className="flex gap-2">
+                       <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+                         {item.type}
+                       </span>
+                     </div>
+                     <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEditor(item)} className="p-1.5 text-zinc-500 hover:text-blue-500 dark:text-zinc-400 dark:hover:text-blue-400 bg-zinc-50 hover:bg-blue-50 dark:bg-white/5 dark:hover:bg-blue-500/10 rounded-md transition-colors">
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(item)} className="p-1.5 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-white/5 dark:hover:bg-red-500/10 rounded-md transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                     </div>
+                  </div>
+                </div>
+             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Editor Modal / Bottom Sheet */}
+      <AnimatePresence>
+        {isEditorOpen && (
+           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={closeEditor}
+                className="absolute inset-0 bg-black/40 dark:bg-black/80 backdrop-blur-sm" 
+              />
+              <motion.div
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              >
+                {/* Drag Handle Indicator */}
+                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
+                   <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+                </div>
+
+                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-white/5">
+                   <h2 className="text-base font-black tracking-wider text-zinc-900 dark:text-white uppercase flex items-center gap-2">
+                     {editingItem ? <Edit2 className="w-4 h-4 text-blue-500" /> : <Plus className="w-4 h-4 text-blue-500" />}
+                     {editingItem ? "Edit Data Master" : "Form Tambah Pasar"}
+                   </h2>
+                   <button onClick={closeEditor} className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 rounded-full transition-colors">
+                     <X className="w-4 h-4" />
+                   </button>
+                </div>
+                
+                <div className="overflow-y-auto px-6 py-5">
+                   <MarketEditorForm 
+                     initialData={editingItem} 
+                     onClose={closeEditor} 
+                     branchId={activeBranchContext!} 
+                     profile={profile}
+                   />
+                </div>
+              </motion.div>
+           </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }
+
+// Inner Component for Editor Form 
+function MarketEditorForm({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
+  const [formData, setFormData] = useState({
+     name: initialData?.name || "",
+     city: initialData?.city || "",
+     district: initialData?.district || "",
+     type: initialData?.type || "Umum",
+     active: initialData?.active ?? true
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!formData.name.trim()) return toast.error("Nama wajib diisi");
+     setSaving(true);
+     try {
+       const finalSanitized = {
+         ...formData,
+         name: toTitleCase(formData.name),
+         nama_pasar: toTitleCase(formData.name), // legacy mapping
+         wilayah: formData.city, // legacy mapping
+         updatedAt: new Date().toISOString()
+       };
+
+       if (initialData?.id) {
+         await setDoc(doc(db, `branches/${branchId}/master_markets`, initialData.id), finalSanitized, { merge: true });
+         toast.success("Perubahan disimpan");
+       } else {
+         const newRef = doc(collection(db, `branches/${branchId}/master_markets`));
+         await setDoc(newRef, {
+           ...finalSanitized,
+           createdAt: new Date().toISOString(),
+           createdBy: profile?.email || "System/Admin User"
+         });
+         toast.success("Master data ditambahkan");
+       }
+       onClose();
+     } catch (err: any) {
+       toast.error("Gagal menyimpan: " + err.message);
+     } finally {
+       setSaving(false);
+     }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+       <div className="space-y-1.5">
+          <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Nama Pasar</label>
+          <input
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
+            placeholder="Contoh: Pasar Beringharjo"
+          />
+       </div>
+
+       <div className="grid grid-cols-2 gap-4">
+         <div className="space-y-1.5">
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Kota / Kabupaten</label>
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => setFormData({...formData, city: e.target.value})}
+              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
+              placeholder="Contoh: Kota Yogyakarta"
+            />
+         </div>
+         <div className="space-y-1.5">
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Kecamatan</label>
+            <input
+              type="text"
+              value={formData.district}
+              onChange={(e) => setFormData({...formData, district: e.target.value})}
+              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
+              placeholder="Opsional..."
+            />
+         </div>
+       </div>
+
+       <div className="grid grid-cols-2 gap-4">
+         <div className="space-y-1.5">
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jenis Operasi</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors cursor-pointer appearance-none"
+            >
+              <option value="Umum">Pasar Umum</option>
+              <option value="Subuh">Pasar Pagi/Subuh</option>
+              <option value="Pasaran">Pasaran Tradisional</option>
+              <option value="Sore">Pasar Sore</option>
+              <option value="Induk">Pusat/Induk</option>
+            </select>
+         </div>
+         <div className="space-y-1.5">
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Status Sistem</label>
+            <button
+               type="button"
+               onClick={() => setFormData({...formData, active: !formData.active})}
+               className={cn(
+                 "w-full h-12 px-4 rounded-xl border text-sm font-bold tracking-wide transition-colors flex items-center justify-between",
+                 formData.active 
+                   ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400"
+                   : "bg-zinc-50 border-zinc-200 text-zinc-500 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-500"
+               )}
+            >
+               {formData.active ? "Aktif" : "Nonaktif"}
+               {formData.active ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+            </button>
+         </div>
+       </div>
+
+       <div className="pt-6">
+          <button
+             type="submit"
+             disabled={saving}
+             className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-blue-500/20"
+          >
+             {saving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</>
+             ) : "SIMPAN DATA MASTER"}
+          </button>
+       </div>
+    </form>
+  );
+}
+
+// --- LEGACY EXPORTS FOR COMPATIBILITY WITH MarketPlans.tsx and AdminLayout.tsx ---
 
 export const WILAYAH_OPTIONS = [
     "Kota Yogyakarta", "Sleman", "Bantul", "Gunungkidul", "Kulon Progo", "Purworejo", "Magelang", "Temanggung"
@@ -78,450 +524,47 @@ export const KATEGORI_OPTIONS = [
     { id: "PASARAN_JAWA", label: "Pasaran Jawa" },
 ];
 
-export function MasterDataView({
-  markets,
-  onAdd,
-  onEdit,
-  onDelete,
-  search,
-  setSearch,
-  filters,
-}: any) {
+export function MasterDataView({ markets, onAdd, onEdit, onDelete, search, setSearch, filters }: any) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-    >
-      <div className="space-y-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 dark:text-white/30" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(toTitleCase(e.target.value))}
-            placeholder="Cari berdasarkan nama pasar atau wilayah..."
-            className="w-full h-11 bg-white dark:bg-white/5 pl-11 pr-4 rounded-xl border border-zinc-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-brand-primary/10 transition-all font-sans text-[13px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 shadow-sm"
-          />
-        </div>
-
-        <div className="flex justify-center">
-          <button
-            onClick={onAdd}
-            className="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest shadow-md hover:translate-y-[-1px] hover:shadow-lg transition-all duration-200 active:scale-95 gap-2"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Tambah Pasar
-          </button>
-        </div>
-
-        {/* Filters Hub */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="relative">
-            <select
-              value={filters.wilayah}
-              onChange={(e) => filters.setWilayah(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
-            >
-              <option value="" className="bg-white dark:bg-black">WILAYAH</option>
-              {WILAYAH_OPTIONS.map((w) => (
-                <option key={w} value={w} className="bg-white dark:bg-black">
-                  {w.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              value={filters.kategori}
-              onChange={(e) => filters.setKategori(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
-            >
-              <option value="" className="bg-white dark:bg-black">KATEGORI</option>
-              {KATEGORI_OPTIONS.map((k) => (
-                <option key={k.id} value={k.id} className="bg-white dark:bg-black">
-                  {k.label.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              value={filters.pasaran}
-              onChange={(e) => filters.setPasaran(e.target.value)}
-              className="w-full h-[38px] bg-white dark:bg-white/5 px-2.5 rounded-[10px] text-sm font-medium border border-zinc-100 dark:border-white/5 outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer transition-colors shadow-sm"
-            >
-              <option value="" className="bg-white dark:bg-black">PASARAN</option>
-              {PASARAN_OPTIONS.map((p) => (
-                <option key={p} value={p} className="bg-white dark:bg-black">
-                  {p.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-transparent md:bg-white md:dark:bg-white/[0.02] md:rounded-2xl md:overflow-hidden md:border md:border-zinc-100 md:dark:border-white/10 md:shadow-xl transition-colors">
-        <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-sm  font-medium tracking-tight text-zinc-400 dark:text-white/60">
-                <th className="px-6 py-4">Informasi Pasar</th>
-                <th className="px-6 py-4">Wilayah</th>
-                <th className="px-6 py-4">Kategori Detail</th>
-                <th className="px-6 py-4">Operasional</th>
-                <th className="px-6 py-4">Jadwal Buka</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-white/[0.05]">
-              {markets.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center text-zinc-500 dark:text-white/40 text-sm font-medium tracking-tight">
-                    Data Tidak Ditemukan
-                  </td>
-                </tr>
-              ) : (
-                markets.map((m: any) => (
-                  <tr key={m.id} className="group hover:bg-zinc-50 dark:hover:bg-white/[0.04] transition-all">
-                    <td className="px-6 py-4 font-medium text-sm tracking-tight text-zinc-900 dark:text-white">{toTitleCase(m.nama_pasar)}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-zinc-500 dark:text-white/60">{toTitleCase(m.wilayah)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((id: any, idx: number) => (
-                          <span key={typeof id === 'string' ? `${id}-${idx}` : `kat-${idx}`} className="px-2 py-0.5 rounded-md bg-brand-secondary/10 dark:bg-brand-secondary/20 text-brand-secondary/80 text-xs font-medium">
-                            {KATEGORI_OPTIONS.find((o) => (typeof id === 'object' ? o.id === id.id : o.id === id))?.label.replace("Pasar ", "").toUpperCase() || String(typeof id === 'object' ? (id.id || id.label) : id).replace("PASAR_", "")}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {m.buka_harian ? (
-                        <span className="text-sm text-emerald-600 dark:text-brand-primary font-medium tracking-tight border border-emerald-200 dark:border-brand-primary/20 px-2 py-0.5 rounded-md">HARIAN</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {m.pasaran?.map((p: string, pIdx: number) => (
-                            <span key={`${p}-${pIdx}`} className="text-xs px-2 py-0.5 bg-amber-50 dark:bg-yellow-500/10 text-amber-600 dark:text-yellow-400 rounded-md border border-amber-200 dark:border-yellow-500/20 font-medium">{p}</span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        {typeof m.jam_buka === "object" && m.jam_buka !== null
-                          ? Object.entries(m.jam_buka).map(([cat, jam], jamIdx) => {
-                              const label = String(KATEGORI_OPTIONS.find((o) => o.id === cat)?.label || cat);
-                              const jamStr = typeof jam === "object" ? "" : String(jam);
-                              return (
-                                <div key={`${cat}-${jamIdx}`} className="flex items-center gap-2 text-sm">
-                                  <span className="text-zinc-400 dark:text-brand-primary/60 font-medium">{label.replace("Pasar ", "").substring(0, 5).toUpperCase()}:</span>
-                                  <span className="text-zinc-600 dark:text-white/60 font-mono">{jamStr}</span>
-                                </div>
-                              );
-                            })
-                          : <span className="text-zinc-600 dark:text-white/40 font-mono text-sm">{String(m.jam_buka || "")}</span>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => onEdit(m)} className="w-9 h-9 flex items-center justify-center bg-zinc-100 dark:bg-white/10 hover:bg-zinc-200 dark:hover:bg-white/20 rounded-xl text-zinc-500 dark:text-white/60 hover:text-zinc-900 dark:hover:text-white transition-all border border-zinc-200 dark:border-transparent shadow-sm"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={() => onDelete(m.id, m.nama_pasar)} className="w-9 h-9 flex items-center justify-center bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/30 rounded-xl text-red-400 dark:text-red-500/60 hover:text-red-600 dark:hover:text-red-400 transition-all border border-red-100 dark:border-transparent shadow-sm"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile View */}
-        <div className="lg:hidden space-y-3 p-3">
-          {markets.length === 0 ? (
-            <div className="py-12 text-center text-zinc-500 dark:text-white/40 text-xs font-medium tracking-tight">
-              Data Tidak Ditemukan
-            </div>
-          ) : (
-            markets.map((m: any) => (
-              <div key={m.id} className="bg-white dark:bg-white/5 p-4 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm flex justify-between items-center group">
-                <div>
-                  <h3 className="font-medium text-[13px] text-zinc-900 dark:text-white">{toTitleCase(m.nama_pasar)}</h3>
-                  <p className="text-xs text-zinc-500 dark:text-white/60">{toTitleCase(m.wilayah)}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => onEdit(m)} className="p-2 bg-zinc-100 dark:bg-white/10 rounded-lg text-zinc-500 dark:text-white/60"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => onDelete(m.id, m.nama_pasar)} className="p-2 bg-red-50 dark:bg-red-500/10 rounded-lg text-red-400 dark:text-red-500/60"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </motion.div>
+    <div className="p-4 border border-zinc-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/5 opacity-50">
+       <p className="text-zinc-500 text-sm font-medium text-center">Tampilan legacy Data Master telah dipindahkan. Mohon gunakan panel admin utama.</p>
+    </div>
   );
 }
 
 export function MarketFormContent({ market, onClose }: any) {
-  const [formData, setFormData] = useState({
-    nama_pasar: market?.nama_pasar || "",
-    wilayah: market?.wilayah || "Kota Yogyakarta",
-    buka_harian: market?.buka_harian ?? true,
-    pasaran: market?.pasaran || [],
-    jam_buka: (() => {
-      if (typeof market?.jam_buka === "object" && market?.jam_buka !== null) {
-        const sanitized = {} as any;
-        Object.entries(market.jam_buka).forEach(([k, v]) => {
-          if (k !== "[object Object]") sanitized[String(k)] = v;
-        });
-        return sanitized;
-      }
-
-      const kategoriArray = Array.isArray(market?.kategori)
-        ? market.kategori.map((k: any) =>
-            typeof k === "object" ? String(k.id || "PASAR_UMUM") : String(k),
-          )
-        : market?.kategori
-          ? [
-              typeof market.kategori === "object"
-                ? String(market.kategori.id || "PASAR_UMUM")
-                : String(market.kategori),
-            ]
-          : ["PASAR_UMUM"];
-
-      const newJam = {} as any;
-      kategoriArray.forEach((k: string) => {
-        if (k && k !== "undefined" && k !== "[object Object]") {
-          newJam[k] = typeof market?.jam_buka === "string" ? market.jam_buka : "";
-        }
-      });
-      return newJam;
-    })(),
-    kategori: Array.isArray(market?.kategori)
-      ? market.kategori
-          .map((k: any) =>
-            typeof k === "object" ? String(k.id || "PASAR_UMUM") : String(k),
-          )
-          .filter((k: string) => k !== "[object Object]" && k !== "undefined")
-      : market?.kategori
-        ? [
-            typeof market.kategori === "object"
-              ? String(market.kategori.id || "PASAR_UMUM")
-              : String(market.kategori),
-          ].filter((k) => k !== "[object Object]" && k !== "undefined")
-        : ["PASAR_UMUM"],
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const togglePasaran = (p: string) => {
-    const upperP = p.toUpperCase();
-    if (formData.pasaran.includes(upperP)) {
-      setFormData({
-        ...formData,
-        pasaran: formData.pasaran.filter((x: string) => x !== upperP),
-      });
-    } else {
-      setFormData({ ...formData, pasaran: [...formData.pasaran, upperP] });
-    }
-  };
-
-  const toggleKategori = (id: string) => {
-    if (formData.kategori.includes(id)) {
-      setFormData({
-        ...formData,
-        kategori: formData.kategori.filter((x: string) => x !== id),
-      });
-    } else {
-      setFormData({ ...formData, kategori: [...formData.kategori, id] });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.nama_pasar) return toast.error("Nama Pasar wajib diisi");
-    if (!formData.jam_buka) return toast.error("Jam Buka wajib diisi");
-    if (!formData.buka_harian && formData.pasaran.length === 0)
-      return toast.error("Pilih minimal satu hari pasaran");
-
-    setIsSubmitting(true);
-    try {
-      if (market?.id) {
-        await updateMarket(market.id, formData);
-        toast.success("Pasar berhasil diperbarui");
-      } else {
-        await addMarket(formData);
-        toast.success("Pasar berhasil ditambahkan");
-      }
-      onClose();
-    } catch (e) {
-      toast.error("Terjadi kesalahan.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  // Map generic to new form directly bypassing context for now or just return a warning placeholder if needed
+  // Since AdminLayout still hooks to it via a manual open, we'll render the modern MarketEditorForm here!
+  // It requires branchId, profile, which are missing here.
+  // We'll wrap it!
+  const { activeBranchContext } = useRuntime();
+  const { profile } = useAuth();
+  
+  if (!activeBranchContext) return <div className="p-10 text-center">Branch context missing</div>;
+  
   return (
-    <div className="w-full flex-1 flex flex-col h-full bg-white dark:bg-black rounded-lg sm:rounded-2xl border border-border shadow-sm">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <h2 className="text-lg font-bold text-foreground">
-          {market?.id ? "Edit Pasar" : "Tambah Pasar"}
-        </h2>
-        <button 
-          onClick={onClose} 
-          type="button"
-          className="text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 bg-muted rounded-md"
-        >
-          Kembali
-        </button>
-      </div>
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 relative h-full max-w-3xl mx-auto w-full">
-          <div className="p-5 space-y-6 pb-6">
-            <div className="space-y-2">
-            <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium block pl-1">
-              Nama Pasar Target
-            </label>
-            <input
-              type="text"
-              value={formData.nama_pasar}
-              onChange={(e) => setFormData({ ...formData, nama_pasar: toTitleCase(e.target.value) })}
-              placeholder="Masukan nama lengkap pasar..."
-              className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none focus:border-brand-primary/40 focus:ring-1 focus:ring-brand-primary transition-all text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium block pl-1">
-                Wilayah Kabupaten
-              </label>
-              <div className="relative">
-                <select
-                  value={formData.wilayah}
-                  onChange={(e) => setFormData({ ...formData, wilayah: e.target.value })}
-                  className="w-full h-12 bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 outline-none appearance-none cursor-pointer text-sm font-medium text-zinc-900 dark:text-white"
-                >
-                  {WILAYAH_OPTIONS.map((o) => (
-                    <option key={o} value={o} className="bg-white dark:bg-black">{o}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium block pl-1">
-                Kategori Operasi
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {KATEGORI_OPTIONS.map((o) => (
-                  <button
-                    key={o.id}
-                    type="button"
-                    onClick={() => toggleKategori(o.id)}
-                    className={cn(
-                      "flex-1 min-w-[90px] h-10 rounded-xl border text-sm font-medium tracking-tight transition-all",
-                      formData.kategori.includes(o.id)
-                        ? "bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/10"
-                        : "bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-white/40",
-                    )}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium">
-                Konfigurasi Jam Buka
-              </label>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, buka_harian: !formData.buka_harian })}
-                className={cn(
-                  "h-10 px-4 rounded-xl border flex items-center justify-center gap-2 font-medium text-sm tracking-tight transition-all ",
-                  formData.buka_harian
-                    ? "bg-brand-primary text-white border-brand-primary"
-                    : "bg-zinc-50 dark:bg-white/10 border-zinc-200 dark:border-white/20 text-zinc-500 dark:text-white/60",
-                )}
-              >
-                {formData.buka_harian ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                {formData.buka_harian ? "Setiap Hari" : "Pasaran"}
-              </button>
-            </div>
-
-            <div className="space-y-3 bg-zinc-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-100 dark:border-white/10">
-              {formData.kategori.map((cat, idx) => (
-                <div key={`${cat}-${idx}`} className="space-y-1.5">
-                  <div className="flex items-center gap-2 px-1">
-                    <Layers className="w-3 h-3 text-brand-primary/60" />
-                    <span className="text-sm text-zinc-500 dark:text-white/80 font-medium tracking-wider">
-                      {KATEGORI_OPTIONS.find((o) => o.id === cat)?.label}
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    value={formData.jam_buka[cat] || ""}
-                    onChange={(e) => setFormData({ ...formData, jam_buka: { ...formData.jam_buka, [cat]: e.target.value } })}
-                    placeholder="Contoh: 02:00 - 10:00"
-                    className="w-full h-11 bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 outline-none text-xs font-mono font-medium text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-white/10 focus:border-brand-primary/40"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {!formData.buka_harian && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-2"
-            >
-              <label className="text-sm text-zinc-400 dark:text-white/60 tracking-tight font-medium block pl-1">
-                Pilih Hari Pasaran
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {PASARAN_OPTIONS.map((p, pIdx) => (
-                  <button
-                    key={`${p}-${pIdx}`}
-                    type="button"
-                    onClick={() => togglePasaran(p)}
-                    className={cn(
-                      "flex-1 min-w-[80px] h-10 rounded-xl border text-sm font-medium tracking-tight transition-all",
-                      formData.pasaran.includes(p.toUpperCase())
-                        ? "bg-brand-secondary text-black border-brand-secondary shadow-lg shadow-brand-secondary/10"
-                        : "bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-white/40",
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-          </div>
-
-          <div className="sticky bottom-0 p-5 mt-auto bg-card border-t border-border flex justify-center gap-3 z-20">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full max-w-[140px] h-11 bg-muted rounded-xl font-black tracking-widest text-[10px] uppercase text-muted-foreground hover:bg-muted/80 transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full max-w-[200px] h-11 bg-primary text-primary-foreground rounded-xl font-black tracking-widest text-[10px] uppercase shadow-lg transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
-            >
-              {isSubmitting ? "Processing..." : "Simpan"}
-            </button>
-          </div>
-        </form>
-      </div>
+     <div className="w-full flex-1 flex flex-col h-full bg-white dark:bg-black rounded-lg border border-border shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-lg font-bold text-foreground">Edit Pasar (Legacy Form Mount)</h2>
+          <button onClick={onClose} className="text-[10px] font-black uppercase text-muted-foreground">Kembali</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+           {/* Auto-map legacy item to new interface */}
+           <MarketEditorForm 
+             initialData={market ? {
+               id: market.id,
+               name: market.name || market.nama_pasar || "",
+               city: market.city || market.wilayah || "",
+               district: market.district || "",
+               type: market.type || market.kategori || "Umum",
+               active: market.active ?? true
+             } : null} 
+             onClose={onClose} 
+             branchId={activeBranchContext} 
+             profile={profile} 
+           />
+        </div>
+     </div>
   );
 }
+

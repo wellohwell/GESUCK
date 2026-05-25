@@ -11,6 +11,7 @@ export interface UserProfile {
   branchId: string | null;
   role: string | null;
   roleIds?: string[];
+  permissions?: string[];
   requestedRole: string | null;
   status: UserStatus;
   approvedBy: string | null;

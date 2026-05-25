@@ -40,13 +40,13 @@ const PlanItem = React.memo(({
   plan, 
   user, 
   activeDate, 
-  isAdmin, 
+  isManager, 
   onDelete
 }: { 
   plan: any; 
   user: any; 
   activeDate: any; 
-  isAdmin: boolean; 
+  isManager: boolean; 
   onDelete: (e: React.MouseEvent, id: string) => void;
 }) => {
   const iscurrentUser = plan.userId === auth.currentUser?.uid;
@@ -134,7 +134,7 @@ const PlanItem = React.memo(({
         <p className="text-[8px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
           {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
         </p>
-        {(iscurrentUser || isAdmin) && (
+        {(iscurrentUser || isManager) && (
           <button
             onClick={(e) => onDelete(e, plan.id)}
             className="p-1 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -167,11 +167,11 @@ const KATEGORI_TYPES = [
 ];
 
 interface DashboardProps {
-  isAdmin: boolean;
+  isManager: boolean;
 }
 
 export default function Dashboard({
-  isAdmin,
+  isManager,
 }: DashboardProps) {
   const [plans, setPlans] = useState<any[]>([]);
   const [allPlans, setAllPlans] = useState<any[]>([]);
@@ -634,7 +634,7 @@ export default function Dashboard({
                     plan={plan}
                     user={userMap[plan.userId]}
                     activeDate={activeDate}
-                    isAdmin={isAdmin}
+                    isManager={isManager}
                     onDelete={handleDelete}
                   />
                 ))

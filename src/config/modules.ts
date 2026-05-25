@@ -11,6 +11,7 @@ export interface ModuleConfig {
   visibleInWorkspace?: boolean;
   defaultWorkspaceEligible?: boolean;
   allowedRoles: string[];
+  requiredPermissions?: string[];
   allowedBranches: string[];
   betaMode: boolean;
   maintenanceMode: boolean;
@@ -27,7 +28,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: true,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -42,7 +43,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: true,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -57,7 +58,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: true,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -72,7 +73,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: true,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SALES, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SALES, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -87,7 +88,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: false,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -102,7 +103,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: true,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SALES, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -117,7 +118,7 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: false,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF, ROLES.SPV, ROLES.SALES],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SPV, ROLES.SALES],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
@@ -132,7 +133,8 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     visibleInSidebar: true,
     visibleInWorkspace: true,
     defaultWorkspaceEligible: false,
-    allowedRoles: [ROLES.OWNER, ROLES.ADMIN, ROLES.STAFF],
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER],
+    requiredPermissions: ["USER_MANAGEMENT", "USER_APPROVAL"],
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,

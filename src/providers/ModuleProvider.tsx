@@ -5,6 +5,7 @@ import { DEFAULT_MODULES, ModuleConfig } from '../config/modules';
 import { useAuth } from './AuthProvider';
 import { useRuntime } from './RuntimeProvider';
 import { ROLES } from '../config/roles';
+import { hasRole, canAccessModule as checkModuleAuth } from '../lib/permissions';
 import { toast } from 'react-toastify';
 
 export type AccessReason = 'disabled' | 'maintenance' | 'role' | 'branch' | 'ok';
@@ -135,9 +136,8 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return { allowed: true, reason: 'ok' as AccessReason };
     }
 
-    // Owner is a super role, bypasses almost all blocks EXCEPT complete module disable state
-    const isOwner = profile?.role === ROLES.OWNER || profile?.userType === 'global';
-
+    const isOwner = hasRole(profile, ROLES.OWNER) || profile?.userType === 'global';
+    
     // 1. Is module generally enabled or active within the cockpit registry?
     if (!mod.enabled) {
       return { allowed: false, reason: 'disabled' as AccessReason };
@@ -146,18 +146,17 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 2. Is index under scheduled maintenance?
     if (mod.maintenanceMode) {
       // Owner and generic admin can bypass maintenance for testing purposes
-      if (isOwner || profile?.role === ROLES.ADMIN || profile?.role === ROLES.STAFF) {
+      if (isOwner || hasRole(profile, ROLES.MANAGER)) {
         return { allowed: true, reason: 'ok' as AccessReason };
       }
       return { allowed: false, reason: 'maintenance' as AccessReason };
     }
 
-    // 3. User Role Authorization check
-    if (mod.allowedRoles && mod.allowedRoles.length > 0) {
-      const userRole = profile?.userType === 'global' ? 'owner' : (profile?.role || 'sales');
-      if (!mod.allowedRoles.includes(userRole)) {
-        return { allowed: false, reason: 'role' as AccessReason };
-      }
+    // 3. User Role/Permission Authorization check
+    if (mod.allowedRoles && mod.allowedRoles.length > 0 || (mod.requiredPermissions && mod.requiredPermissions.length > 0)) {
+        if (!checkModuleAuth(profile, mod)) {
+           return { allowed: false, reason: 'role' as AccessReason };
+        }
     }
 
     // 4. Branch Specific Isolation check (beta features trial, rollout, etc)

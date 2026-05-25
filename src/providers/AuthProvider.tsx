@@ -6,6 +6,7 @@ import { getUserProfile, createUserProfile } from '../features/auth/services';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { normalizeUserProfile } from '../features/users/utils/normalizeUserProfile';
 import { subscribeBranches } from '../lib/services';
+import { isOwner as checkIsOwner } from '../lib/permissions';
 
 interface AuthContextType {
   firebaseUser: User | null;
@@ -14,6 +15,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isApproved: boolean;
   role: string | null;
+  permissions: string[];
+  isOwner: boolean;
+  isManager: boolean;
+  isStaff: boolean;
   branchId: string | null;
   branch: any | null;
   branchesList: any[];
@@ -28,6 +33,10 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isApproved: false,
   role: null,
+  permissions: [],
+  isOwner: false,
+  isManager: false,
+  isStaff: false,
   branchId: null,
   branch: null,
   branchesList: [],
@@ -76,9 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setBranchesList(legacyList);
         setBranchesLoading(false);
 
-        // Try to seed database ONLY if the current logged-in user role is OWNER or ADMIN
+        // Try to seed database ONLY if the current logged-in user role is OWNER or MANAGER
         const userRole = profile?.role?.toUpperCase() || "";
-        if (userRole === "OWNER" || userRole === "ADMIN" || userRole === "STAFF") {
+        const normalizedRole = userRole === "ADMIN" ? "MANAGER" : userRole;
+        if (normalizedRole === "OWNER" || normalizedRole === "MANAGER" || normalizedRole === "STAFF") {
           for (const item of legacyList) {
             try {
               await setDoc(doc(db, "branches", item.branchId), {
@@ -122,13 +132,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       spreadsheetId: foundBranch.spreadsheets?.pricing || foundBranch.spreadsheetId || null
     } : null;
 
+    const rawRole = profile?.role?.toUpperCase() || null;
+    const normalizedRole = rawRole === "ADMIN" ? "MANAGER" : rawRole;
+    
     return {
       firebaseUser,
       profile,
       loading: loading || branchesLoading,
       isAuthenticated: !!firebaseUser,
       isApproved: profile?.status === 'approved',
-      role: profile?.role || null,
+      role: normalizedRole,
+      permissions: profile?.permissions || [],
+      isOwner: checkIsOwner(profile),
+      isManager: normalizedRole === 'MANAGER',
+      isStaff: normalizedRole === 'STAFF',
       branchId,
       branch: resolvedBranch,
       branchesList: branchesList.filter(b => !b.archived),

@@ -61,11 +61,11 @@ const KATEGORI_TYPES = [
 ];
 
 interface MarketPlansProps {
-  isAdmin: boolean;
+  isManager: boolean;
 }
 
 export default function MarketPlans({
-  isAdmin,
+  isManager,
 }: MarketPlansProps) {
   const [plans, setPlans] = useState<any[]>([]);
   const [allPlans, setAllPlans] = useState<any[]>([]);
@@ -74,19 +74,21 @@ export default function MarketPlans({
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
+  const [showPendingTooltip, setShowPendingTooltip] = useState(false);
 
   // Form State
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedPasaran, setSelectedPasaran] = useState("");
   const [selectedMarketName, setSelectedMarketName] = useState("");
+  const [selectedMarketCity, setSelectedMarketCity] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { openModal, closeAllModals } = useModal();
   const role = useRole();
-  const canAccessMaster = role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.STAFF || role === ROLES.SPV;
-  const actualIsAdmin = isAdmin || canAccessMaster;
+  const canAccessMaster = role === ROLES.OWNER || role === ROLES.MANAGER || role === ROLES.STAFF || role === ROLES.SPV;
+  const actualIsAdmin = isManager || canAccessMaster;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as 'plans' | 'master' | 'laporan') || 'plans';
@@ -186,12 +188,43 @@ export default function MarketPlans({
     return Math.max(0, spvUsers.length - spvWithPlans.length);
   }, [users, plans]);
 
-  const availableMarkets = useMemo(() => {
-    const takenMarketNames = new Set(plans.map((p) => p.marketName));
-    return markets.filter((m) => {
-      const isTaken = takenMarketNames.has(m.nama_pasar);
-      if (isTaken) return false;
+  const pendingSpvUsers = useMemo(() => {
+    const spvUsers = users.filter(u => u.role === 'spv');
+    const spvWithPlansIds = new Set(plans.map(p => p.userId));
+    return spvUsers.filter(u => !spvWithPlansIds.has(u.id));
+  }, [users, plans]);
 
+  const normalizeMarketName = (name: string): string => {
+    if (!name) return "";
+    return name
+      .toLowerCase()
+      .replace(/^pasar\s+/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const normalizeCityName = (city: string): string => {
+    if (!city) return "";
+    return city
+      .toLowerCase()
+      .replace(/^kota\s+/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const takenMarketsMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    plans.forEach((p) => {
+      const uInfo = userMap[p.userId];
+      const userName = uInfo ? uInfo.name : "User";
+      const key = `${normalizeMarketName(p.marketName)}|${normalizeCityName(p.city)}`;
+      map[key] = userName;
+    });
+    return map;
+  }, [plans, userMap]);
+
+  const availableMarkets = useMemo(() => {
+    return markets.filter((m) => {
       const matchesSearch =
         !searchQuery ||
         m.nama_pasar.toLowerCase().includes(searchQuery.toLowerCase());
@@ -213,11 +246,11 @@ export default function MarketPlans({
 
       return matchesCity && matchesType && matchesPasaran;
     });
-  }, [markets, plans, selectedCity, selectedType, selectedPasaran, searchQuery]);
+  }, [markets, selectedCity, selectedType, selectedPasaran, searchQuery]);
 
   const selectedMarket = useMemo(
-    () => markets.find((m) => m.nama_pasar === selectedMarketName),
-    [markets, selectedMarketName],
+    () => markets.find((m) => m.nama_pasar === selectedMarketName && m.wilayah === selectedMarketCity),
+    [markets, selectedMarketName, selectedMarketCity],
   );
 
   const pasaranWarning = useMemo(() => {
@@ -244,6 +277,7 @@ export default function MarketPlans({
 
   const resetForm = () => {
     setSelectedMarketName("");
+    setSelectedMarketCity("");
     setSelectedSubCategory("");
     setSelectedCity("");
     setSelectedType("");
@@ -323,8 +357,13 @@ export default function MarketPlans({
     }
   };
 
-  const handleMarketClick = (m: any) => {
+   const handleMarketClick = (m: any) => {
+    const key = `${normalizeMarketName(m.nama_pasar)}|${normalizeCityName(m.wilayah)}`;
+    const takerName = takenMarketsMap[key];
+    if (takerName) return;
+
     setSelectedMarketName(m.nama_pasar);
+    setSelectedMarketCity(m.wilayah);
     const mKategoris = Array.isArray(m.kategori) ? m.kategori : [m.kategori];
 
     const getKatId = (k: any) => (typeof k === "object" ? k.kode || k.id : k);
@@ -555,21 +594,30 @@ export default function MarketPlans({
                 </AnimatePresence>
 
                 <div className="flex flex-col gap-1">
-                    {availableMarkets.length > 0 ? (
-                      availableMarkets.map((m) => (
-                         <div
-                          key={m.id}
-                          onClick={() => handleMarketClick(m)}
-                          className={cn(
-                            "flex items-center justify-between p-4 mb-3 transition-all active:scale-[0.99] group cursor-pointer border border-border/40 dark:border-white/[0.04] bg-muted/15 dark:bg-zinc-900/30 hover:bg-muted/25 dark:hover:bg-zinc-900/60 rounded-2xl shadow-sm",
-                            selectedMarketName === m.nama_pasar && "bg-primary/10 border-primary/40 dark:border-primary/40 dark:bg-primary/[0.04] ring-1 ring-primary/20"
-                          )}
-                        >
-                          <div className="min-w-0 flex-1 pr-1">
-                            <h4 className={cn(
-                              "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
-                              selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
-                            )}>
+                     {availableMarkets.length > 0 ? (
+                      availableMarkets.map((m) => {
+                         const key = `${normalizeMarketName(m.nama_pasar)}|${normalizeCityName(m.wilayah)}`;
+                         const takerName = takenMarketsMap[key];
+                         const isTaken = !!takerName;
+                         const isSelected = selectedMarketName === m.nama_pasar && selectedMarketCity === m.wilayah;
+                         return (
+                           <div
+                            key={m.id}
+                            onClick={() => !isTaken && handleMarketClick(m)}
+                            className={cn(
+                              "flex items-center justify-between p-4 mb-3 transition-all rounded-2xl shadow-sm border",
+                              isTaken 
+                                ? "opacity-60 bg-zinc-100/30 dark:bg-zinc-950/20 border-zinc-200/40 dark:border-white/5 cursor-not-allowed" 
+                                : "active:scale-[0.99] group cursor-pointer border-border/40 dark:border-white/[0.04] bg-muted/15 dark:bg-zinc-900/30 hover:bg-muted/25 dark:hover:bg-zinc-900/60",
+                              isSelected && !isTaken && "bg-primary/10 border-primary/40 dark:border-primary/40 dark:bg-primary/[0.04] ring-1 ring-primary/20"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1 pr-1">
+                              <h4 className={cn(
+                                "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
+                                isSelected && !isTaken ? "text-primary" : "text-foreground",
+                                isTaken && "text-muted-foreground/75"
+                              )}>
                               {toTitleCase(m.nama_pasar)}
                             </h4>
                             <div className="text-[11px] font-bold text-muted-foreground/80 tracking-wide mt-0.5">
@@ -604,8 +652,14 @@ export default function MarketPlans({
                               })}
                             </div>
 
+                            {isTaken && (
+                              <div className="mt-2 text-[10px] font-black text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg w-fit tracking-wider uppercase">
+                                pasar ini telah dipilih {takerName}
+                              </div>
+                            )}
+
                             {/* Sub Category Selection - Always show if multi-category and selected */}
-                            {selectedMarketName === m.nama_pasar && Array.isArray(m.kategori) && m.kategori.length > 1 && (
+                            {isSelected && !isTaken && Array.isArray(m.kategori) && m.kategori.length > 1 && (
                               <div className="mt-2.5 flex flex-wrap gap-1.5 p-1.5 bg-zinc-50 dark:bg-white/[0.02] rounded-xl w-fit border border-zinc-100 dark:border-white/5 shadow-inner">
                                 {m.kategori.map((kat: any, katIdx: number) => {
                                   const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
@@ -635,7 +689,8 @@ export default function MarketPlans({
                             )}
                           </div>
                         </div>
-                      ))
+                       );
+                      })
                     ) : (
                       <div className="py-20 text-center text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] opacity-30">
                         Data Tidak Ditemukan
@@ -772,15 +827,52 @@ export default function MarketPlans({
                    <Users className="w-2.5 md:w-3 h-2.5 md:h-3 text-black" />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-xs md:text-sm font-bold tracking-tight text-zinc-800 dark:text-white/90">
+                  <h2 className="text-xs md:text-sm font-bold tracking-tight text-zinc-800 dark:text-white/90 flex items-center">
                     Rencana Kunjungan
                     {pendingSpvCount > 0 && (
-                      <>
+                      <span className="inline-flex items-center">
                         <span className="opacity-10 mx-1.5 font-normal md:text-base">•</span>
-                        <span className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-wider">
-                          {pendingSpvCount} PENDING
+                        <span 
+                          className="relative group inline-flex items-center cursor-help"
+                          onMouseEnter={() => setShowPendingTooltip(true)}
+                          onMouseLeave={() => setShowPendingTooltip(false)}
+                        >
+                          <span 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowPendingTooltip(prev => !prev);
+                            }}
+                            className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-wider bg-primary/10 hover:bg-primary/20 px-2.5 py-0.5 rounded-full transition-colors"
+                          >
+                            {pendingSpvCount} PENDING
+                          </span>
+                          
+                          {/* Rich Polished Custom Tooltip */}
+                          <span 
+                            className={`absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-48 bg-zinc-950 dark:bg-zinc-900 text-white rounded-xl p-2.5 shadow-xl text-[10px] font-bold leading-normal transition-all duration-200 z-[120] text-left ring-1 ring-white/10 ${
+                              showPendingTooltip 
+                                ? 'opacity-100 visible pointer-events-auto' 
+                                : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none'
+                            }`}
+                          >
+                            <span className="block text-zinc-400 font-extrabold uppercase tracking-wider mb-1.5 border-b border-white/5 pb-1">
+                              Belum Mengisi ({pendingSpvCount})
+                            </span>
+                            <span className="block space-y-1 max-h-32 overflow-y-auto no-scrollbar">
+                              {pendingSpvUsers.map((u) => (
+                                <span key={u.id} className="flex items-center gap-1.5 py-0.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                  <span className="text-[10px] text-zinc-200 font-bold truncate">
+                                    {u.displayName || u.name || "User"}
+                                  </span>
+                                </span>
+                              ))}
+                            </span>
+                            {/* Subtle Pointer Arrow */}
+                            <span className="absolute top-full left-1/2 -translate-x-1/2 -not-sr-only border-x-4 border-x-transparent border-t-4 border-t-zinc-950 dark:border-t-zinc-900" />
+                          </span>
                         </span>
-                      </>
+                      </span>
                     )}
                   </h2>
                 </div>
@@ -843,7 +935,7 @@ export default function MarketPlans({
                         plan={plan}
                         user={userMap[plan.userId]}
                         activeDate={activeDate}
-                        isAdmin={actualIsAdmin}
+                        isManager={actualIsAdmin}
                         onDelete={handleDelete}
                       />
                     ))}

@@ -10,7 +10,7 @@ interface PlanItemProps {
   plan: any;
   user: any;
   activeDate: any;
-  isAdmin: boolean;
+  isManager: boolean;
   onDelete: (e: React.MouseEvent, id: string) => void;
 }
 
@@ -18,7 +18,7 @@ export const PlanItem = React.memo(({
   plan, 
   user, 
   activeDate, 
-  isAdmin, 
+  isManager, 
   onDelete
 }: PlanItemProps) => {
   const iscurrentUser = plan.userId === auth.currentUser?.uid;
@@ -107,7 +107,7 @@ export const PlanItem = React.memo(({
         <p className="text-[8px] md:text-xs text-zinc-300 dark:text-white/30 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
           {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
         </p>
-        {(iscurrentUser || isAdmin) && (
+        {(iscurrentUser || isManager) && (
           <button
             data-html2canvas-ignore="true"
             onClick={(e) => onDelete(e, plan.id)}

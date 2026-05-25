@@ -1,11 +1,13 @@
 export const ROLES = {
-  OWNER: 'owner',
-  ADMIN: 'admin', // generic admin or branch admin
-  STAFF: 'staff',
-  SALES: 'sales',
-  SURVEY: 'survey',
-  GUDANG: 'gudang',
-  SPV: 'spv',
+  OWNER: 'OWNER',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF',
+  SALES: 'SALES',
+  SURVEY: 'SURVEY', // Leaving other roles as they might be used
+  GUDANG: 'GUDANG',
+  SPV: 'SUPERVISOR',
+  AUDITOR: 'AUDITOR',
+  FINANCE: 'FINANCE'
 } as const;
 
 export type Role = typeof ROLES[keyof typeof ROLES];

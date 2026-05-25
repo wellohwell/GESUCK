@@ -18,6 +18,7 @@ import {
   startAfter,
   QueryConstraint
 } from "firebase/firestore";
+import { tenantQuery } from "./tenantFirestore";
 import { useState, useEffect } from "react";
 import { auth, db } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -64,32 +65,48 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 // Market Service
-export function subscribeMarkets(callback: (markets: any[]) => void) {
-  const q = query(collection(db, "markets"));
+export function getMarketsCollectionPath(branchId?: string | null): string {
+  if (branchId) {
+    return `branches/${branchId}/master_markets`;
+  }
+  try {
+    const val = localStorage.getItem('tenant_branch_context');
+    if (val) return `branches/${val}/master_markets`;
+  } catch (e) {
+    // Ignore localStorage error
+  }
+  return `branches/GJY/master_markets`;
+}
+
+export function subscribeMarkets(callback: (markets: any[]) => void, branchId?: string | null) {
+  const path = getMarketsCollectionPath(branchId);
+  const q = query(collection(db, path));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, "markets");
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 }
 
-export async function addMarket(marketData: any) {
+export async function addMarket(marketData: any, branchId?: string | null) {
+  const path = getMarketsCollectionPath(branchId);
   try {
     const cleanedData = {
       ...marketData,
       nama_pasar: toTitleCase(marketData.nama_pasar),
       wilayah: toTitleCase(marketData.wilayah),
     };
-    await addDoc(collection(db, "markets"), {
+    await addDoc(collection(db, path), {
       ...cleanedData,
       created_at: serverTimestamp()
     });
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, "markets");
+    handleFirestoreError(error, OperationType.CREATE, path);
   }
 }
 
-export async function updateMarket(marketId: string, marketData: any) {
+export async function updateMarket(marketId: string, marketData: any, branchId?: string | null) {
+  const path = getMarketsCollectionPath(branchId);
   try {
     const { id, ...data } = marketData; // Remove ID if present
     const cleanedData = {
@@ -100,17 +117,18 @@ export async function updateMarket(marketId: string, marketData: any) {
     // Remove undefined
     Object.keys(cleanedData).forEach(key => (cleanedData as any)[key] === undefined && delete (cleanedData as any)[key]);
 
-    await setDoc(doc(db, "markets", marketId), cleanedData, { merge: true });
+    await setDoc(doc(db, path, marketId), cleanedData, { merge: true });
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `markets/${marketId}`);
+    handleFirestoreError(error, OperationType.UPDATE, `${path}/${marketId}`);
   }
 }
 
-export async function removeMarket(marketId: string) {
+export async function removeMarket(marketId: string, branchId?: string | null) {
+  const path = getMarketsCollectionPath(branchId);
   try {
-    await deleteDoc(doc(db, "markets", marketId));
+    await deleteDoc(doc(db, path, marketId));
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `markets/${marketId}`);
+    handleFirestoreError(error, OperationType.DELETE, `${path}/${marketId}`);
   }
 }
 
@@ -155,7 +173,7 @@ export function subscribeActivities(role: string, uid: string, callback: (activi
   const r = role?.toUpperCase();
   const constraints: any[] = [];
 
-  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isManager = r === 'OWNER' || r === 'MANAGER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
   if (r === "SURVEY") {
@@ -164,16 +182,18 @@ export function subscribeActivities(role: string, uid: string, callback: (activi
     constraints.push(where("category", "in", ["task", "workflow", "order"]));
   }
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     constraints.push(where("actorId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     constraints.push(where("branchId", "==", branchId));
   }
 
-  const q = query(
-    collection(db, "activities"), 
+  const q = tenantQuery(
+    "activities",
+    null,
+    branchId,
     ...constraints, 
     orderBy("createdAt", "desc"), 
     limit(limitCount)
@@ -263,7 +283,7 @@ export async function updateUser(userId: string, data: any) {
 
 export async function updateUserStatusAndRole(
   userId: string, 
-  data: { status?: string, role?: string, blockedReason?: string }
+  data: { status?: string, role?: string, permissions?: string[], blockedReason?: string }
 ) {
   try {
     const adminUid = auth.currentUser?.uid;
@@ -417,12 +437,12 @@ export const ROLE_PERMISSIONS = {
 
 export function canAccessAll(role?: string) {
   const r = role?.toUpperCase();
-  return r === 'OWNER' || r === 'ADMIN' || r === 'STAFF';
+  return r === 'OWNER' || r === 'MANAGER' || r === 'STAFF';
 }
 
 export function canAccessTeam(role?: string) {
   const r = role?.toUpperCase();
-  return r === 'OWNER' || r === 'ADMIN' || r === 'SPV' || r === 'STAFF';
+  return r === 'OWNER' || r === 'MANAGER' || r === 'SPV' || r === 'STAFF';
 }
 
 // Market Plan Service
@@ -491,14 +511,14 @@ export function subscribeClientsByStage(stage: string, role: string, uid: string
   const r = role?.toUpperCase();
   const constraints: any[] = [where("stage", "==", stage)];
   
-  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isManager = r === 'OWNER' || r === 'MANAGER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     constraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     constraints.push(where("branchId", "==", branchId));
   }
   
@@ -518,7 +538,7 @@ export function subscribeClientsByStage(stage: string, role: string, uid: string
 
 export function subscribeClientHistory(nomor: string, role: string, uid: string, callback: (history: any[]) => void, branchId?: string | null) {
   const r = role?.toUpperCase();
-  const isAdmin = r === 'ADMIN' || r === 'OWNER';
+  const isManager = r === 'MANAGER' || r === 'OWNER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
   const constraints: any[] = [
@@ -526,11 +546,11 @@ export function subscribeClientHistory(nomor: string, role: string, uid: string,
     orderBy("createdAt", "desc")
   ];
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     constraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     constraints.push(where("branchId", "==", branchId));
   }
   
@@ -547,19 +567,21 @@ export function subscribeClients(role: string, uid: string, callback: (clients: 
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
-  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isManager = r === 'OWNER' || r === 'MANAGER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
-  const q = query(
-    collection(db, "clients"), 
+  const q = tenantQuery(
+    "clients", 
+    null,
+    branchId,
     ...baseConstraints,
     orderBy("lastOrderAt", "desc"), 
     limit(100)
@@ -577,14 +599,14 @@ export function subscribeOrders(role: string, uid: string, callback: (orders: an
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
-  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isManager = r === 'OWNER' || r === 'MANAGER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
@@ -596,7 +618,13 @@ export function subscribeOrders(role: string, uid: string, callback: (orders: an
     }
   }
   
-  const q = query(collection(db, "orders"), ...baseConstraints, orderBy("createdAt", "desc"));
+  const q = tenantQuery(
+    "orders",
+    null,
+    branchId,
+    ...baseConstraints,
+    orderBy("createdAt", "desc")
+  );
   
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -909,7 +937,7 @@ export function subscribeTasks(role: string, uid: string, callback: (tasks: any[
   const r = role?.toUpperCase();
   const baseConstraints: any[] = [];
   
-  const isAdmin = r === 'OWNER' || r === 'ADMIN';
+  const isManager = r === 'OWNER' || r === 'MANAGER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
   if (r === 'SURVEY') {
@@ -918,15 +946,21 @@ export function subscribeTasks(role: string, uid: string, callback: (tasks: any[
     baseConstraints.push(where("type", "==", "delivery"));
   }
 
-  if (!isAdmin && !isBranchRestricted) {
+  if (!isManager && !isBranchRestricted) {
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isAdmin) {
+  if (branchId && !isManager) {
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
-  const q = query(collection(db, "tasks"), ...baseConstraints, orderBy("createdAt", "desc"));
+  const q = tenantQuery(
+    "tasks",
+    null,
+    branchId,
+    ...baseConstraints,
+    orderBy("createdAt", "desc")
+  );
   
   return onSnapshot(q, (snapshot) => {
     const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1165,7 +1199,7 @@ export function subscribeClientOrders(clientId: string, callback: (orders: any[]
   const r = role?.toUpperCase();
   let q;
   
-  if (r === 'OWNER' || r === 'ADMIN' || r === 'SPV' || r === 'STAFF') {
+  if (r === 'OWNER' || r === 'MANAGER' || r === 'SPV' || r === 'STAFF') {
     q = query(
       collection(db, "orders"), 
       where("clientId", "==", clientId), 
@@ -1330,7 +1364,7 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
   }
 
   // 3. Global / Owner notifications (Owner/Admin sees all or Global)
-  if (r === 'OWNER' || r === 'ADMIN' || r === 'STAFF') {
+  if (r === 'OWNER' || r === 'MANAGER' || r === 'STAFF') {
     const qAll = query(collection(db, "notifications"));
     listeners.push(onSnapshot(qAll, (snap) => {
       allNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));

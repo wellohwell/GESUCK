@@ -256,10 +256,10 @@ export default function NavigationPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className={`relative bg-zinc-950 border rounded-2xl p-4 hover:border-zinc-700/80 transition-all ${
+                    className={`relative bg-white dark:bg-zinc-900 border rounded-2xl p-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all ${
                       !item.enabled ? 'opacity-50' : ''
                     } ${
-                      item.visible ? 'border-zinc-800/80' : 'border-dashed border-zinc-800/50 bg-zinc-950/40'
+                      item.visible ? 'border-zinc-200 dark:border-zinc-800' : 'border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -267,38 +267,38 @@ export default function NavigationPage() {
                       <div className="flex gap-3">
                         <div className={`p-2.5 rounded-xl border shrink-0 ${
                           item.visible && item.enabled 
-                            ? 'bg-primary/5 border-primary/10 text-primary' 
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+                            ? 'bg-primary/10 border-primary/20 text-primary' 
+                            : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-500'
                         }`}>
                           <IconComponent className="w-5 h-5" />
                         </div>
                         
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="text-sm font-black text-white leading-none">{item.label}</h3>
-                            <span className="text-[9px] font-bold py-0.5 px-1.5 bg-zinc-900 border border-zinc-805/80 text-zinc-400 rounded">
+                            <h3 className="text-sm font-black text-zinc-900 dark:text-white leading-none">{item.label}</h3>
+                            <span className="text-[9px] font-bold py-0.5 px-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 rounded">
                               idx: {item.order}
                             </span>
                             
                             {/* Badges indicators */}
                             {item.badge && item.badge !== 'none' && (
                               <span className={`text-[8px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded ${
-                                item.badge === 'beta' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                                item.badge === 'new' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
-                                'bg-red-500/20 text-red-300 border border-red-500/30'
+                                item.badge === 'beta' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30' :
+                                item.badge === 'new' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-500/30' :
+                                'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30'
                               }`}>
                                 {item.badge}
                               </span>
                             )}
                           </div>
                           
-                          <p className="text-[10px] font-mono text-zinc-500 leading-none">
+                          <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500 leading-none">
                             {item.route}
                           </p>
 
                           {/* Link to module registry check */}
                           {item.moduleId && (
-                            <div className="flex items-center gap-1 text-[9px] font-medium text-amber-500/80">
+                            <div className="flex items-center gap-1 text-[9px] font-medium text-amber-600 dark:text-amber-500/80">
                               <Link2 className="w-3 h-3 text-amber-500" />
                               Terikat Modul: <strong className="uppercase">{item.moduleId}</strong> ({linkedMod ? (linkedMod.enabled ? 'Aktif' : 'Disabled ⚠️') : 'Registri Tidak Ditemukan 🚫'})
                             </div>
@@ -307,11 +307,11 @@ export default function NavigationPage() {
                           {/* Visibility status text tags */}
                           <div className="flex flex-wrap gap-1.5 pt-1.5">
                             {item.visible ? (
-                              <span className="flex items-center gap-0.5 text-[8px] font-bold text-zinc-400 bg-zinc-900 px-1.5 py-0.5 rounded">
-                                <Eye className="w-2.5 h-2.5 text-green-400" /> TERLIHAT
+                              <span className="flex items-center gap-0.5 text-[8px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded">
+                                <Eye className="w-2.5 h-2.5 text-green-500" /> TERLIHAT
                               </span>
                             ) : (
-                              <span className="flex items-center gap-0.5 text-[8px] font-bold text-zinc-500 bg-zinc-900/60 px-1.5 py-0.5 rounded border border-dashed border-zinc-800">
+                              <span className="flex items-center gap-0.5 text-[8px] font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-900/60 px-1.5 py-0.5 rounded border border-dashed border-zinc-300 dark:border-zinc-800">
                                 <EyeOff className="w-2.5 h-2.5 text-zinc-500" /> DISEMBUNYIKAN
                               </span>
                             )}

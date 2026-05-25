@@ -6,7 +6,8 @@ import {
   updateMarket, 
   removeMarket, 
   subscribeUsers, 
-  subscribeMarketPlansByMonth
+  subscribeMarketPlansByMonth,
+  getMarketsCollectionPath
 } from "../../lib/services";
 import { getActiveSystemDate } from "../../utils/javaneseDate";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -21,6 +22,8 @@ import { useModal } from '../../hooks/use-modal';
 import { db } from "../../firebase/config";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { MarketFormContent } from "./Master";
+import { useRuntime } from "../../providers/RuntimeProvider";
+import { Sidebar } from "../../components/admin/Sidebar";
 
 dayjs.extend(relativeTime);
 dayjs.locale("id");
@@ -40,6 +43,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { openModal, openDrawer, closeAllModals } = useModal();
+  const { activeBranchContext } = useRuntime();
   
   const [markets, setMarkets] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -64,7 +68,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
   };
 
   useEffect(() => {
-    const unsubMarkets = subscribeMarkets(setMarkets);
+    const unsubMarkets = subscribeMarkets(setMarkets, activeBranchContext);
     const unsubAssignments = subscribeMarketPlans(activeDate.isoDate, setAssignments);
     const unsubUsers = subscribeUsers(setUsers);
     const unsubMonthlyPlans = subscribeMarketPlansByMonth(selectedMonth, setAllMonthlyPlans);
@@ -75,15 +79,16 @@ export default function AdminLayout({ onBack }: AdminProps) {
       unsubUsers();
       unsubMonthlyPlans();
     };
-  }, [activeDate.isoDate, selectedMonth]);
+  }, [activeDate.isoDate, selectedMonth, activeBranchContext]);
 
   const seedData = async () => {
     if (!window.confirm("Hapus semua data pasar lama dan muat data sampel?")) return;
     setIsSeeding(true);
     try {
-      const q = await getDocs(collection(db, "markets"));
-      for (const d of q.docs) await deleteDoc(doc(db, "markets", d.id));
-      for (const market of SAMPLE_MARKETS) await addMarket(market);
+      const path = getMarketsCollectionPath(activeBranchContext);
+      const q = await getDocs(collection(db, path));
+      for (const d of q.docs) await deleteDoc(doc(db, path, d.id));
+      for (const market of SAMPLE_MARKETS) await addMarket(market, activeBranchContext);
       toast.success("Master data berhasil dimuat!");
     } catch (e) {
       toast.error("Gagal memuat data.");
@@ -106,7 +111,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
   const handleDeleteMarket = async (id: string, name: string) => {
     if (!window.confirm(`Hapus pasar "${name}"?`)) return;
     try {
-      await removeMarket(id);
+      await removeMarket(id, activeBranchContext);
       toast.info("Pasar berhasil dihapus");
     } catch (e) {
       toast.error("Gagal menghapus pasar");
@@ -115,14 +120,18 @@ export default function AdminLayout({ onBack }: AdminProps) {
 
   const handleBack = () => {
     const cleanPath = location.pathname.replace(/\/$/, "");
-    if (cleanPath === "/admin") {
+    if (cleanPath === "/admin" || cleanPath === "/owner") {
       if (typeof onBack === "function") {
         onBack();
       } else {
-        navigate("/tools");
+        navigate("/workspace/home");
       }
     } else {
-      navigate("/admin");
+      if (cleanPath.startsWith("/owner")) {
+        navigate("/owner");
+      } else {
+        navigate("/admin");
+      }
     }
   };
 
@@ -136,12 +145,14 @@ export default function AdminLayout({ onBack }: AdminProps) {
     if (cleanPath.endsWith("/modules")) return "TATA KELOLA MODUL";
     if (cleanPath.endsWith("/navigation")) return "TATA KELOLA NAVIGASI";
     if (cleanPath.endsWith("/docs")) return "ARSITEKTUR & STANDAR";
+    if (cleanPath === "/owner") return "OWNER SYSTEM CONTROL";
+    if (cleanPath === "/admin") return "MANAGER DASHBOARD";
     return "ADMIN PANEL";
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300 flex flex-col">
-      {/* Main Responsive Layout Wrapper */}
+    <div className="min-h-screen w-full bg-white dark:bg-[#050505] text-zinc-900 dark:text-white font-sans transition-colors duration-300 flex">
+      <Sidebar />
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
         <Outlet context={{ 
             markets, 

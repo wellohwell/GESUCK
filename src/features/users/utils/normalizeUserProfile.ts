@@ -2,7 +2,7 @@ import { UserProfile, UserStatus } from '../../auth/types';
 import { ROLES, Role } from '../../../config/roles';
 
 const roleMap: Record<string, Role> = {
-    'admin': ROLES.ADMIN,
+    'admin': ROLES.MANAGER,
     'superadmin': ROLES.OWNER,
     'super_admin': ROLES.OWNER,
     'branch_admin': ROLES.STAFF,

@@ -17,13 +17,13 @@ import React from 'react';
 
 // Centralised default workspaces registry for each user role
 export const DEFAULT_WORKSPACES: Record<string, string> = {
-  owner: "/home",
-  admin: "/admin/modules",
-  staff: "/client",
-  sales: "/explore",
-  survey: "/tools",
-  gudang: "/tools",
-  spv: "/explore"
+  owner: "/owner",
+  manager: "/admin",
+  staff: "/workspace/client",
+  sales: "/workspace/explore",
+  survey: "/workspace/tools",
+  gudang: "/workspace/tools",
+  spv: "/workspace/explore"
 };
 
 // Ultimate fallback route if a user has no eligible workspaces or experiences any dead-end
@@ -39,11 +39,13 @@ export interface DynamicNavItem {
   enabled: boolean;
   order: number;
   allowedRoles: string[]; // empty array means all roles can view
+  requiredPermissions?: string[];
   allowedBranches: string[]; // empty array means all branches can view
   mobileOnly: boolean;
   desktopOnly: boolean;
   badge: 'none' | 'beta' | 'new' | 'maintenance';
   moduleId?: string; // dynamically linked to a specific core modules for automatic enablement checking
+  hiddenFromOwner?: boolean;
 }
 
 // Icon dictionary translating serializable name tags to real components
@@ -70,10 +72,25 @@ export function getIconComponent(name: string): React.ComponentType<{ className?
 // Global baseline default navigation records to populate db and serve as local fallback
 export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
   {
+    id: 'ownerSystem',
+    label: 'System',
+    icon: 'sliders',
+    route: '/owner',
+    visible: true,
+    enabled: true,
+    order: 0,
+    allowedRoles: [ROLES.OWNER],
+    allowedBranches: [],
+    mobileOnly: false,
+    desktopOnly: false,
+    badge: 'none',
+    moduleId: 'ownerSystem'
+  },
+  {
     id: 'home',
     label: 'Home',
     icon: 'home',
-    route: '/home',
+    route: '/workspace/home',
     visible: true,
     enabled: true,
     order: 1,
@@ -88,7 +105,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'client',
     label: 'Client',
     icon: 'users',
-    route: '/client',
+    route: '/workspace/client',
     visible: true,
     enabled: true,
     order: 2,
@@ -103,7 +120,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'explore',
     label: 'Explore',
     icon: 'compass',
-    route: '/explore',
+    route: '/workspace/explore',
     visible: true,
     enabled: true,
     order: 3,
@@ -118,7 +135,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'marketPlans',
     label: 'Plans',
     icon: 'calendar',
-    route: '/Market-Plans',
+    route: '/workspace/Market-Plans',
     visible: true,
     enabled: true,
     order: 4,
@@ -133,7 +150,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'report',
     label: 'Report',
     icon: 'filetext',
-    route: '/report',
+    route: '/workspace/report',
     visible: true,
     enabled: true,
     order: 5,
@@ -144,15 +161,17 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     badge: 'none',
     moduleId: 'report'
   },
+
   {
     id: 'adminUsers',
-    label: 'Admin',
+    label: 'Manager',
     icon: 'shieldalert',
-    route: '/admin/users',
+    route: '/admin',
     visible: true,
     enabled: true,
-    order: 6,
-    allowedRoles: [ROLES.OWNER, ROLES.STAFF],
+    order: 7,
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER],
+    requiredPermissions: ["USER_MANAGEMENT", "USER_APPROVAL", "MARKET_EDIT"],
     allowedBranches: [],
     mobileOnly: false,
     desktopOnly: false,
@@ -163,10 +182,10 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'tools',
     label: 'Tools',
     icon: 'layoutgrid',
-    route: '/tools',
+    route: '/workspace/tools',
     visible: true,
     enabled: true,
-    order: 7,
+    order: 8,
     allowedRoles: [],
     allowedBranches: [],
     mobileOnly: false,
@@ -181,7 +200,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     route: '/profile',
     visible: true,
     enabled: true,
-    order: 8,
+    order: 9,
     allowedRoles: [],
     allowedBranches: [],
     mobileOnly: false,

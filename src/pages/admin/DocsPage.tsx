@@ -633,7 +633,7 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    function isAdmin() {
+    function isManager() {
       return isSignedIn() && 
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "owner" ||
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
@@ -643,18 +643,18 @@ service cloud.firestore {
     // Module restrictions
     match /modules/{moduleId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isManager();
     }
     
     // Client security matching branch scope
     match /clients/{clientId} {
       allow read: if isSignedIn() && (
         resource.data.branchId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.branchId ||
-        isAdmin()
+        isManager()
       );
       allow write: if isSignedIn() && (
         request.resource.data.branchId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.branchId ||
-        isAdmin()
+        isManager()
       );
     }
   }

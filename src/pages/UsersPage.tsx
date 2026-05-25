@@ -3,6 +3,7 @@ import { Users, Shield, Clock, CheckCircle2, XCircle, Search, MoreVertical, Edit
 import { subscribeUsers, updateUserStatusAndRole, updateUser, useUserProfile } from '../lib/services';
 import { normalizeUserProfile } from '../features/users/utils/normalizeUserProfile';
 import { ROLES } from '../config/roles';
+import { PERMISSIONS } from '../config/permissions';
 import { cn } from '../lib/utils';
 import { toast } from 'react-toastify';
 import { useRuntime } from '../providers/RuntimeProvider';
@@ -45,6 +46,7 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [actionType, setActionType] = useState<string | null>(null); 
   const [roleInput, setRoleInput] = useState('');
+  const [permissionsInput, setPermissionsInput] = useState<string[]>([]);
   const [reasonInput, setReasonInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,6 +95,7 @@ export default function UsersPage() {
       if (actionType === 'approve') {
         payload.status = 'approved';
         payload.role = roleInput;
+        payload.permissions = permissionsInput;
         successMsg = `User approved as ${roleInput}`;
       } else if (actionType === 'reject') {
         payload.status = 'rejected';
@@ -104,6 +107,7 @@ export default function UsersPage() {
         successMsg = 'User suspended';
       } else if (actionType === 'role') {
         payload.role = roleInput;
+        payload.permissions = permissionsInput;
         successMsg = `User role changed to ${roleInput}`;
       } else if (actionType === 'rename') {
         payload.displayName = roleInput;
@@ -218,7 +222,7 @@ export default function UsersPage() {
                    <option value={ROLES.GUDANG}>Gudang</option>
                    <option value={ROLES.SPV}>Supervisor (SPV)</option>
                    <option value={ROLES.STAFF}>Staff</option>
-                   <option value={ROLES.ADMIN}>Admin</option>
+                   <option value={ROLES.MANAGER}>Manager</option>
                    <option value={ROLES.OWNER}>Owner</option>
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
@@ -306,13 +310,13 @@ export default function UsersPage() {
                                    {(user.status === 'pending' || user.status === 'suspended') && (
                                      <button onClick={() => { setSelectedUser(user); setActionType('reject'); }} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-500/10 text-zinc-600 dark:text-zinc-400 hover:text-red-500 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors">Tolak</button>
                                    )}
-                                   <button onClick={() => { setSelectedUser(user); setActionType('approve'); setRoleInput(user.role || ROLES.SALES); }} className="px-3 py-1 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm">
+                                   <button onClick={() => { setSelectedUser(user); setActionType('approve'); setRoleInput(user.role || ROLES.SALES); setPermissionsInput(user.permissions || []); }} className="px-3 py-1 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm">
                                      Approve
                                    </button>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  <button onClick={() => { setSelectedUser(user); setActionType('role'); setRoleInput(user.role || ROLES.SALES); }} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1">
+                                  <button onClick={() => { setSelectedUser(user); setActionType('role'); setRoleInput(user.role || ROLES.SALES); setPermissionsInput(user.permissions || []); }} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1">
                                     <Edit className="w-3 h-3" /> Role
                                   </button>
                                   <button onClick={() => { setSelectedUser(user); setActionType('suspend'); }} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-orange-50 dark:hover:bg-orange-500/10 text-zinc-600 dark:text-zinc-400 hover:text-orange-500 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1">
@@ -379,11 +383,11 @@ export default function UsersPage() {
                                 {(user.status === 'pending' || user.status === 'suspended') && (
                                   <button onClick={() => { setSelectedUser(user); setActionType('reject'); }} className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-lg text-[9px] font-black uppercase tracking-widest">Tolak</button>
                                 )}
-                                <button onClick={() => { setSelectedUser(user); setActionType('approve'); setRoleInput(user.role || ROLES.SALES); }} className="px-4 py-1.5 bg-brand-primary text-white rounded-lg text-[9px] font-black uppercase tracking-widest">Approve</button>
+                                <button onClick={() => { setSelectedUser(user); setActionType('approve'); setRoleInput(user.role || ROLES.SALES); setPermissionsInput(user.permissions || []); }} className="px-4 py-1.5 bg-brand-primary text-white rounded-lg text-[9px] font-black uppercase tracking-widest">Approve</button>
                               </>
                             ) : (
                               <>
-                                <button onClick={() => { setSelectedUser(user); setActionType('role'); setRoleInput(user.role || ROLES.SALES); }} className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-lg text-[9px] font-black uppercase tracking-widest">Role</button>
+                                <button onClick={() => { setSelectedUser(user); setActionType('role'); setRoleInput(user.role || ROLES.SALES); setPermissionsInput(user.permissions || []); }} className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-lg text-[9px] font-black uppercase tracking-widest">Role</button>
                                 <button onClick={() => { setSelectedUser(user); setActionType('suspend'); }} className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-lg text-[9px] font-black uppercase tracking-widest">Suspend</button>
                               </>
                             )}
@@ -433,12 +437,41 @@ export default function UsersPage() {
                       <option value={ROLES.GUDANG}>Gudang</option>
                       <option value={ROLES.SPV}>Supervisor (SPV)</option>
                       <option value={ROLES.STAFF}>Staff</option>
-                      <option value={ROLES.ADMIN}>Admin</option>
+                      <option value={ROLES.MANAGER}>Manager</option>
                       {profile?.role === ROLES.OWNER && <option value={ROLES.OWNER}>Owner</option>}
                     </select>
                   )}
                   {actionType !== 'rename' && <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />}
                 </div>
+
+                {actionType !== 'rename' && (
+                  <div className="mt-4">
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-2 block">
+                      Permissions (Opsional)
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto pr-1 select-none">
+                      {Object.values(PERMISSIONS).map(perm => {
+                        const isChecked = permissionsInput.includes(perm);
+                        return (
+                          <label key={perm} className="flex items-center gap-3 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-700/50 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 text-brand-primary rounded focus:ring-brand-primary/20 accent-brand-primary"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) setPermissionsInput([...permissionsInput, perm]);
+                                else setPermissionsInput(permissionsInput.filter(p => p !== perm));
+                              }}
+                            />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                              {perm}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

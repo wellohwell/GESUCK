@@ -74,7 +74,7 @@ export default function ToolsPage() {
   const userId = profile?.id || auth.currentUser?.uid || '';
   const userRole = profile?.role || 'sales';
   const branchId = profile?.branchId || null;
-  const isAdmin = profile?.role === 'owner' || profile?.role === 'admin' || profile?.role === 'staff';
+  const isManager = profile?.role === 'owner' || profile?.role === "MANAGER" || profile?.role === 'staff';
 
   // Tools Configuration
   const allTools: ToolItem[] = [
@@ -110,7 +110,7 @@ export default function ToolsPage() {
     },
   ];
 
-  const tools = allTools.filter(tool => !tool.adminOnly || isAdmin);
+  const tools = allTools.filter(tool => !tool.adminOnly || isManager);
 
   // Background dataset fetch for Data Quality scanning
   useEffect(() => {
