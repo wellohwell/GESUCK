@@ -26,6 +26,7 @@ export function SimulatorModal({ isOpen, onClose, product }: Props) {
       // Open inside our beautiful new responsive global modal
       const modalId = openModal({
         size: "sm",
+        className: "is-calculator-modal",
         content: React.createElement(InstallmentCalculator, { itemDefaults }),
         onClose: () => {
           activeModalIdRef.current = null;

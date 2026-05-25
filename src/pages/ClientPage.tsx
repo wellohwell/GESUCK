@@ -320,74 +320,71 @@ export default function ClientPage() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
-                className="fixed bottom-0 left-0 right-0 z-[101] bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-zinc-200 dark:border-white/5 flex flex-col max-h-[92vh] shadow-2xl"
+                className="fixed bottom-0 left-0 right-0 z-[101] bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-zinc-200 dark:border-white/5 flex flex-col max-h-[92vh] shadow-2xl md:max-w-md md:mx-auto md:bottom-4 md:rounded-3xl md:border md:max-h-[85vh]"
               >
                 {/* DRAG HANDLE */}
-                <div className="pt-3 pb-2 flex-shrink-0">
+                <div className="pt-3 pb-1 flex-shrink-0 relative">
                   <div className="w-10 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto" />
-                </div>
-
-                {/* STICKY HEADER */}
-                <div className="sticky top-0 z-[102] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-zinc-100 dark:border-white/5 flex-shrink-0">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h2 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-50 truncate leading-none">
-                        {selectedClient.nama}
-                      </h2>
-                      {getStatusBadge(selectedClient.status, true)}
-                    </div>
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest truncate">
-                      {selectedClient.stage} stage
-                    </p>
-                  </div>
                   <button 
                     onClick={() => setSelectedClient(null)}
-                    className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-500 active:scale-90 transition-transform"
+                    className="absolute right-4 top-2 w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-500 active:scale-90 transition-transform"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 {/* SCROLLABLE CONTENT */}
                 <div className="overflow-y-auto flex-1 overscroll-contain">
-                  <div className="p-6 pt-2 space-y-8">
+                  <div className="p-4 pt-1 space-y-5">
                     
-                    {/* SECTION 1: PROFIL & LOKASI */}
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-black text-primary uppercase tracking-[0.2em] opacity-80">Profil Bisnis</label>
-                        <p className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-                          <Briefcase className="w-3 h-3 text-zinc-400" />
-                          {selectedClient.usaha || 'Personal Unit'}
+                    {/* CENTERED COMPACT HEADER BLOCK */}
+                    <div className="flex flex-col items-center justify-center text-center space-y-2 border-b border-zinc-100 dark:border-white/5 pb-4">
+                      {/* 1. Status Badge */}
+                      <div className="flex justify-center">
+                        {getStatusBadge(selectedClient.status, true)}
+                      </div>
+
+                      {/* 2. Nama Konsumen */}
+                      <div className="space-y-0.5">
+                        <h2 className="text-base font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
+                          {selectedClient.nama}
+                        </h2>
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                          {selectedClient.stage} stage
                         </p>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-black text-primary uppercase tracking-[0.2em] opacity-80">Alamat Lengkap</label>
-                        <div className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200">
-                          <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                          <p className="text-[11px] font-bold leading-relaxed uppercase tracking-tight">{selectedClient.alamat}</p>
-                        </div>
+                      {/* 3. Profil (hanya icon & detail tanpa label, rata tengah) */}
+                      <div className="flex items-center justify-center gap-1.5 text-zinc-650 dark:text-zinc-350 text-[10.5px] font-bold tracking-wider uppercase">
+                        <Briefcase className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span>{selectedClient.usaha || 'Personal Unit'}</span>
                       </div>
 
-                      <div className="flex gap-2 pt-2">
+                      {/* 4. Alamat (hanya icon & detail tanpa label, rata tengah) */}
+                      <div className="flex items-center justify-center gap-1.5 text-zinc-800 dark:text-zinc-200 text-[10.5px] font-medium leading-relaxed uppercase tracking-tight max-w-xs px-2">
+                        <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="text-center">{selectedClient.alamat}</span>
+                      </div>
+
+                      {/* 5. Button Actions (Round icon-only without label, centered) */}
+                      <div className="flex items-center justify-center gap-3 pt-1">
                         <a 
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedClient.alamat)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-95 text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-200 dark:ring-white/5"
+                          className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 flex items-center justify-center active:scale-95 text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-200 dark:ring-white/5 transition-all"
+                          title="Rute Maps"
                         >
-                          <MapPin className="w-3 h-3 text-red-500" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">Rute</span>
+                          <MapPin className="w-4 h-4 text-red-500" />
                         </a>
                         <a 
                           href={`https://wa.me/${formatWhatsApp(selectedClient.nomor)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 h-10 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-full transition-all active:scale-95 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20"
+                          className="w-9 h-9 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center active:scale-95 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 transition-all"
+                          title="WhatsApp"
                         >
-                          <MessageCircle className="w-3 h-3" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">WhatsApp</span>
+                          <MessageCircle className="w-4 h-4" />
                         </a>
                       </div>
                     </div>

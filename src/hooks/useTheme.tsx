@@ -22,7 +22,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark",
   storageKey = "theme",
   ...props
 }: ThemeProviderProps) {
@@ -35,7 +35,7 @@ export function ThemeProvider({
 
     root.classList.remove("light", "dark");
 
-    let activeTheme: "light" | "dark" = "light";
+    let activeTheme: "light" | "dark" = "dark";
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
@@ -50,7 +50,7 @@ export function ThemeProvider({
 
     // Sync Android/Mobile browser status bar theme color
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    const colorHex = activeTheme === "dark" ? "#0A0A0A" : "#F4F8F1";
+    const colorHex = activeTheme === "dark" ? "#0F1115" : "#F6F7F9";
     if (metaThemeColor) {
       metaThemeColor.setAttribute("content", colorHex);
     } else {

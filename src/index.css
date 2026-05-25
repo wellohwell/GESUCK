@@ -52,7 +52,7 @@
 @layer base {
   :root {
     /* ==================== PREMIUM LIGHT WORKSPACE ==================== */
-    --background: #F4F8F1;
+    --background: #F6F7F9;
     --foreground: #111111;
     
     --card: #FFFFFF;
@@ -64,13 +64,13 @@
     --primary: #C6FF2E;
     --primary-foreground: #0A0A0A;
     
-    --secondary: #EDF3E8;
-    --secondary-foreground: #4B4B4B;
+    --secondary: #F6F7F9;
+    --secondary-foreground: rgba(0,0,0,0.65);
     
-    --tertiary: #E5EEDF;
+    --tertiary: #FFFFFF;
     
-    --muted: #E5EEDF;
-    --muted-foreground: #7A7A7A;
+    --muted: #F6F7F9;
+    --muted-foreground: rgba(0,0,0,0.4);
     
     --accent: #C6FF2E;
     --accent-foreground: #0A0A0A;
@@ -79,40 +79,40 @@
     --destructive-foreground: #FFFFFF;
     
     --border: rgba(0,0,0,0.06);
-    --input: #F7FAF4;
+    --input: #FFFFFF;
     --ring: #C6FF2E;
     
     --radius: 1.25rem;
 
     --text-primary: #111111;
-    --text-secondary: #4B4B4B;
-    --text-muted: #7A7A7A;
+    --text-secondary: rgba(0,0,0,0.65);
+    --text-muted: rgba(0,0,0,0.4);
     --card-surface: #FFFFFF;
-    --input-surface: #F7FAF4;
+    --input-surface: #FFFFFF;
     --border-default: rgba(0,0,0,0.06);
   }
 
   .dark {
-    /* ==================== GRAPHITE BLACK DARK WORKSPACE ==================== */
-    --background: #0A0A0A;
-    --foreground: #F5F5F5;
+    /* ==================== PREMIUM DARK WORKSPACE ==================== */
+    --background: #0F1115;
+    --foreground: #FFFFFF;
     
-    --card: #161616;
-    --card-foreground: #F5F5F5;
+    --card: #171A20;
+    --card-foreground: #FFFFFF;
     
-    --popover: #121212;
-    --popover-foreground: #F5F5F5;
+    --popover: #171A20;
+    --popover-foreground: #FFFFFF;
     
     --primary: #C6FF2E;
     --primary-foreground: #0A0A0A;
     
-    --secondary: #121212;
-    --secondary-foreground: #A1A1A1;
+    --secondary: #1E222B;
+    --secondary-foreground: rgba(255,255,255,0.72);
     
-    --tertiary: #161616;
+    --tertiary: #1E222B;
     
-    --muted: #161616;
-    --muted-foreground: #6B6B6B;
+    --muted: #1E222B;
+    --muted-foreground: rgba(255,255,255,0.4);
     
     --accent: #C6FF2E;
     --accent-foreground: #0A0A0A;
@@ -121,14 +121,14 @@
     --destructive-foreground: #FFFFFF;
     
     --border: rgba(255,255,255,0.06);
-    --input: #1B1B1B;
+    --input: #1E222B;
     --ring: #C6FF2E;
 
-    --text-primary: #F5F5F5;
-    --text-secondary: #A1A1A1;
-    --text-muted: #6B6B6B;
-    --card-surface: #161616;
-    --input-surface: #1B1B1B;
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.72);
+    --text-muted: rgba(255,255,255,0.4);
+    --card-surface: #171A20;
+    --input-surface: #1E222B;
     --border-default: rgba(255,255,255,0.06);
   }
 

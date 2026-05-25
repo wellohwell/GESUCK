@@ -35,9 +35,14 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
     fullscreen: "md:max-w-none md:w-screen md:h-screen md:rounded-none"
   };
 
+  const isCalculatorModal = modal.className?.includes("is-calculator-modal");
+
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 max-md:items-end max-md:p-0"
+      className={cn(
+        "fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 max-md:items-end max-md:p-0",
+        isCalculatorModal && "items-start pt-[56px] md:pt-[68px] max-md:items-start max-md:p-3 max-md:pt-[54px]"
+      )}
       style={{ zIndex: 999 + index }}
     >
       {/* Backdrop with elegant glass overlay blur */}
@@ -51,27 +56,30 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
 
       {/* Modal Surface Box */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+        initial={isCalculatorModal ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 30 }}
+        exit={isCalculatorModal ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
-          "relative flex flex-col bg-white dark:bg-black border border-zinc-200/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px] max-md:rounded-t-[28px] max-md:rounded-b-none",
+          "relative flex flex-col bg-white dark:bg-black border border-zinc-200/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
+          !isCalculatorModal ? "max-md:rounded-t-[28px] max-md:rounded-b-none" : "max-md:rounded-[20px]",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
           "md:w-[85vw]", sizeClasses[modal.size || 'md'],
           // Mobile responsive bottom-sheet structure and safe-area adjustments
-          "max-md:max-h-[92vh] max-md:border-b-0 max-md:pb-[calc(env(safe-area-inset-bottom,20px)+8px)]",
+          !isCalculatorModal ? "max-md:max-h-[92vh] max-md:border-b-0 max-md:pb-[calc(env(safe-area-inset-bottom,20px)+8px)]" : "max-md:max-h-[85vh]",
           modal.className
         )}
       >
         {/* Mobile touch-swipe handle simulator */}
-        <div 
-          className="hidden max-md:flex justify-center py-3 shrink-0 cursor-pointer" 
-          onClick={handleClose}
-        >
-          <div className="w-12 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
-        </div>
+        {!isCalculatorModal && (
+          <div 
+            className="hidden max-md:flex justify-center py-3 shrink-0 cursor-pointer" 
+            onClick={handleClose}
+          >
+            <div className="w-12 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+          </div>
+        )}
 
         {/* Dynamic header if specified in the call */}
         {(modal.title || !modal.hideCloseButton) && (
