@@ -18,7 +18,7 @@ import {
   startAfter,
   QueryConstraint
 } from "firebase/firestore";
-import { tenantQuery } from "./tenantFirestore";
+import { tenantQuery, tenantCollection } from "./tenantFirestore";
 import { useState, useEffect } from "react";
 import { auth, db } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -1279,6 +1279,7 @@ export async function sendSysNotification(options: {
   message: string;
   relatedOrderId?: string;
   relatedTaskId?: string;
+  branchId?: string | null; // Add branchId
 }) {
   try {
     const promises = [];
@@ -1289,6 +1290,7 @@ export async function sendSysNotification(options: {
       relatedOrderId: options.relatedOrderId || null,
       relatedTaskId: options.relatedTaskId || null,
       read: false,
+      branchId: options.branchId || null, // Include branchId
       createdAt: serverTimestamp()
     };
 
@@ -1321,7 +1323,29 @@ export async function addNotification(userId: string, title: string, message: st
   });
 }
 
-export function subscribeNotifications(role: string, uid: string, callback: (notifs: any[]) => void) {
+export async function createActivityLog(log: {
+  branchId: string | null;
+  actorId: string;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  module: string;
+  entityId: string;
+  entityType: string;
+  description: string;
+  metadata?: any;
+}) {
+  try {
+    await addDoc(tenantCollection("activity_logs", null, log.branchId), {
+      ...log,
+      createdAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Failed to log activity", error);
+  }
+}
+
+export function subscribeNotifications(role: string, uid: string, callback: (notifs: any[]) => void, branchId?: string | null) {
   if (!uid || !role) return () => {};
   const r = role.toUpperCase();
   
@@ -1344,7 +1368,7 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
   };
 
   // 1. User specific notifications
-  const qUser = query(collection(db, "notifications"), where("userId", "==", uid));
+  const qUser = tenantQuery("notifications", null, branchId, where("userId", "==", uid));
   listeners.push(onSnapshot(qUser, (snap) => {
     userNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     updateCallback();
@@ -1354,7 +1378,7 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
 
   // 2. Role specific notifications
   if (r && r !== 'OWNER' && r !== 'ADMIN' && r !== 'STAFF') {
-    const qRole = query(collection(db, "notifications"), where("roleTarget", "==", r));
+    const qRole = tenantQuery("notifications", null, branchId, where("roleTarget", "==", r));
     listeners.push(onSnapshot(qRole, (snap) => {
       roleNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       updateCallback();
@@ -1365,20 +1389,12 @@ export function subscribeNotifications(role: string, uid: string, callback: (not
 
   // 3. Global / Owner notifications (Owner/Admin sees all or Global)
   if (r === 'OWNER' || r === 'MANAGER' || r === 'STAFF') {
-    const qAll = query(collection(db, "notifications"));
+    const qAll = tenantQuery("notifications", null, branchId); // Use tenantQuery for safe access
     listeners.push(onSnapshot(qAll, (snap) => {
       allNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       updateCallback();
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, "notifications/all");
-    }));
-  } else {
-    const qGlobal = query(collection(db, "notifications"), where("roleTarget", "==", "ALL"));
-    listeners.push(onSnapshot(qGlobal, (snap) => {
-      allNotifs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      updateCallback();
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "notifications/global");
     }));
   }
 

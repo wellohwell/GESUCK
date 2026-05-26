@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Search, Plus, Filter, Download, Upload, MoreVertical, Edit2, Trash2, CheckCircle2, XCircle, FileJson, X, AlignLeft, Building2, MapPin, Loader2, SearchX, ChevronDown, Layers, Clock } from "lucide-react";
+import { Search, Plus, Filter, Download, Upload, MoreVertical, Pencil, Trash2, CheckCircle2, XCircle, FileJson, X, AlignLeft, Building2, MapPin, Loader2, SearchX, ChevronDown, Layers, Clock } from "lucide-react";
 import { db } from "../../firebase/config";
 import { collection, doc, writeBatch, query, onSnapshot, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
 import { useRuntime } from "../../providers/RuntimeProvider";
 import { useAuth } from "../../providers/AuthProvider";
 import { toast } from "../../hooks/use-toast";
+import { openModal, closeModal } from "../../components/ui/modal/useModal";
 import { cn } from "../../lib/utils";
 import { toTitleCase } from "../../utils/format";
 
@@ -17,12 +17,11 @@ export interface MarketMaster {
   district: string;
   type: string;
   active: boolean;
+  kategori: string[];
+  hari_operasi: string[];
+  jam_operasional: { buka: string; tutup: string };
   createdAt?: string;
   updatedAt?: string;
-  createdBy?: string;
-  // Legacy backward compat fields
-  nama_pasar?: string;
-  wilayah?: string;
 }
 
 export default function AdminMasterPage() {
@@ -33,10 +32,6 @@ export default function AdminMasterPage() {
   const [loading, setLoading] = useState(true);
   
   const [search, setSearch] = useState("");
-  const [filterActive, setFilterActive] = useState<"all"|"active"|"inactive">("all");
-  
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MarketMaster | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +56,8 @@ export default function AdminMasterPage() {
           district: docData.district || "-",
           type: docData.type || docData.kategori || "Umum",
           active: docData.active ?? true,
+          hari_operasi: docData.hari_operasi || [],
+          jam_operasional: docData.jam_operasional || { buka: "06:00", tutup: "17:00" },
           createdAt: docData.createdAt || docData.created_at || new Date().toISOString(),
           updatedAt: docData.updatedAt || docData.updated_at || new Date().toISOString(),
           createdBy: docData.createdBy || "System"
@@ -87,10 +84,9 @@ export default function AdminMasterPage() {
     return data.filter(item => {
       const q = search.toLowerCase();
       const matchSearch = item.name.toLowerCase().includes(q) || item.city.toLowerCase().includes(q) || item.district.toLowerCase().includes(q);
-      const matchActive = filterActive === "all" ? true : filterActive === "active" ? item.active : !item.active;
-      return matchSearch && matchActive;
+      return matchSearch;
     });
-  }, [data, search, filterActive]);
+  }, [data, search]);
 
   const handleToggleActive = async (item: MarketMaster) => {
     if (!activeBranchContext) return;
@@ -196,13 +192,18 @@ export default function AdminMasterPage() {
   };
 
   const openEditor = (item?: MarketMaster) => {
-    setEditingItem(item || null);
-    setIsEditorOpen(true);
-  };
-
-  const closeEditor = () => {
-    setIsEditorOpen(false);
-    setEditingItem(null);
+    const modalId = openModal({
+      title: item ? "Edit Data Master" : "Form Tambah Pasar",
+      size: 'md',
+      content: (
+        <MarketEditorForm 
+           initialData={item || null} 
+           onClose={() => closeModal(modalId)} 
+           branchId={activeBranchContext!} 
+           profile={profile}
+        />
+      ),
+    });
   };
 
   return (
@@ -219,17 +220,7 @@ export default function AdminMasterPage() {
             className="w-full h-10 md:h-11 bg-zinc-50 dark:bg-white/5 border-transparent focus:border-zinc-300 dark:focus:border-white/20 rounded-xl pl-9 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
-          <select 
-            value={filterActive}
-            onChange={(e) => setFilterActive(e.target.value as any)}
-            className="h-10 md:h-11 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-semibold outline-none cursor-pointer text-zinc-700 dark:text-zinc-300 flex-shrink-0"
-          >
-            <option value="all">Semua Status</option>
-            <option value="active">Aktif Saja</option>
-            <option value="inactive">Nonaktif</option>
-          </select>
-          
+         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
           <button 
             onClick={handleExport}
             className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors flex-shrink-0"
@@ -278,10 +269,7 @@ export default function AdminMasterPage() {
                 <div 
                   key={item.id} 
                   className={cn(
-                    "group relative overflow-hidden bg-white dark:bg-[#0A0A0A] border rounded-2xl p-4 transition-all hover:shadow-lg",
-                    item.active 
-                      ? "border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20" 
-                      : "border-dashed border-zinc-200 dark:border-white/5 opacity-75"
+                    "group relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 transition-all hover:shadow-lg hover:border-zinc-300 dark:hover:border-zinc-500"
                   )}
                 >
                   <div className="flex justify-between items-start mb-3">
@@ -294,31 +282,20 @@ export default function AdminMasterPage() {
                           <span>{item.city} {item.district ? `• ${item.district}` : ''}</span>
                        </div>
                      </div>
-                     <div className="absolute top-4 right-4 flex items-center gap-1">
-                       <button
-                         onClick={() => handleToggleActive(item)}
-                         title={item.active ? "Nonaktifkan" : "Aktifkan"}
-                         className={cn(
-                           "p-1.5 rounded-lg border flex items-center justify-center transition-colors",
-                           item.active 
-                             ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" 
-                             : "bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                         )}
-                       >
-                         {item.active ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                       </button>
-                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 mb-3 bg-zinc-50 dark:bg-black/20 p-2 rounded-lg">
+                    <Clock className="w-3 h-3" />
+                    <span>{item.jam_operasional.buka} - {item.jam_operasional.tutup} • {item.hari_operasi.length} Hari</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 dark:border-white/5">
-                     <div className="flex gap-2">
-                       <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                         {item.type}
-                       </span>
-                     </div>
+                     <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+                       {item.type}
+                     </span>
                      <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => openEditor(item)} className="p-1.5 text-zinc-500 hover:text-blue-500 dark:text-zinc-400 dark:hover:text-blue-400 bg-zinc-50 hover:bg-blue-50 dark:bg-white/5 dark:hover:bg-blue-500/10 rounded-md transition-colors">
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button onClick={() => handleDelete(item)} className="p-1.5 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-white/5 dark:hover:bg-red-500/10 rounded-md transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
@@ -332,51 +309,6 @@ export default function AdminMasterPage() {
       </div>
 
       {/* Editor Modal / Bottom Sheet */}
-      <AnimatePresence>
-        {isEditorOpen && (
-           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                onClick={closeEditor}
-                className="absolute inset-0 bg-black/40 dark:bg-black/80 backdrop-blur-sm" 
-              />
-              <motion.div
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="relative w-full max-w-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-              >
-                {/* Drag Handle Indicator */}
-                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
-                   <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
-                </div>
-
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-white/5">
-                   <h2 className="text-base font-black tracking-wider text-zinc-900 dark:text-white uppercase flex items-center gap-2">
-                     {editingItem ? <Edit2 className="w-4 h-4 text-blue-500" /> : <Plus className="w-4 h-4 text-blue-500" />}
-                     {editingItem ? "Edit Data Master" : "Form Tambah Pasar"}
-                   </h2>
-                   <button onClick={closeEditor} className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 rounded-full transition-colors">
-                     <X className="w-4 h-4" />
-                   </button>
-                </div>
-                
-                <div className="overflow-y-auto px-6 py-5">
-                   <MarketEditorForm 
-                     initialData={editingItem} 
-                     onClose={closeEditor} 
-                     branchId={activeBranchContext!} 
-                     profile={profile}
-                   />
-                </div>
-              </motion.div>
-           </div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }
@@ -387,10 +319,23 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
      name: initialData?.name || "",
      city: initialData?.city || "",
      district: initialData?.district || "",
-     type: initialData?.type || "Umum",
+     kategori: initialData?.kategori || ["PASAR_UMUM"],
+     hari_operasi: initialData?.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+     jam_operasional: initialData?.jam_operasional || { buka: "06:00", tutup: "17:00" },
      active: initialData?.active ?? true
   });
   const [saving, setSaving] = useState(false);
+
+  const applyTemplate = (category: string) => {
+     if (!window.confirm("Gunakan jadwal default kategori ini? Jadwal saat ini akan tertimpa.")) return;
+     if (category === "PASAR_PAGI") {
+       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"], jam_operasional: { buka: "04:00", tutup: "11:00" } }));
+     } else if (category === "PASAR_JAWA") {
+       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["LEGI"], jam_operasional: { buka: "05:00", tutup: "12:00" } }));
+     } else {
+       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"], jam_operasional: { buka: "06:00", tutup: "17:00" } }));
+     }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
@@ -400,8 +345,6 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
        const finalSanitized = {
          ...formData,
          name: toTitleCase(formData.name),
-         nama_pasar: toTitleCase(formData.name), // legacy mapping
-         wilayah: formData.city, // legacy mapping
          updatedAt: new Date().toISOString()
        };
 
@@ -429,81 +372,118 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
     <form onSubmit={handleSubmit} className="space-y-4">
        <div className="space-y-1.5">
           <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Nama Pasar</label>
-          <input
-            type="text"
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-            placeholder="Contoh: Pasar Beringharjo"
-          />
+          <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors" placeholder="Contoh: Pasar Beringharjo" />
        </div>
 
        <div className="grid grid-cols-2 gap-4">
          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Kota / Kabupaten</label>
-            <input
-              type="text"
-              value={formData.city}
-              onChange={(e) => setFormData({...formData, city: e.target.value})}
-              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-              placeholder="Contoh: Kota Yogyakarta"
-            />
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Wilayah</label>
+            <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors" placeholder="Contoh: Kota Yogyakarta" />
          </div>
          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Kecamatan</label>
-            <input
-              type="text"
-              value={formData.district}
-              onChange={(e) => setFormData({...formData, district: e.target.value})}
-              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-              placeholder="Opsional..."
-            />
+            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jenis Pasar</label>
+            <div className="flex flex-wrap gap-2">
+              {["PASAR_UMUM", "PASAR_PAGI", "PASAR_JAWA"].map((cat) => (
+                <button
+                  type="button"
+                  key={cat}
+                  onClick={() => {
+                    const newKat = formData.kategori.includes(cat)
+                      ? formData.kategori.filter((c) => c !== cat)
+                      : [...formData.kategori, cat];
+                    setFormData({ ...formData, kategori: newKat });
+                    if (!formData.kategori.includes(cat)) applyTemplate(cat);
+                  }}
+                  className={cn(
+                    "px-3 py-2 rounded-xl border text-sm font-medium transition-all",
+                    formData.kategori.includes(cat)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-transparent"
+                  )}
+                >
+                  {cat.replace("_", " ")}
+                </button>
+              ))}
+            </div>
          </div>
        </div>
 
-       <div className="grid grid-cols-2 gap-4">
-         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jenis Operasi</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({...formData, type: e.target.value})}
-              className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors cursor-pointer appearance-none"
-            >
-              <option value="Umum">Pasar Umum</option>
-              <option value="Subuh">Pasar Pagi/Subuh</option>
-              <option value="Pasaran">Pasaran Tradisional</option>
-              <option value="Sore">Pasar Sore</option>
-              <option value="Induk">Pusat/Induk</option>
-            </select>
-         </div>
-         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Status Sistem</label>
+       <div className="space-y-1.5">
+          <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Hari Operasi</label>
+          <div className="space-y-2">
             <button
-               type="button"
-               onClick={() => setFormData({...formData, active: !formData.active})}
-               className={cn(
-                 "w-full h-12 px-4 rounded-xl border text-sm font-bold tracking-wide transition-colors flex items-center justify-between",
-                 formData.active 
-                   ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400"
-                   : "bg-zinc-50 border-zinc-200 text-zinc-500 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-500"
-               )}
+              type="button"
+              onClick={() => {
+                const ALL_DAYS = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+                const isEveryDay = ALL_DAYS.every(d => formData.hari_operasi.includes(d));
+                if (isEveryDay) {
+                  setFormData(prev => ({ ...prev, hari_operasi: [] }));
+                } else {
+                  setFormData(prev => ({ ...prev, hari_operasi: ALL_DAYS }));
+                }
+              }}
+              className={cn(
+                "w-full h-12 flex items-center justify-between px-4 rounded-xl border text-sm font-medium transition-all",
+                ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d))
+                  ? "bg-blue-600/10 border-blue-500 text-blue-700 dark:text-blue-300"
+                  : "bg-zinc-100 dark:bg-zinc-800 border-transparent text-zinc-600 dark:text-zinc-400"
+              )}
             >
-               {formData.active ? "Aktif" : "Nonaktif"}
-               {formData.active ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+              <span>Buka Setiap Hari 🕐</span>
+              {["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d)) && <CheckCircle2 className="w-4 h-4" />}
             </button>
+
+            {!["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d)) && (
+              <>
+                {formData.hari_operasi.map((day, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <select
+                      value={day}
+                      onChange={(e) => {
+                        const newHari = [...formData.hari_operasi];
+                        newHari[idx] = e.target.value;
+                        setFormData({ ...formData, hari_operasi: newHari });
+                      }}
+                      className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white"
+                    >
+                      <option value="">Pilih Hari...</option>
+                      {["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "LEGI", "PAHING", "PON", "WAGE", "KLIWON"].map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, hari_operasi: formData.hari_operasi.filter((_, i) => i !== idx) })}
+                      className="px-3 rounded-xl bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+                    >
+                      x
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setFormData({ ...formData, hari_operasi: [...formData.hari_operasi, "SENIN"] })} className="w-full py-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 text-sm font-medium hover:bg-zinc-50 transition-colors">
+                  + Tambah Hari
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+       <div className="grid grid-cols-2 gap-4">
+         <div className="space-y-1.5">
+           <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jam Buka</label>
+           <input type="time" value={formData.jam_operasional.buka} onChange={(e) => setFormData(prev=>({...prev, jam_operasional: {...prev.jam_operasional, buka: e.target.value}}))} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none" />
+         </div>
+         <div className="space-y-1.5">
+           <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jam Tutup</label>
+           <input type="time" value={formData.jam_operasional.tutup} onChange={(e) => setFormData(prev=>({...prev, jam_operasional: {...prev.jam_operasional, tutup: e.target.value}}))} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none" />
          </div>
        </div>
 
        <div className="pt-6">
-          <button
-             type="submit"
-             disabled={saving}
-             className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-blue-500/20"
-          >
-             {saving ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</>
-             ) : "SIMPAN DATA MASTER"}
+          <button type="submit" disabled={saving} className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-blue-500/20">
+             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</> : "SIMPAN DATA MASTER"}
           </button>
        </div>
     </form>
