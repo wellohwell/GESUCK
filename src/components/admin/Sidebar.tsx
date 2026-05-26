@@ -8,7 +8,7 @@ export const Sidebar: React.FC = () => {
     const navItems = useNavigation();
 
     return (
-        <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-screen p-4 flex flex-col">
+        <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 h-screen p-4 flex-col hidden md:flex">
             <div className="font-black text-lg tracking-tighter mb-8 px-2 uppercase text-brand-primary">
                 System
             </div>

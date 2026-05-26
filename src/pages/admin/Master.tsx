@@ -8,8 +8,18 @@ import { toast } from "../../hooks/use-toast";
 import { openModal, closeModal } from "../../components/ui/modal/useModal";
 import { cn } from "../../lib/utils";
 import { toTitleCase } from "../../utils/format";
+import { motion, AnimatePresence } from "motion/react";
 
 // Models
+export interface MarketOperation {
+  id: string;
+  jenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA";
+  hariOperasi: string[];
+  jamBuka: string;
+  jamTutup: string;
+  metadata?: any;
+}
+
 export interface MarketMaster {
   id: string;
   name: string;
@@ -20,9 +30,16 @@ export interface MarketMaster {
   kategori: string[];
   hari_operasi: string[];
   jam_operasional: { buka: string; tutup: string };
+  operations?: MarketOperation[];
   createdAt?: string;
   updatedAt?: string;
 }
+
+export const KATEGORI_TYPES = [
+  { id: "PASAR_UMUM", label: "Pasar Umum" },
+  { id: "PASAR_PAGI", label: "Pasar Pagi" },
+  { id: "PASAR_JAWA", label: "Pasar Jawa" }
+];
 
 export default function AdminMasterPage() {
   const { activeBranchContext } = useRuntime();
@@ -32,6 +49,8 @@ export default function AdminMasterPage() {
   const [loading, setLoading] = useState(true);
   
   const [search, setSearch] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingMarket, setEditingMarket] = useState<MarketMaster | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,15 +68,28 @@ export default function AdminMasterPage() {
     const unsub = onSnapshot(q, (snap) => {
       const items = snap.docs.map(d => {
         const docData = d.data();
+        const fallbackId = "op-legacy-" + d.id;
+        const operations = docData.operations || [
+          {
+            id: fallbackId,
+            jenis: docData.kategori?.[0] || docData.type || "PASAR_UMUM",
+            hariOperasi: docData.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+            jamBuka: docData.jam_operasional?.buka || "06:00",
+            jamTutup: docData.jam_operasional?.tutup || "17:00",
+            metadata: {}
+          }
+        ];
         return {
           id: d.id,
           name: docData.name || docData.nama_pasar || "Unnamed Market",
           city: docData.city || docData.wilayah || "-",
           district: docData.district || "-",
-          type: docData.type || docData.kategori || "Umum",
+          type: docData.type || docData.kategori?.[0] || "Umum",
           active: docData.active ?? true,
+          kategori: docData.kategori || ["PASAR_UMUM"],
           hari_operasi: docData.hari_operasi || [],
           jam_operasional: docData.jam_operasional || { buka: "06:00", tutup: "17:00" },
+          operations,
           createdAt: docData.createdAt || docData.created_at || new Date().toISOString(),
           updatedAt: docData.updatedAt || docData.updated_at || new Date().toISOString(),
           createdBy: docData.createdBy || "System"
@@ -192,18 +224,8 @@ export default function AdminMasterPage() {
   };
 
   const openEditor = (item?: MarketMaster) => {
-    const modalId = openModal({
-      title: item ? "Edit Data Master" : "Form Tambah Pasar",
-      size: 'md',
-      content: (
-        <MarketEditorForm 
-           initialData={item || null} 
-           onClose={() => closeModal(modalId)} 
-           branchId={activeBranchContext!} 
-           profile={profile}
-        />
-      ),
-    });
+    setEditingMarket(item || null);
+    setIsFormOpen(true);
   };
 
   return (
@@ -239,9 +261,9 @@ export default function AdminMasterPage() {
 
           <button 
             onClick={() => openEditor()}
-            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-sm flex-shrink-0"
+            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-4 bg-[#d2f34c] hover:bg-[#b8d63b] active:scale-95 text-black rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-[#d2f34c]/20 flex-shrink-0"
           >
-            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+            <Plus className="w-5 h-5 text-black font-black" strokeWidth={3.5} />
             <span className="hidden md:inline">Baru</span>
           </button>
         </div>
@@ -264,228 +286,698 @@ export default function AdminMasterPage() {
              <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">Tidak ditemukan data pasar pada cabang terpilih.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-             {filteredData.map(item => (
-                <div 
-                  key={item.id} 
-                  className={cn(
-                    "group relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 transition-all hover:shadow-lg hover:border-zinc-300 dark:hover:border-zinc-500"
-                  )}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                     <div className="space-y-1 pr-8">
-                       <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
-                         {item.name}
-                       </h3>
-                       <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                          <MapPin className="w-3 h-3 text-zinc-400" />
-                          <span>{item.city} {item.district ? `• ${item.district}` : ''}</span>
-                       </div>
-                     </div>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             {filteredData.map(item => {
+                const isInactive = !item.active;
+                const ops = item.operations || [
+                  {
+                    id: "fallback-" + item.id,
+                    jenis: (item.kategori?.[0] || "PASAR_UMUM") as any,
+                    hariOperasi: item.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+                    jamBuka: item.jam_operasional?.buka || "06:00",
+                    jamTutup: item.jam_operasional?.tutup || "17:00",
+                    metadata: {}
+                  }
+                ];
+                
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "flex flex-col justify-between p-4.5 transition-all bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl hover:bg-zinc-50 dark:hover:bg-white/[0.01] shadow-sm hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 group min-h-[180px]",
+                      isInactive && "opacity-60 bg-zinc-50/50 dark:bg-zinc-950/40"
+                    )}
+                  >
+                    <div className="min-w-0 flex-1 flex flex-col">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-extrabold text-sm md:text-base leading-tight tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-[#C6FF2E] transition-colors truncate">
+                            {toTitleCase(item.name)}
+                          </h4>
+                          <div className="flex items-center gap-1 mt-0.5 text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
+                            <MapPin className="w-3 h-3 text-zinc-400 dark:text-zinc-600 flex-shrink-0" />
+                            <span>{toTitleCase(item.city)}</span>
+                            {item.district && item.district !== "-" && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span className="truncate max-w-[120px]">{toTitleCase(item.district)}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
 
-                  <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400 mb-3 bg-zinc-50 dark:bg-black/20 p-2 rounded-lg">
-                    <Clock className="w-3 h-3" />
-                    <span>{item.jam_operasional.buka} - {item.jam_operasional.tutup} • {item.hari_operasi.length} Hari</span>
-                  </div>
+                        {/* Status Toggle Button */}
+                        <button
+                          onClick={() => handleToggleActive(item)}
+                          className={cn(
+                            "flex-shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider transition-all scale-95 hover:scale-100 cursor-pointer",
+                            item.active
+                              ? "bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/20"
+                              : "bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10"
+                          )}
+                        >
+                          {item.active ? "Aktif" : "Muted"}
+                        </button>
+                      </div>
 
-                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 dark:border-white/5">
-                     <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                       {item.type}
-                     </span>
-                     <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditor(item)} className="p-1.5 text-zinc-500 hover:text-blue-500 dark:text-zinc-400 dark:hover:text-blue-400 bg-zinc-50 hover:bg-blue-50 dark:bg-white/5 dark:hover:bg-blue-500/10 rounded-md transition-colors">
-                          <Pencil className="w-3.5 h-3.5" />
+                      {/* Display Multi-Schedule Operations */}
+                      <div className="mt-2 space-y-1.5 flex-1">
+                        {ops.map((op, oIdx) => {
+                          const isJava = op.jenis === "PASAR_JAWA";
+                          const isPagi = op.jenis === "PASAR_PAGI";
+                          return (
+                            <div 
+                              key={op.id || oIdx} 
+                              className="bg-zinc-50/10 dark:bg-black/30 border border-zinc-100 dark:border-white/5 rounded-xl p-2 flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className={cn(
+                                  "text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded",
+                                  isJava 
+                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono" 
+                                    : isPagi 
+                                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" 
+                                      : "bg-[#C6FF2E]/10 text-zinc-700 dark:text-[#C6FF2E]"
+                                )}>
+                                  {op.jenis.replace("PASAR_", "")}
+                                </span>
+                                <div className="flex items-center gap-1 text-[9.5px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/60 px-1.5 py-0.5 rounded font-mono">
+                                  <Clock className="w-2.5 h-2.5 text-zinc-400" />
+                                  <span>{op.jamBuka} - {op.jamTutup}</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                {op.hariOperasi?.map((day, dIdx) => (
+                                  <span 
+                                    key={dIdx} 
+                                    className={cn(
+                                      "text-[7px] font-bold px-1 py-0.2 rounded uppercase font-mono border",
+                                      isJava 
+                                        ? "bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400" 
+                                        : "bg-zinc-100/50 dark:bg-zinc-800 border-transparent text-zinc-500 dark:text-zinc-400"
+                                    )}
+                                  >
+                                    {day}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Action footer */}
+                    <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-zinc-100 dark:border-white/5">
+                      <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-mono">
+                        ID: {item.id.slice(0, 6)}...
+                      </span>
+                      <div className="flex gap-1.5">
+                        <button 
+                          onClick={() => openEditor(item)} 
+                          className="p-1 px-2 text-zinc-650 hover:text-black dark:text-zinc-400 dark:hover:text-[#C6FF2E] bg-zinc-50 hover:bg-[#C6FF2E]/10 dark:bg-white/5 dark:hover:bg-[#C6FF2E]/10 rounded-lg transition-colors border border-zinc-200/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Edit
                         </button>
-                        <button onClick={() => handleDelete(item)} className="p-1.5 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-white/5 dark:hover:bg-red-500/10 rounded-md transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
+                        <button 
+                          onClick={() => handleDelete(item)} 
+                          className="p-1 px-2 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-white/5 dark:hover:bg-red-500/10 rounded-lg transition-colors border border-zinc-200/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Hapus
                         </button>
-                     </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-             ))}
+                );
+             })}
           </div>
         )}
       </div>
 
       {/* Editor Modal / Bottom Sheet */}
+      <AnimatePresence>
+        {isFormOpen && (
+          <MarketEditorSheet
+            initialData={editingMarket}
+            onClose={() => {
+              setIsFormOpen(false);
+              setEditingMarket(null);
+            }}
+            branchId={activeBranchContext!}
+            profile={profile}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// Inner Component for Editor Form 
-function MarketEditorForm({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
-  const [formData, setFormData] = useState({
-     name: initialData?.name || "",
-     city: initialData?.city || "",
-     district: initialData?.district || "",
-     kategori: initialData?.kategori || ["PASAR_UMUM"],
-     hari_operasi: initialData?.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
-     jam_operasional: initialData?.jam_operasional || { buka: "06:00", tutup: "17:00" },
-     active: initialData?.active ?? true
-  });
-  const [saving, setSaving] = useState(false);
+// --- NEW MOBILE-FIRST SHEET WRAPPER WITH MOTION ANIMATIONS ---
+function MarketEditorSheet({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+      />
+      {/* Native-feeling slide-up Sheet panel */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 220 }}
+        className="relative w-full max-w-xl h-[92vh] md:h-[88vh] bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-white/10 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden pb-safe"
+      >
+        <MarketEditorForm initialData={initialData} onClose={onClose} branchId={branchId} profile={profile} />
+      </motion.div>
+    </div>
+  );
+}
 
-  const applyTemplate = (category: string) => {
-     if (!window.confirm("Gunakan jadwal default kategori ini? Jadwal saat ini akan tertimpa.")) return;
-     if (category === "PASAR_PAGI") {
-       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"], jam_operasional: { buka: "04:00", tutup: "11:00" } }));
-     } else if (category === "PASAR_JAWA") {
-       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["LEGI"], jam_operasional: { buka: "05:00", tutup: "12:00" } }));
-     } else {
-       setFormData(prev => ({ ...prev, kategori: [category], hari_operasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"], jam_operasional: { buka: "06:00", tutup: "17:00" } }));
-     }
-  }
+export const BRANCH_WILAYAH_MAP: Record<string, string[]> = {
+  GJY: ["Kota Yogyakarta", "Bantul", "Gunungkidul", "Kulon Progo", "Sleman"], // DIY
+  SLA: ["Sleman", "Depok", "Ngaglik", "Mlati", "Kalasan", "Gamping", "Tempel", "Prambanan"], // Sleman
+  MGL: ["Kota Magelang", "Kabupaten Magelang", "Muntilan", "Secang", "Borobudur", "Salaman", "Grabag"], // Magelang
+  PWR: ["Purworejo", "Kutoarjo", "Bagelen", "Kemiri", "Butuh", "Loano"], // Purworejo
+  TMG: ["Temanggung", "Parakan", "Kranggan", "Ngadirejo", "Kedu"] // Temanggung
+};
+
+// Inner Component for Editor Form
+function MarketEditorForm({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
+  const [name, setName] = useState(initialData?.name || "");
+  const [city, setCity] = useState(initialData?.city || "");
+  const [district, setDistrict] = useState(initialData?.district || "");
+  const [active, setActive] = useState(initialData?.active ?? true);
+  const [saving, setSaving] = useState(false);
+  const [customDaysOps, setCustomDaysOps] = useState<Record<string, boolean>>({});
+
+  const [isKustomCity, setIsKustomCity] = useState(() => {
+    if (!initialData?.city) return false;
+    const currentOptions = BRANCH_WILAYAH_MAP[branchId?.toUpperCase()] || BRANCH_WILAYAH_MAP["GJY"] || [];
+    return !currentOptions.includes(initialData.city);
+  });
+
+  const [operations, setOperations] = useState<MarketOperation[]>(() => {
+    if (initialData?.operations && initialData.operations.length > 0) {
+      return initialData.operations;
+    }
+    // Safe initialization with fallback mapping of legacy records
+    return [
+      {
+        id: "op-" + Math.random().toString(36).substr(2, 9),
+        jenis: (initialData?.kategori?.[0] || "PASAR_UMUM") as any,
+        hariOperasi: initialData?.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+        jamBuka: initialData?.jam_operasional?.buka || "06:00",
+        jamTutup: initialData?.jam_operasional?.tutup || "17:00",
+        metadata: {}
+      }
+    ];
+  });
+
+  const WEEKDAYS = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+  const JAWA_DAYS = ["LEGI", "PAHING", "PON", "WAGE", "KLIWON"];
+
+  const handleAddOperation = () => {
+    setOperations(prev => [
+      ...prev,
+      {
+        id: "op-" + Math.random().toString(36).substr(2, 9),
+        jenis: "PASAR_UMUM",
+        hariOperasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+        jamBuka: "06:00",
+        jamTutup: "17:00",
+        metadata: {}
+      }
+    ]);
+    toast.success("Operasional baru ditambahkan ke daftar");
+  };
+
+  const handleRemoveOperation = (id: string) => {
+    if (operations.length === 1) {
+      toast.error("Wajib menyisakan minimal 1 jadwal operasional utama!");
+      return;
+    }
+    setOperations(prev => prev.filter(op => op.id !== id));
+  };
+
+  const handleChangeJenis = (id: string, newJenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA") => {
+    setOperations(prev => prev.map(op => {
+      if (op.id !== id) return op;
+      
+      let defaultBuka = op.jamBuka;
+      let defaultTutup = op.jamTutup;
+      let defaultHari = op.hariOperasi;
+
+      if (newJenis === "PASAR_PAGI") {
+        defaultBuka = "04:00";
+        defaultTutup = "11:00";
+        defaultHari = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+      } else if (newJenis === "PASAR_JAWA") {
+        defaultBuka = "05:00";
+        defaultTutup = "12:00";
+        defaultHari = ["LEGI"];
+      } else {
+        defaultBuka = "06:00";
+        defaultTutup = "17:00";
+        defaultHari = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+      }
+
+      return {
+        ...op,
+        jenis: newJenis,
+        hariOperasi: defaultHari,
+        jamBuka: defaultBuka,
+        jamTutup: defaultTutup
+      };
+    }));
+  };
+
+  const handleToggleEveryday = (id: string) => {
+    setOperations(prev => prev.map(op => {
+      if (op.id !== id) return op;
+      const isEvery = WEEKDAYS.every(d => op.hariOperasi.includes(d));
+      return {
+        ...op,
+        hariOperasi: isEvery ? [] : [...WEEKDAYS]
+      };
+    }));
+  };
+
+  const handleToggleDay = (id: string, day: string) => {
+    setOperations(prev => prev.map(op => {
+      if (op.id !== id) return op;
+      const isExist = op.hariOperasi.includes(day);
+      const newHari = isExist 
+        ? op.hariOperasi.filter(d => d !== day)
+        : [...op.hariOperasi, day];
+      return {
+        ...op,
+        hariOperasi: newHari
+      };
+    }));
+  };
+
+  const handleChangeTime = (id: string, field: "jamBuka" | "jamTutup", val: string) => {
+    setOperations(prev => prev.map(op => {
+      if (op.id !== id) return op;
+      return {
+        ...op,
+        [field]: val
+      };
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     if (!formData.name.trim()) return toast.error("Nama wajib diisi");
-     setSaving(true);
-     try {
-       const finalSanitized = {
-         ...formData,
-         name: toTitleCase(formData.name),
-         updatedAt: new Date().toISOString()
-       };
+    e.preventDefault();
+    if (!name.trim()) return toast.error("Nama Pasar wajib diisi");
+    if (!city.trim()) return toast.error("Wilayah/Kota wajib diisi");
+    if (operations.length === 0) return toast.error("Minimal harus memiliki 1 jadwal operasional");
 
-       if (initialData?.id) {
-         await setDoc(doc(db, `branches/${branchId}/master_markets`, initialData.id), finalSanitized, { merge: true });
-         toast.success("Perubahan disimpan");
-       } else {
-         const newRef = doc(collection(db, `branches/${branchId}/master_markets`));
-         await setDoc(newRef, {
-           ...finalSanitized,
-           createdAt: new Date().toISOString(),
-           createdBy: profile?.email || "System/Admin User"
-         });
-         toast.success("Master data ditambahkan");
-       }
-       onClose();
-     } catch (err: any) {
-       toast.error("Gagal menyimpan: " + err.message);
-     } finally {
-       setSaving(false);
-     }
+    setSaving(true);
+    try {
+      const nameSanitized = toTitleCase(name);
+      const citySanitized = toTitleCase(city);
+      const districtSanitized = district ? toTitleCase(district) : "";
+
+      // Re-map category, days, work hours to top-level fields for existing legacy query filters
+      const kategori = Array.from(new Set(operations.map(o => o.jenis)));
+      const hari_operasi = Array.from(new Set(operations.flatMap(o => o.hariOperasi)));
+      const firstOp = operations[0];
+      const jam_operasional = {
+        buka: firstOp?.jamBuka || "06:00",
+        tutup: firstOp?.jamTutup || "17:00"
+      };
+
+      const finalPayload = {
+        name: nameSanitized,
+        nama_pasar: nameSanitized, // Legacy
+        city: citySanitized,
+        wilayah: citySanitized, // Legacy
+        district: districtSanitized,
+        active,
+        kategori,
+        hari_operasi,
+        jam_operasional,
+        operations,
+        updatedAt: new Date().toISOString()
+      };
+
+      const marketId = initialData?.id || doc(collection(db, `branches/${branchId}/master_markets`)).id;
+      const marketRef = doc(db, `branches/${branchId}/master_markets`, marketId);
+      
+      const batch = writeBatch(db);
+
+      // Save primary master market details
+      batch.set(marketRef, {
+        ...finalPayload,
+        ...(initialData?.id ? {} : { createdAt: new Date().toISOString(), createdBy: profile?.email || "System/Admin User" })
+      }, { merge: true });
+
+      // Reconcile and prune obsolete operations from Firestore subcollection
+      const oldOps = initialData?.operations || [];
+      const newIds = new Set(operations.map(o => o.id));
+      const deletedOps = oldOps.filter(o => !newIds.has(o.id));
+
+      for (const dOp of deletedOps) {
+        const opRef = doc(db, `branches/${branchId}/master_markets/${marketId}/operations`, dOp.id);
+        batch.delete(opRef);
+      }
+
+      // Write active operation models into the subcollection
+      for (const op of operations) {
+        const opRef = doc(db, `branches/${branchId}/master_markets/${marketId}/operations`, op.id);
+        batch.set(opRef, {
+          jenis: op.jenis,
+          hariOperasi: op.hariOperasi,
+          jamBuka: op.jamBuka,
+          jamTutup: op.jamTutup,
+          metadata: op.metadata || {}
+        }, { merge: true });
+      }
+
+      await batch.commit();
+      toast.success(initialData?.id ? "Data master pasar berhasil diperbarui" : "Master pasar baru berhasil didaftarkan");
+      onClose();
+    } catch (err: any) {
+      toast.error("Gagal menyimpan: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-       <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Nama Pasar</label>
-          <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors" placeholder="Contoh: Pasar Beringharjo" />
-       </div>
+    <form onSubmit={handleSubmit} className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-white/5">
+        <div>
+          <h3 className="text-base font-black uppercase tracking-wider text-zinc-900 dark:text-white">
+            {initialData ? "Edit Master Pasar" : "Tambah Master Pasar"}
+          </h3>
+          <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-0.5">
+            Operational Scheduling Workspace
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-zinc-950 dark:hover:text-white transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5 flex-shrink-0" />
+        </button>
+      </div>
 
-       <div className="grid grid-cols-2 gap-4">
-         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Wilayah</label>
-            <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors" placeholder="Contoh: Kota Yogyakarta" />
-         </div>
-         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jenis Pasar</label>
-            <div className="flex flex-wrap gap-2">
-              {["PASAR_UMUM", "PASAR_PAGI", "PASAR_JAWA"].map((cat) => (
-                <button
-                  type="button"
-                  key={cat}
-                  onClick={() => {
-                    const newKat = formData.kategori.includes(cat)
-                      ? formData.kategori.filter((c) => c !== cat)
-                      : [...formData.kategori, cat];
-                    setFormData({ ...formData, kategori: newKat });
-                    if (!formData.kategori.includes(cat)) applyTemplate(cat);
-                  }}
-                  className={cn(
-                    "px-3 py-2 rounded-xl border text-sm font-medium transition-all",
-                    formData.kategori.includes(cat)
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-transparent"
-                  )}
-                >
-                  {cat.replace("_", " ")}
-                </button>
-              ))}
-            </div>
-         </div>
-       </div>
+      {/* Scrollable Content Pane */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 scrollbar-thin">
+        {/* SECTION 1: Master Market Information */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
+            <Building2 className="w-4 h-4 text-[#C6FF2E]" />
+            <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+              Informasi Utama Pasar
+            </h3>
+          </div>
+          
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+              Nama Pasar <span className="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              required 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all" 
+              placeholder="Contoh: Pasar Beringharjo" 
+            />
+          </div>
 
-       <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Hari Operasi</label>
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => {
-                const ALL_DAYS = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
-                const isEveryDay = ALL_DAYS.every(d => formData.hari_operasi.includes(d));
-                if (isEveryDay) {
-                  setFormData(prev => ({ ...prev, hari_operasi: [] }));
-                } else {
-                  setFormData(prev => ({ ...prev, hari_operasi: ALL_DAYS }));
-                }
-              }}
-              className={cn(
-                "w-full h-12 flex items-center justify-between px-4 rounded-xl border text-sm font-medium transition-all",
-                ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d))
-                  ? "bg-blue-600/10 border-blue-500 text-blue-700 dark:text-blue-300"
-                  : "bg-zinc-100 dark:bg-zinc-800 border-transparent text-zinc-600 dark:text-zinc-400"
-              )}
-            >
-              <span>Buka Setiap Hari 🕐</span>
-              {["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d)) && <CheckCircle2 className="w-4 h-4" />}
-            </button>
-
-            {!["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => formData.hari_operasi.includes(d)) && (
-              <>
-                {formData.hari_operasi.map((day, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <select
-                      value={day}
-                      onChange={(e) => {
-                        const newHari = [...formData.hari_operasi];
-                        newHari[idx] = e.target.value;
-                        setFormData({ ...formData, hari_operasi: newHari });
-                      }}
-                      className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white"
-                    >
-                      <option value="">Pilih Hari...</option>
-                      {["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "LEGI", "PAHING", "PON", "WAGE", "KLIWON"].map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, hari_operasi: formData.hari_operasi.filter((_, i) => i !== idx) })}
-                      className="px-3 rounded-xl bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                    >
-                      x
-                    </button>
-                  </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+              Wilayah / Kota <span className="text-red-500">*</span>
+            </label>
+            <div className="flex flex-col gap-2">
+              <select
+                value={isKustomCity ? "KUSTOM" : city}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "KUSTOM") {
+                    setIsKustomCity(true);
+                    setCity("");
+                  } else {
+                    setIsKustomCity(false);
+                    setCity(val);
+                  }
+                }}
+                required
+                className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all cursor-pointer"
+              >
+                <option value="">Pilih Wilayah...</option>
+                {(BRANCH_WILAYAH_MAP[branchId?.toUpperCase()] || BRANCH_WILAYAH_MAP["GJY"] || []).map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
-                <button type="button" onClick={() => setFormData({ ...formData, hari_operasi: [...formData.hari_operasi, "SENIN"] })} className="w-full py-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 text-sm font-medium hover:bg-zinc-50 transition-colors">
-                  + Tambah Hari
-                </button>
-              </>
-            )}
+                <option value="KUSTOM">+ Tulis Wilayah Kustom...</option>
+              </select>
+
+              {isKustomCity && (
+                <input 
+                  type="text" 
+                  required 
+                  value={city} 
+                  onChange={(e) => setCity(e.target.value)} 
+                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all" 
+                  placeholder="Ketik nama wilayah baru/kustom..." 
+                />
+              )}
+            </div>
           </div>
         </div>
 
-       <div className="grid grid-cols-2 gap-4">
-         <div className="space-y-1.5">
-           <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jam Buka</label>
-           <input type="time" value={formData.jam_operasional.buka} onChange={(e) => setFormData(prev=>({...prev, jam_operasional: {...prev.jam_operasional, buka: e.target.value}}))} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none" />
-         </div>
-         <div className="space-y-1.5">
-           <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest pl-1">Jam Tutup</label>
-           <input type="time" value={formData.jam_operasional.tutup} onChange={(e) => setFormData(prev=>({...prev, jam_operasional: {...prev.jam_operasional, tutup: e.target.value}}))} className="w-full h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-900 dark:text-white outline-none" />
-         </div>
-       </div>
+        {/* SECTION 2: Operational Schedule List */}
+        <div className="space-y-3.5 pb-10">
+          <div className="flex items-center gap-2 pl-1 mb-1">
+            <Layers className="w-4 h-4 text-[#C6FF2E]" />
+            <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+              Daftar Jadwal Operasional
+            </h3>
+          </div>
 
-       <div className="pt-6">
-          <button type="submit" disabled={saving} className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-blue-500/20">
-             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</> : "SIMPAN DATA MASTER"}
-          </button>
-       </div>
+          {operations.map((op, opIdx) => {
+            const isJava = op.jenis === "PASAR_JAWA";
+            return (
+              <div 
+                key={op.id} 
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm relative space-y-4"
+              >
+                {/* Micro Header with Prune Option */}
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/5 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#C6FF2E]/10 text-zinc-800 dark:text-[#C6FF2E] font-black text-[10px] flex items-center justify-center border border-[#C6FF2E]/20 font-mono">
+                      {opIdx + 1}
+                    </span>
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200 font-mono">
+                      Jadwal #{opIdx + 1}
+                    </h4>
+                  </div>
+                  {operations.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveOperation(op.id)}
+                      className="p-1 px-2 text-[10px] font-black rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-500/10 transition-colors uppercase tracking-wider cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  )}
+                </div>
+
+                {/* Jenis Pasar selector (segmented pills / adaptive chips) */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+                    Jenis Pasar
+                  </label>
+                  <div className="grid grid-cols-3 gap-1 p-1 bg-zinc-100 dark:bg-zinc-950 rounded-xl border border-transparent dark:border-white/5">
+                    {[
+                      { id: "PASAR_UMUM", label: "Pasar Umum" },
+                      { id: "PASAR_PAGI", label: "Pasar Pagi" },
+                      { id: "PASAR_JAWA", label: "Pasar Jawa" }
+                    ].map((typeItem) => {
+                      const isSelected = op.jenis === typeItem.id;
+                      return (
+                        <button
+                          type="button"
+                          key={typeItem.id}
+                          onClick={() => handleChangeJenis(op.id, typeItem.id as any)}
+                          className={cn(
+                            "h-9 rounded-lg text-[10px] font-black tracking-wider transition-all cursor-pointer uppercase",
+                            isSelected
+                              ? "bg-[#C6FF2E] text-black shadow-md shadow-[#C6FF2E]/10 font-black border-[#C6FF2E]"
+                              : "text-zinc-550 dark:text-zinc-450 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          )}
+                          style={isSelected ? { backgroundColor: "#C6FF2E", color: "#000000" } : {}}
+                        >
+                          {typeItem.label.replace("Pasar ", "")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Hari Operasi Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+                      Hari Operasi
+                    </label>
+                  </div>
+
+                  {/* Dynamic Chips Row */}
+                  {isJava ? (
+                    <div className="flex flex-wrap gap-1">
+                      {JAWA_DAYS.map((day) => {
+                        const isActive = op.hariOperasi.includes(day);
+                        return (
+                          <button
+                            type="button"
+                            key={day}
+                            onClick={() => handleToggleDay(op.id, day)}
+                            className={cn(
+                              "flex-1 min-w-[55px] h-9 rounded-lg text-[9px] font-black tracking-wider border transition-all cursor-pointer",
+                              isActive
+                                ? "bg-[#C6FF2E]/10 border-[#C6FF2E] text-[#C6FF2E] shadow-sm"
+                                : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-300"
+                            )}
+                            style={isActive ? { borderColor: "#C6FF2E", color: "#C6FF2E" } : {}}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (() => {
+                    const isEveryday = WEEKDAYS.every(d => op.hariOperasi.includes(d));
+                    const showCustom = customDaysOps[op.id] ?? !isEveryday;
+
+                    if (!showCustom) {
+                      return (
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-[#C6FF2E]/5 dark:bg-[#C6FF2E]/5 border border-[#C6FF2E]/15">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-[#C6FF2E]" />
+                            <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
+                              Buka Setiap Hari (Senin - Minggu)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setCustomDaysOps(prev => ({ ...prev, [op.id]: true }))}
+                            className="text-[9px] font-black text-zinc-500 hover:text-[#C6FF2E] dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider underline cursor-pointer"
+                          >
+                            Ubah
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between pl-1">
+                          <span className="text-[8.5px] font-black text-amber-500 uppercase tracking-wider">
+                            Kustom ({op.hariOperasi.length} Hari Aktif)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomDaysOps(prev => ({ ...prev, [op.id]: false }));
+                              setOperations(prevOps => prevOps.map(item => item.id === op.id ? { ...item, hariOperasi: [...WEEKDAYS] } : item));
+                            }}
+                            className="text-[9px] font-black text-emerald-600 dark:text-[#C6FF2E] hover:underline uppercase tracking-wider cursor-pointer"
+                          >
+                            Setiap Hari
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-7 gap-1">
+                          {WEEKDAYS.map((day) => {
+                            const isActive = op.hariOperasi.includes(day);
+                            const shortLabel = day.slice(0, 3);
+                            return (
+                              <button
+                                type="button"
+                                key={day}
+                                onClick={() => handleToggleDay(op.id, day)}
+                                className={cn(
+                                  "h-9 rounded-lg text-[9px] font-black border transition-all cursor-pointer uppercase font-mono",
+                                  isActive
+                                    ? "bg-[#C6FF2E]/10 border-[#C6FF2E] text-[#C6FF2E] shadow-sm"
+                                    : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                )}
+                                style={isActive ? { borderColor: "#C6FF2E", color: "#C6FF2E" } : {}}
+                              >
+                                {shortLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Time Settings */}
+                <div className="grid grid-cols-2 gap-3.5 pt-1">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+                      Jam Buka
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={op.jamBuka}
+                      onChange={(e) => handleChangeTime(op.id, "jamBuka", e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+                      Jam Tutup
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={op.jamTutup}
+                      onChange={(e) => handleChangeTime(op.id, "jamTutup", e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sticky Bottom Actions Action Panel (SafeArea optimized) */}
+      <div className="sticky bottom-0 z-10 p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/5 flex gap-3">
+        <button
+          type="button"
+          onClick={handleAddOperation}
+          className="flex-1 h-12 flex items-center justify-center gap-1.5 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/10 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+        >
+          <Plus className="w-4 h-4 text-zinc-550 dark:text-zinc-400" strokeWidth={3} />
+          Jadwal
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex-[2.5] h-12 flex items-center justify-center gap-2 bg-[#C6FF2E] hover:bg-[#b8d63b] text-black rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-[#C6FF2E]/20 cursor-pointer"
+          style={{ backgroundColor: "#C6FF2E", color: "#000000" }}
+        >
+          {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</> : "SIMPAN PASAR"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -513,33 +1005,34 @@ export function MasterDataView({ markets, onAdd, onEdit, onDelete, search, setSe
 }
 
 export function MarketFormContent({ market, onClose }: any) {
-  // Map generic to new form directly bypassing context for now or just return a warning placeholder if needed
-  // Since AdminLayout still hooks to it via a manual open, we'll render the modern MarketEditorForm here!
-  // It requires branchId, profile, which are missing here.
-  // We'll wrap it!
   const { activeBranchContext } = useRuntime();
   const { profile } = useAuth();
   
-  if (!activeBranchContext) return <div className="p-10 text-center">Branch context missing</div>;
+  if (!activeBranchContext) return <div className="p-10 text-center">Konteks cabang tidak tersedia</div>;
+
+  const handleClose = () => {
+    onClose();
+    // Refresh parent context if possible
+    window.location.reload();
+  };
   
   return (
-     <div className="w-full flex-1 flex flex-col h-full bg-white dark:bg-black rounded-lg border border-border shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-lg font-bold text-foreground">Edit Pasar (Legacy Form Mount)</h2>
-          <button onClick={onClose} className="text-[10px] font-black uppercase text-muted-foreground">Kembali</button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-           {/* Auto-map legacy item to new interface */}
+     <div className="w-full flex-1 flex flex-col h-[85vh] bg-zinc-50 dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-white/5 shadow-lg overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
            <MarketEditorForm 
              initialData={market ? {
                id: market.id,
                name: market.name || market.nama_pasar || "",
                city: market.city || market.wilayah || "",
-               district: market.district || "",
+               district: market.district || market.alamat || "",
                type: market.type || market.kategori || "Umum",
-               active: market.active ?? true
+               active: market.active ?? true,
+               kategori: market.kategori || ["PASAR_UMUM"],
+               hari_operasi: market.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+               jam_operasional: market.jam_operasional || { buka: "06:00", tutup: "17:00" },
+               operations: market.operations
              } : null} 
-             onClose={onClose} 
+             onClose={handleClose} 
              branchId={activeBranchContext} 
              profile={profile} 
            />

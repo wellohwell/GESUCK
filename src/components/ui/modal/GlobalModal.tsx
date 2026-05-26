@@ -36,12 +36,13 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
   };
 
   const isCalculatorModal = modal.className?.includes("is-calculator-modal");
+  const isBelowTopBar = modal.className?.includes("below-top-bar") || isCalculatorModal;
 
   return (
     <div
       className={cn(
         "fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 max-md:items-end max-md:p-0",
-        isCalculatorModal && "items-start pt-[56px] md:pt-[68px] max-md:items-start max-md:p-3 max-md:pt-[54px]"
+        isBelowTopBar && "items-start pt-16 md:pt-20 max-md:items-start max-md:p-3 max-md:pt-[102px]"
       )}
       style={{ zIndex: 999 + index }}
     >
@@ -56,23 +57,23 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
 
       {/* Modal Surface Box */}
       <motion.div
-        initial={isCalculatorModal ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
+        initial={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={isCalculatorModal ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
+        exit={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
           "relative flex flex-col bg-white dark:bg-black border border-zinc-200/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
-          !isCalculatorModal ? "max-md:rounded-t-[28px] max-md:rounded-b-none" : "max-md:rounded-[20px]",
+          !isBelowTopBar ? "max-md:rounded-t-[28px] max-md:rounded-b-none" : "max-md:rounded-[20px]",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
           "md:w-[85vw]", sizeClasses[modal.size || 'md'],
           // Mobile responsive bottom-sheet structure and safe-area adjustments
-          !isCalculatorModal ? "max-md:max-h-[92vh] max-md:border-b-0 max-md:pb-[calc(env(safe-area-inset-bottom,20px)+8px)]" : "max-md:max-h-[85vh]",
+          !isBelowTopBar ? "max-md:max-h-[92vh] max-md:border-b-0 max-md:pb-[calc(env(safe-area-inset-bottom,20px)+8px)]" : "max-md:max-h-[85vh]",
           modal.className
         )}
       >
         {/* Mobile touch-swipe handle simulator */}
-        {!isCalculatorModal && (
+        {!isBelowTopBar && (
           <div 
             className="hidden max-md:flex justify-center py-3 shrink-0 cursor-pointer" 
             onClick={handleClose}
