@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react";
-import { auth } from "./firebase/config";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import MarketPlansPage from "./pages/workspace/market-plans/page";
 import CreateMarketPlanPage from "./pages/workspace/market-plans/create/page";
@@ -17,8 +14,10 @@ import PendingApproval from "./pages/PendingApproval";
 import Blocked from "./pages/Blocked";
 import { OnboardingPage } from "./features/users/pages/OnboardingPage";
 import { AdminUserApprovalPage } from "./features/users/pages/AdminUserApprovalPage";
-import { WorkspaceDashboard, WorkspaceExplore, WorkspaceClients, WorkspaceVisit, WorkspaceTasks, WorkspaceProfile } from "./pages/workspace/WorkspacePages";
-import { RequireRole, RequireAdminAccess, RequirePermission } from "./components/auth/guards";
+import { WorkspaceExplore, WorkspaceClients, WorkspaceVisit, WorkspaceTasks, WorkspaceProfile } from "./pages/workspace/WorkspacePages";
+import { RequireAuth, RequireRole, RequireAdminAccess, RequirePermission } from "./components/auth/guards";
+import { AuthRedirectGate } from "./components/auth/AuthRedirectGate";
+import { useAuth } from "./providers/AuthProvider";
 import { ROLES } from "./config/roles";
 import { PERMISSIONS } from "./config/permissions";
 import ToolsPage from "./pages/Tools";
@@ -44,54 +43,49 @@ import { UserLifecycleGuard } from "./components/auth/UserLifecycleGuard";
 import GlobalWorkspacePage from "./pages/GlobalWorkspacePage";
 
 import OwnerLayout from "./layouts/owner/OwnerLayout";
-import { AppLayout } from "./layouts/AppLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { WorkspaceLayout } from "./domains/workspace/WorkspaceLayout";
 
 function AppContent() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribeAuth();
-    };
-  }, []);
+  const { loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="relative">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none">
+        <div className="relative flex justify-center items-center">
+          {/* Outer glowing pulsing ring */}
+          <div className="absolute w-16 h-16 rounded-full border border-primary/10 animate-pulse scale-125"></div>
+          {/* Inner spin card */}
+          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
         </div>
+        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 animate-pulse">
+          Memulihkan Sesi Pengguna...
+        </p>
       </div>
     );
-  }
-
-  // Auth Guard
-  if (!user) {
-    return <Login />;
   }
 
   return (
     <>
       <UserLifecycleGuard>
         <Routes>
-          {/* Public / Lifecycle Routes */}
-          <Route element={<PublicLayout />}>
+          {/* Public / Landing & Auth Routes with Redirect Gate */}
+          <Route path="/" element={<AuthRedirectGate><Login /></AuthRedirectGate>} />
+          <Route path="/login" element={<AuthRedirectGate><Login /></AuthRedirectGate>} />
+          <Route path="/signin" element={<AuthRedirectGate><Login /></AuthRedirectGate>} />
+          <Route path="/auth" element={<AuthRedirectGate><Login /></AuthRedirectGate>} />
+
+          {/* Public / Lifecycle Routes for logged-in but unapproved users */}
+          <Route element={<RequireAuth><PublicLayout /></RequireAuth>}>
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/pending" element={<PendingApproval />} />
             <Route path="/blocked" element={<Blocked />} />
           </Route>
 
-          {/* Workspace / Operational Routes */}
-          <Route element={<WorkspaceLayout />}>
-            <Route path="/" element={<WorkspaceResolver />} />
+          {/* Workspace / Operational Routes (Guarded) */}
+          <Route element={<RequireAuth><WorkspaceLayout /></RequireAuth>}>
+            {/* Dynamic Root of Workspace triggers Resolver to locate default tab or path */}
+            <Route path="/workspace" element={<WorkspaceResolver />} />
             
             {/* STAFF / WORKSPACE ROUTES */}
             <Route path="/workspace/home" element={<ModuleGuard moduleId="home"><HomePage /></ModuleGuard>} />
@@ -105,7 +99,6 @@ function AppContent() {
             <Route path="/workspace/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
             
             {/* STAFF WORKSPACE V2 */}
-            <Route path="/workspace" element={<WorkspaceDashboard />} />
             <Route path="/workspace/explore" element={<ModuleGuard moduleId="explore"><WorkspaceExplore /></ModuleGuard>} />
             <Route path="/workspace/clients" element={<WorkspaceClients />} />
             <Route path="/workspace/visit" element={<WorkspaceVisit />} />
@@ -115,13 +108,15 @@ function AppContent() {
             <Route path="/global" element={<GlobalWorkspacePage />} />
           </Route>
             
-          {/* Core Nested Admin / Manager Routes */}
+          {/* Core Nested Admin / Manager Routes (Guarded) */}
           <Route 
             path="/admin" 
             element={
-              <RequireAdminAccess>
-                <AdminLayoutPage />
-              </RequireAdminAccess>
+              <RequireAuth>
+                <RequireAdminAccess>
+                  <AdminLayoutPage />
+                </RequireAdminAccess>
+              </RequireAuth>
             }
           >
             <Route index element={<RequireAdminAccess><AdminHubPage /></RequireAdminAccess>} />
@@ -142,13 +137,15 @@ function AppContent() {
             />
           </Route>
 
-          {/* OWNER ONLY ROUTES */}
+          {/* OWNER ONLY ROUTES (Guarded) */}
           <Route 
             path="/owner" 
             element={
-              <RequireRole roles={[ROLES.OWNER]}>
-                <OwnerLayout />
-              </RequireRole>
+              <RequireAuth>
+                <RequireRole roles={[ROLES.OWNER]}>
+                  <OwnerLayout />
+                </RequireRole>
+              </RequireAuth>
             }
           >
             <Route index element={<RequireRole roles={[ROLES.OWNER]}><AdminHubPage /></RequireRole>} />

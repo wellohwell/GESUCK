@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
 import { UnauthorizedState, PendingApprovalState, SuspendedState, RejectedState } from '../system/AccessStates';
 import { Role } from '../../config/roles';
@@ -8,7 +9,9 @@ import { hasRole, hasPermission, canAccessAdmin } from '../../lib/permissions';
 export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
     if (loading) return null; 
-    if (!isAuthenticated) return <div>Please login.</div>; 
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
     return <>{children}</>;
 };
 

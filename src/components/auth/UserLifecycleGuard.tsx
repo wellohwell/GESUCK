@@ -4,13 +4,14 @@ import { useAuth } from '../../providers/AuthProvider';
 import { resolveUserAccessState } from '../../features/users/utils/lifecycleResolver';
 
 export const UserLifecycleGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { profile, loading } = useAuth();
+    const { profile, loading, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const state = resolveUserAccessState(profile);
 
     useEffect(() => {
         if (loading) return;
+        if (!isAuthenticated) return;
 
         const isLifecyclePage = ['/onboarding', '/pending', '/blocked', '/login'].includes(location.pathname);
 
@@ -23,9 +24,13 @@ export const UserLifecycleGuard: React.FC<{ children: React.ReactNode }> = ({ ch
         } else if (state === 'blocked') {
             if (location.pathname !== '/blocked') navigate('/blocked');
         }
-    }, [state, location, navigate, loading]);
+    }, [state, location, navigate, loading, isAuthenticated]);
 
     if (loading) return null;
+
+    if (!isAuthenticated) {
+        return <>{children}</>;
+    }
 
     // Operational pages requirement: 'pending' cannot access operational pages
     if (state !== 'approved' && !['/onboarding', '/pending', '/blocked'].includes(location.pathname)) {
