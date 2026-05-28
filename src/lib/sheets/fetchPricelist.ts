@@ -17,22 +17,73 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
     throw new Error("Konfigurasi spreadsheetId tidak ditemukan. Tidak dapat mengambil data.");
   }
   const sheetId = extractSpreadsheetId(customSpreadsheetId);
-  
   const sheetName = customSheetName || "List Harga";
-  // Gunakan proxy API backend untuk menghindari CORS
-  const sheetUrl = `/api/pricelist?sheetId=${sheetId}&sheetName=${encodeURIComponent(sheetName)}`;
+  
+  let text = '';
+  let fetchedSuccessful = false;
+  let fetchErrorMsg = '';
+
+  // 1. Coba lewat proxy API backend terlebih dahulu
+  const proxyUrl = `/api/pricelist?sheetId=${sheetId}&sheetName=${encodeURIComponent(sheetName)}`;
+  try {
+    console.log("Mencoba mengambil pricelist melalui proxy:", proxyUrl);
+    const response = await fetch(proxyUrl);
+    if (response.ok) {
+      const resText = await response.text();
+      const trimmed = resText.trim();
+      const isHtml = trimmed.startsWith('<!') || 
+                     trimmed.toLowerCase().includes('<html') || 
+                     trimmed.toLowerCase().includes('<body') || 
+                     trimmed.toLowerCase().includes('<div');
+      
+      if (!isHtml) {
+        text = resText;
+        fetchedSuccessful = true;
+      } else {
+        console.warn("Proxy mengembalikan dokumen HTML (kemungkinan static routing fallback). Mencoba Direct Google Sheets URL...");
+      }
+    } else {
+      console.warn(`Proxy mengembalikan HTTP status ${response.status}. Mencoba Direct Google Sheets URL...`);
+    }
+  } catch (err: any) {
+    console.warn("Gagal fetching dari proxy:", err);
+  }
+
+  // 2. Jika proxy gagal atau mengembalikan HTML (misal karena static hosting), coba fetch langsung dari Google Sheets
+  if (!fetchedSuccessful) {
+    const directUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    try {
+      console.log("Mencoba mengambil pricelist secara langsung:", directUrl);
+      const response = await fetch(directUrl);
+      if (!response.ok) {
+        throw new Error(`Direct fetch HTTP error! status: ${response.status}`);
+      }
+      const resText = await response.text();
+      const trimmed = resText.trim();
+      const isHtml = trimmed.startsWith('<!') || 
+                     trimmed.toLowerCase().includes('<html') || 
+                     trimmed.toLowerCase().includes('<body') || 
+                     trimmed.toLowerCase().includes('<div');
+      
+      if (isHtml) {
+        throw new Error(`Google Sheets mengembalikan halaman web (HTML). Pastikan spreadsheet diset ke "Siapa saja yang memiliki link dapat melihat" (Public/Pembaca) dan Nama Sheet "${sheetName}" sudah tertera dengan benar di Spreadsheet.`);
+      }
+      text = resText;
+      fetchedSuccessful = true;
+    } catch (err: any) {
+      console.error("Gagal fetching secara langsung dari Google Sheets:", err);
+      fetchErrorMsg = err.message || "Gagal mengambil data.";
+    }
+  }
+
+  if (!fetchedSuccessful) {
+    throw new Error(
+      fetchErrorMsg || 
+      `Google Sheets mengembalikan halaman web (HTML) atau tidak dapat diakses. Pastikan spreadsheet diset ke "Siapa saja yang memiliki link dapat melihat" (Public/Pembaca) dan Nama Sheet "${sheetName}" sudah benar.`
+    );
+  }
 
   try {
-    const response = await fetch(sheetUrl);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const text = await response.text();
-    
-    // Check if the response matches HTML documents
-    const trimmed = text.trim();
-    if (trimmed.startsWith('<!') || trimmed.includes('<html') || trimmed.includes('<HTML') || trimmed.includes('<body') || trimmed.includes('<div')) {
-      throw new Error(`Google Sheets mengembalikan halaman web (HTML). Pastikan spreadsheet diset ke "Siapa saja yang memiliki link dapat melihat" (Public/Pembaca) dan Nama Sheet "${sheetName}" sudah tertera dengan benar di Spreadsheet.`);
-    }
-
     let jsonString = '';
     let jsonObject: any = null;
 
