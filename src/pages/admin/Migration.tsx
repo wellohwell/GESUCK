@@ -446,7 +446,7 @@ export default function AdminMigrationPage() {
     <div className="max-w-4xl mx-auto py-6 px-4 space-y-8 pb-16">
       
       {/* Upper Navigation Row */}
-      <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between pb-4 border-b border-border/50">
         <button
           onClick={() => navigate("/admin")}
           className="flex items-center gap-2 text-xs font-black text-zinc-500 hover:text-primary transition-colors uppercase tracking-widest"
@@ -473,7 +473,7 @@ export default function AdminMigrationPage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* Left Side: Setup Panel */}
-        <div className="md:col-span-7 bg-zinc-50/70 dark:bg-zinc-900/35 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 space-y-6">
+        <div className="md:col-span-7 bg-zinc-50/70 bg-card/35 border border-border/50/80 rounded-[1.5rem] p-5 space-y-6">
           <div className="flex items-center gap-3">
             <Archive className="w-5 h-5 text-purple-500" />
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white leading-none">
@@ -494,10 +494,10 @@ export default function AdminMigrationPage() {
                   type="button"
                   onClick={() => setSourceCollection("markets")}
                   className={cn(
-                    "py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all uppercase tracking-tight text-center",
+                    "py-2.5 px-3 text-xs font-semibold rounded-[1.25rem] border transition-all uppercase tracking-tight text-center",
                     sourceCollection === "markets" 
                       ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300 font-bold"
-                      : "bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400"
+                      : "bg-card dark:bg-black border-border/50 text-zinc-600 dark:text-zinc-400"
                   )}
                 >
                   markets (Active)
@@ -506,10 +506,10 @@ export default function AdminMigrationPage() {
                   type="button"
                   onClick={() => setSourceCollection("master_markets")}
                   className={cn(
-                    "py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all uppercase tracking-tight text-center",
+                    "py-2.5 px-3 text-xs font-semibold rounded-[1.25rem] border transition-all uppercase tracking-tight text-center",
                     sourceCollection === "master_markets" 
                       ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300 font-bold"
-                      : "bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400"
+                      : "bg-card dark:bg-black border-border/50 text-zinc-600 dark:text-zinc-400"
                   )}
                 >
                   master_markets
@@ -524,14 +524,14 @@ export default function AdminMigrationPage() {
               </label>
               <div className="relative">
                 {isLoadingBranches ? (
-                  <div className="w-full text-xs text-zinc-400 font-semibold p-2.5 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                  <div className="w-full text-xs text-zinc-400 font-semibold p-2.5 bg-card dark:bg-black border border-border/50 rounded-[1.25rem]">
                     Loading target branches...
                   </div>
                 ) : (
                   <select
                     value={targetBranchId}
                     onChange={(e) => setTargetBranchId(e.target.value)}
-                    className="w-full py-2.5 px-3 text-xs font-semibold bg-white dark:bg-black text-foreground border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:border-purple-500 transition-colors uppercase"
+                    className="w-full py-2.5 px-3 text-xs font-semibold bg-card dark:bg-black text-foreground border border-border/50 rounded-[1.25rem] focus:outline-none focus:border-purple-500 transition-colors uppercase"
                   >
                     {branches.length === 0 ? (
                       <option value="GJY">GJY - Jayakusuma Yogyakarta (Default)</option>
@@ -548,7 +548,7 @@ export default function AdminMigrationPage() {
             </div>
 
             {/* Metadata information card */}
-            <div className="p-3 bg-zinc-100 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-zinc-800/40 rounded-xl space-y-2 text-zinc-600 dark:text-zinc-400">
+            <div className="p-3 bg-zinc-100 dark:bg-zinc-800/40 border border-border/50/50 border-border/50/40 rounded-[1.25rem] space-y-2 text-zinc-600 dark:text-zinc-400">
               <span className="text-[10px] font-mono font-bold uppercase block text-purple-500 tracking-wider">
                 AUTO-INJECT METADATA ARSITEKTUR
               </span>
@@ -556,13 +556,13 @@ export default function AdminMigrationPage() {
                 Tiap berkas dokumen yang berpindah akan disematkan metadata pelacak:
               </p>
               <div className="grid grid-cols-3 gap-2 text-[9px] font-mono text-center">
-                <div className="bg-white dark:bg-black border p-1 rounded">
+                <div className="bg-card dark:bg-black border p-1 rounded">
                   branchId: <span className="font-bold text-primary">"{targetBranchId}"</span>
                 </div>
-                <div className="bg-white dark:bg-black border p-1 rounded">
+                <div className="bg-card dark:bg-black border p-1 rounded">
                   migrated: <span className="font-bold text-primary">true</span>
                 </div>
-                <div className="bg-white dark:bg-black border p-1 rounded font-sans leading-none flex flex-col justify-center">
+                <div className="bg-card dark:bg-black border p-1 rounded font-sans leading-none flex flex-col justify-center">
                   <span className="font-mono text-[9px] mt-0.5">migratedAt: ISO_TIME</span>
                 </div>
               </div>
@@ -574,7 +574,7 @@ export default function AdminMigrationPage() {
                 type="button"
                 onClick={handleExportBackup}
                 disabled={isMigrating}
-                className="flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider bg-zinc-900 group dark:bg-white text-white dark:text-zinc-900 hover:opacity-90 active:scale-[0.98] transition-all rounded-xl cursor-copy shadow-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider bg-zinc-900 group dark:bg-card text-white dark:text-zinc-900 hover:opacity-90 active:scale-[0.98] transition-all rounded-[1.25rem] cursor-copy shadow-sm disabled:opacity-50"
               >
                 <Download className="w-4 h-4 text-emerald-500" />
                 Backup JSON
@@ -585,7 +585,7 @@ export default function AdminMigrationPage() {
                 onClick={handleRunMigration}
                 disabled={isMigrating}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider text-white bg-purple-600 hover:bg-purple-500 active:scale-[0.98] transition-all rounded-xl disabled:opacity-50 shadow-sm",
+                  "flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider text-white bg-purple-600 hover:bg-purple-500 active:scale-[0.98] transition-all rounded-[1.25rem] disabled:opacity-50 shadow-sm",
                   isMigrating ? "animate-pulse" : ""
                 )}
               >
@@ -595,7 +595,7 @@ export default function AdminMigrationPage() {
             </div>
 
             {/* Divider */}
-            <hr className="border-t border-zinc-200 dark:border-zinc-800/80 my-4" />
+            <hr className="border-t border-border/50/80 my-4" />
 
             {/* Import Block Panel */}
             <div className="space-y-3.5">
@@ -618,7 +618,7 @@ export default function AdminMigrationPage() {
                     "py-2 px-3 text-[10px] font-bold rounded-lg border transition-all uppercase tracking-tight text-center",
                     importTarget === "branch" 
                       ? "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300"
-                      : "bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400"
+                      : "bg-card dark:bg-black border-border/50 text-zinc-600 dark:text-zinc-400"
                   )}
                 >
                   Ke Cabang ({targetBranchId})
@@ -630,7 +630,7 @@ export default function AdminMigrationPage() {
                     "py-2 px-3 text-[10px] font-bold rounded-lg border transition-all uppercase tracking-tight text-center",
                     importTarget === "legacy" 
                       ? "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300"
-                      : "bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400"
+                      : "bg-card dark:bg-black border-border/50 text-zinc-600 dark:text-zinc-400"
                   )}
                 >
                   Ke Legacy ({sourceCollection})
@@ -638,7 +638,7 @@ export default function AdminMigrationPage() {
               </div>
 
               {/* Upload Input & Dropzone Box */}
-              <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-center hover:bg-zinc-50 dark:hover:bg-zinc-950/20 transition-colors relative cursor-pointer">
+              <div className="border border-dashed border-border/50 rounded-[1.25rem] p-4 text-center hover:bg-zinc-50 dark:hover:bg-zinc-950/20 transition-colors relative cursor-pointer">
                 <input
                   type="file"
                   accept=".json"
@@ -665,7 +665,7 @@ export default function AdminMigrationPage() {
                   onClick={handleExecuteImport}
                   disabled={isImporting}
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-500 active:scale-[0.98] transition-all rounded-xl disabled:opacity-50 shadow-sm",
+                    "w-full flex items-center justify-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-500 active:scale-[0.98] transition-all rounded-[1.25rem] disabled:opacity-50 shadow-sm",
                     isImporting ? "animate-pulse" : ""
                   )}
                 >
@@ -679,7 +679,7 @@ export default function AdminMigrationPage() {
         </div>
 
         {/* Right Side: Operational Console Logging */}
-        <div className="md:col-span-5 bg-black border border-zinc-800 rounded-2xl flex flex-col overflow-hidden min-h-[320px] shadow-lg">
+        <div className="md:col-span-5 bg-black border border-zinc-800 rounded-[1.5rem] flex flex-col overflow-hidden min-h-[320px] shadow-lg">
           
           {/* Output title bar */}
           <div className="px-4 py-3 border-b border-zinc-900 bg-zinc-950 flex items-center justify-between">
@@ -718,7 +718,7 @@ export default function AdminMigrationPage() {
       </div>
 
       {/* Role migration action button embedded */}
-      <div className="bg-zinc-50/70 dark:bg-zinc-900/35 border border-red-500/30 rounded-2xl p-5 space-y-4">
+      <div className="bg-zinc-50/70 bg-card/35 border border-red-500/30 rounded-[1.5rem] p-5 space-y-4">
         <div className="flex items-center gap-3">
           <ShieldAlert className="w-5 h-5 text-red-500" />
           <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white leading-none">
@@ -780,7 +780,7 @@ export default function AdminMigrationPage() {
               }
             });
           }}
-          className="w-full md:w-auto px-4 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm"
+          className="w-full md:w-auto px-4 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-[1.25rem] transition-all shadow-sm"
         >
           Normalisasi Database Ke MANAGER
         </button>
@@ -793,7 +793,7 @@ export default function AdminMigrationPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-3 shadow-md"
+            className="bg-card border border-border/50 rounded-[1.5rem] p-5 space-y-3 shadow-md"
           >
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -842,7 +842,7 @@ export default function AdminMigrationPage() {
         </div>
 
         {historyLogs.length === 0 ? (
-          <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center space-y-2 bg-zinc-50/20">
+          <div className="border border-dashed border-border/50 rounded-[1.5rem] p-8 text-center space-y-2 bg-zinc-50/20">
             <ShieldAlert className="w-8 h-8 text-zinc-400 mx-auto opacity-70" />
             <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">
               Tidak ada riwayat migrasi terdeteksi
@@ -856,7 +856,7 @@ export default function AdminMigrationPage() {
             {historyLogs.map((log) => (
               <div 
                 key={log.id} 
-                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="bg-card border border-border/50 rounded-[1.25rem] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 id={`migration-log-${log.id}`}
               >
                 {/* Details info */}
@@ -929,7 +929,7 @@ export default function AdminMigrationPage() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden p-6 space-y-4 text-center sm:text-left"
+              className="relative w-full max-w-md bg-card border border-border/50 rounded-[1.5rem] shadow-xl overflow-hidden p-6 space-y-4 text-center sm:text-left"
             >
               <div className="flex items-center justify-center sm:justify-start gap-3">
                 <ShieldAlert className={cn(
@@ -949,7 +949,7 @@ export default function AdminMigrationPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmDialog(null)}
-                  className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-xl transition-all"
+                  className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-[1.25rem] transition-all"
                 >
                   {confirmDialog.cancelText || "Batal"}
                 </button>
@@ -959,7 +959,7 @@ export default function AdminMigrationPage() {
                     confirmDialog.onConfirm();
                   }}
                   className={cn(
-                    "px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white rounded-xl transition-all shadow-sm active:scale-95",
+                    "px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white rounded-[1.25rem] transition-all shadow-sm active:scale-95",
                     confirmDialog.isDanger 
                       ? "bg-red-600 hover:bg-red-500" 
                       : "bg-blue-600 hover:bg-blue-500"

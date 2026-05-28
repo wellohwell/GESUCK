@@ -55,11 +55,11 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 pl-2 rounded-2xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 sm:hover:shadow-[0_0_15px_-3px_rgba(183,232,0,0.3)] dark:sm:hover:shadow-[0_0_20px_-5px_rgba(183,232,0,0.2)]"
+        className="flex items-center gap-2 p-1 pl-2 rounded-[1.5rem] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group border border-transparent hover:border-border/50 dark:hover:border-zinc-700 sm:hover:shadow-[0_0_15px_-3px_rgba(183,232,0,0.3)] dark:sm:hover:shadow-[0_0_20px_-5px_rgba(183,232,0,0.2)]"
       >
-        <div className="w-8 h-8 rounded-xl bg-brand-primary flex items-center justify-center text-black font-black text-xs shadow-lg shadow-brand-primary/20 group-hover:ring-2 group-hover:ring-brand-primary/50 transition-all">
+        <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-black font-black text-xs shadow-lg shadow-brand-primary/20 group-hover:ring-2 group-hover:ring-brand-primary/50 transition-all overflow-hidden">
           {profile?.photoURL ? (
-            <img src={profile.photoURL} alt="Avatar" className="w-full h-full rounded-xl object-cover" />
+            <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             initials
           )}
@@ -68,9 +68,9 @@ export function UserMenu() {
 
       {isOpen && (
           <div
-            className="absolute right-0 mt-3 w-56 bg-white dark:bg-zinc-900 shadow-2xl p-2 z-[100] rounded-sm"
+            className="absolute right-0 mt-3 w-56 bg-card shadow-2xl p-2 z-[100] rounded-[2rem] border border-border/40 backdrop-blur-xl"
           >
-            <div className="px-4 py-3 mb-2 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="px-5 py-4 mb-2 border-b border-zinc-100 border-border/50">
                <p className="text-xs font-black text-brand-primary uppercase tracking-widest">
                  {profile?.userType === 'global' ? `Global ${profile?.globalRole || 'Owner'}` : (profile?.role || 'Member')}
                </p>
@@ -78,11 +78,11 @@ export function UserMenu() {
                <p className="text-[10px] text-muted-foreground truncate italic">{profile?.email}</p>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 p-1">
               <Link 
-                to="/profile" 
+                to="/workspace/profile" 
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
               >
                 Profile
               </Link>
@@ -92,7 +92,7 @@ export function UserMenu() {
                   <Link 
                     to="/admin" 
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                    className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                   >
                     Dashboard Admin
                   </Link>
@@ -100,7 +100,7 @@ export function UserMenu() {
                   <Link 
                     to="/admin/branches" 
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                    className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                   >
                     Manajemen Cabang
                   </Link>
@@ -108,7 +108,7 @@ export function UserMenu() {
                   <Link 
                     to="/admin/modules" 
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                    className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                   >
                     Tata Kelola Modul
                   </Link>
@@ -116,7 +116,7 @@ export function UserMenu() {
                   <Link 
                     to="/admin/navigation" 
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                    className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                   >
                     Tata Kelola Navigasi
                   </Link>
@@ -124,7 +124,7 @@ export function UserMenu() {
                   <Link 
                     to="/admin/docs" 
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                    className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                   >
                     Arsitektur & Standar
                   </Link>
@@ -135,7 +135,7 @@ export function UserMenu() {
                 <Link 
                   to="/admin/users" 
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
+                  className="flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-black transition-all group animate-in slide-in-from-left duration-200"
                 >
                   Manajemen User & Approval
                 </Link>
@@ -143,9 +143,9 @@ export function UserMenu() {
               
               <button 
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all group"
+                className="w-full flex items-center gap-3 px-5 py-3 rounded-full text-sm font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all group"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center group-hover:bg-white/10">
+                <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center group-hover:bg-card/10">
                   <LogOut className="w-4 h-4" />
                 </div>
                 Sign Out

@@ -48,12 +48,12 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
     >
-      <div className="bg-transparent md:bg-white md:dark:bg-white/[0.02] md:rounded-2xl md:overflow-hidden md:border md:border-zinc-100 md:dark:border-white/10 md:shadow-xl transition-colors">
+      <div className="bg-transparent md:bg-card md:dark:bg-card/[0.02] md:rounded-[1.5rem] md:overflow-hidden md:border md:border-zinc-100 md:dark:border-white/10 md:shadow-xl transition-colors">
         {/* Desktop View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-white/[0.05] text-sm  tracking-tight text-zinc-400 dark:text-white/60">
+              <tr className="bg-zinc-50 dark:bg-card/[0.05] text-sm  tracking-tight text-zinc-400 dark:text-white/60">
                 <th className="px-6 py-4 font-medium text-sm">User Detail</th>
                 <th className="px-6 py-4 font-medium text-sm">Aktivitas</th>
                 <th className="px-6 py-4 font-medium text-sm">Akses & Status</th>
@@ -72,15 +72,15 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                   <tr
                     key={u.id}
                     onClick={() => onSelectUser(u)}
-                    className="hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+                    className="hover:bg-zinc-50 dark:hover:bg-card/[0.02] transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-white/10 p-0.5">
+                        <div className="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-card/10 p-0.5">
                           {u.photoURL ? (
                             <img src={u.photoURL} alt="" className="w-full h-full rounded-full ring-1 ring-white/10" crossOrigin="anonymous" referrerPolicy="no-referrer" />
                           ) : (
-                            <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-sm font-medium text-zinc-400">
+                            <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-card/5 flex items-center justify-center text-sm font-medium text-zinc-400">
                               {u.displayName?.charAt(0)}
                             </div>
                           )}
@@ -128,7 +128,7 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                           <select
                             value={u.role || "SPV"}
                             onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
-                            className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                            className="w-full bg-zinc-100 dark:bg-card/5 border border-border/50 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
                           >
                             <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
                             <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
@@ -194,13 +194,13 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
               <div 
                 key={u.id} 
                 onClick={() => onSelectUser(u)}
-                className="py-2 flex gap-3 items-center hover:bg-zinc-50 dark:hover:bg-white/[0.01] active:bg-zinc-100 dark:active:bg-white/[0.02] transition-colors px-2 cursor-pointer"
+                className="py-2 flex gap-3 items-center hover:bg-zinc-50 dark:hover:bg-card/[0.01] active:bg-zinc-100 dark:active:bg-card/[0.02] transition-colors px-2 cursor-pointer"
               >
-                <div className="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-white/10 p-0.5 border border-zinc-200 dark:border-white/20">
+                <div className="w-9 h-9 flex-shrink-0 rounded-full bg-zinc-100 dark:bg-card/10 p-0.5 border border-border/50 dark:border-white/20">
                   {u.photoURL ? (
                     <img src={u.photoURL} alt="" className="w-full h-full rounded-full ring-1 ring-white/10" crossOrigin="anonymous" referrerPolicy="no-referrer" />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-sm font-medium text-zinc-400">
+                    <div className="w-full h-full rounded-full bg-zinc-200 dark:bg-card/5 flex items-center justify-center text-sm font-medium text-zinc-400">
                       {u.displayName?.charAt(0)}
                     </div>
                   )}
@@ -245,7 +245,7 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                         <select
                           value={u.role || "SPV"}
                           onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "approved")}
-                          className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                          className="w-full bg-zinc-50 dark:bg-card/5 border border-zinc-100 dark:border-white/10 px-1 py-1 rounded-md text-xs font-medium outline-none text-zinc-900 dark:text-white appearance-none cursor-pointer"
                         >
                           <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
                           <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
@@ -310,11 +310,11 @@ export function UserDetailContent({ user, assignments }: any) {
       <div className="flex flex-col">
         <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-white/10 p-1 border border-zinc-200 dark:border-white/10">
+          <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-100 dark:bg-card/10 p-1 border border-border/50 dark:border-white/10">
             {user.photoURL ? (
-              <img src={user.photoURL} alt="" className="w-full h-full rounded-xl object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+              <img src={user.photoURL} alt="" className="w-full h-full rounded-[1.25rem] object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
             ) : (
-              <div className="w-full h-full rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center text-2xl font-bold text-zinc-400">
+              <div className="w-full h-full rounded-[1.25rem] bg-zinc-200 dark:bg-card/5 flex items-center justify-center text-2xl font-bold text-zinc-400">
                 {user.displayName?.charAt(0)}
               </div>
             )}
@@ -338,7 +338,7 @@ export function UserDetailContent({ user, assignments }: any) {
 
       <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
+              <div className="p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-card/[0.02] border border-zinc-100 dark:border-white/5">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Terakhir Login</p>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary" />
@@ -346,12 +346,12 @@ export function UserDetailContent({ user, assignments }: any) {
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/5">
+              <div className="p-4 rounded-[1.5rem] bg-zinc-50 dark:bg-card/[0.02] border border-zinc-100 dark:border-white/5">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Penugasan Hari Ini</p>
                 {assignments.length > 0 ? (
                   <div className="space-y-2">
                     {assignments.map((plan: any) => (
-                      <div key={plan.id} className="flex items-center justify-between p-2 rounded-xl bg-background border border-border">
+                      <div key={plan.id} className="flex items-center justify-between p-2 rounded-[1.25rem] bg-background border border-border">
                         <div className="flex items-center gap-3">
                           <MapPin className="w-4 h-4 text-primary" />
                           <div>

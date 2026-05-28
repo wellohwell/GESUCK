@@ -7,7 +7,7 @@ export const BottomNav: React.FC = () => {
   const navItems = useNavigation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex justify-around items-center px-2 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border/50 flex justify-around items-center px-2 pb-safe">
       {navItems.filter(item => !item.desktopOnly).map((item) => {
         const Icon = getIconComponent(item.icon);
         return (

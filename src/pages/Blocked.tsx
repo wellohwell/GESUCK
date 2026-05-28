@@ -32,7 +32,7 @@ export default function Blocked() {
           auth.signOut();
           navigate("/");
         }}
-        className="w-full max-w-xs py-4 bg-white dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all shadow-sm"
+        className="w-full max-w-xs py-4 bg-card dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-[1.5rem] flex items-center justify-center gap-2 text-sm font-bold text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all shadow-sm"
       >
         <LogOut className="w-4 h-4" />
         Kembali ke Login

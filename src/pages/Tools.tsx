@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -18,18 +18,16 @@ import {
   AlertTriangle, 
   Wifi, 
   WifiOff, 
-  RotateCw, 
-  Copy, 
+  RefreshCw, 
+  Share2, 
   Cpu, 
   Database,
   Trash2,
   HardDrive,
-  Users,
-  Eye,
-  RefreshCw,
-  Share2
+  Users
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { ActionCard, DetailCard, SummaryCard } from '../components/ui/FintechCard';
 
 interface ToolItem {
   id: string;
@@ -90,7 +88,7 @@ export default function ToolsPage() {
       name: 'Rencana Pasar', 
       description: 'Atur dan tinjau target pasar operasional harian cabang.',
       icon: Clock, 
-      path: '/Market-Plans' 
+      path: '/workspace/market-plans' 
     },
     { 
       id: 'report', 
@@ -302,30 +300,30 @@ Copied directly from Operational Stabilization Console.`;
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-50 pb-32 pt-4">
+    <div className="min-h-screen bg-background text-foreground pb-32 pt-4">
       <div className="max-w-4xl mx-auto px-4 space-y-6">
         
         {/* Header Title Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-850 pb-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50 pb-5">
           <div>
-            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
-              <Activity className="w-5 h-5 text-brand-primary" />
+            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-text-primary flex items-center gap-2">
+              <Activity className="w-5 h-5 text-primary" />
               Operational Cockpit
             </h1>
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mt-1">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-text-muted mt-1">
               Fasilitas Pendukung & Stabilisasi Lapangan
             </p>
           </div>
 
           {/* Quick tab switch to minimize complexity */}
-          <div className="flex bg-zinc-200/60 dark:bg-zinc-900 p-1 rounded-xl shrink-0">
+          <div className="flex bg-card p-1 rounded-2xl shrink-0 border border-border/30">
             <button
               onClick={() => setActiveTab('tools')}
               className={cn(
-                "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
                 activeTab === 'tools'
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-350"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               )}
             >
               Komponen Alat
@@ -333,16 +331,16 @@ Copied directly from Operational Stabilization Console.`;
             <button
               onClick={() => setActiveTab('diagnostics')}
               className={cn(
-                "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
+                "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1.5",
                 activeTab === 'diagnostics'
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-350"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               )}
             >
               Uji & Diagnostik
               <span className={cn(
                 "w-2 h-2 rounded-full",
-                isOnline ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                isOnline ? "bg-emerald-500 animate-pulse" : "bg-destructive"
               )} />
             </button>
           </div>
@@ -360,23 +358,14 @@ Copied directly from Operational Stabilization Console.`;
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               {tools.map((tool) => (
-                <button
+                <ActionCard
                   key={tool.id}
+                  title={tool.name}
+                  description={tool.description}
+                  icon={tool.icon}
                   onClick={() => navigate(tool.path)}
-                  className="flex items-start text-left p-5 bg-white dark:bg-zinc-900 border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700 rounded-3xl transition-all hover:shadow-md group relative active:scale-[0.99]"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-850 flex items-center justify-center text-brand-primary shrink-0 mr-4 group-hover:scale-105 transition-transform">
-                    <tool.icon className="w-5 h-5 text-brand-primary" />
-                  </div>
-                  <div className="space-y-1 pr-6">
-                    <span className="text-sm font-black text-zinc-900 dark:text-white group-hover:text-brand-primary transition-colors block">
-                      {tool.name}
-                    </span>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block leading-relaxed">
-                      {tool.description}
-                    </span>
-                  </div>
-                </button>
+                  color="primary"
+                />
               ))}
             </motion.div>
           ) : (
@@ -392,144 +381,122 @@ Copied directly from Operational Stabilization Console.`;
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* Latency Box */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-3xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Konektivitas Jaringan</span>
-                    {isOnline ? (
-                      <Wifi className="w-4 h-4 text-emerald-500" />
-                    ) : (
-                      <WifiOff className="w-4 h-4 text-red-500" />
-                    )}
-                  </div>
-                  <div className="py-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black tracking-tight">
+                <DetailCard title="Konektivitas Jaringan" icon={isOnline ? Wifi : WifiOff}>
+                  <div className="flex flex-col h-full justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-2xl font-black tracking-tight text-text-primary">
                         {isOnline ? (pingMs !== null ? `${pingMs} ms` : 'Online') : 'Terputus'}
                       </span>
+                      <p className="text-[10px] text-text-muted uppercase font-bold">
+                        {pingMs !== null 
+                          ? (pingMs < 100 ? '⚡ Cepat & Stabil' : pingMs < 300 ? '⚡ Lambat' : '⚠️ Jaringan Buruk') 
+                          : 'Siap diuji'}
+                      </p>
                     </div>
-                    <p className="text-[10px] text-zinc-500 mt-1 uppercase font-semibold">
-                      {pingMs !== null 
-                        ? (pingMs < 100 ? '⚡ Sangat Cepat & Stabil' : pingMs < 300 ? '⚡ Keuntungan Normal' : '⚠️ Jaringan Lambat / Lag') 
-                        : 'Klik tombol ukur di bawah'}
-                    </p>
+                    <button
+                      onClick={runPingTest}
+                      disabled={isTestingPing || !isOnline}
+                      className="w-full py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <RefreshCw className={cn("w-3 h-3", isTestingPing && "animate-spin")} />
+                      {isTestingPing ? 'Menguji...' : 'Uji Ping'}
+                    </button>
                   </div>
-                  <button
-                    onClick={runPingTest}
-                    disabled={isTestingPing || !isOnline}
-                    className="w-full py-1.5 bg-zinc-100 hover:bg-zinc-250 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 disabled:opacity-55"
-                  >
-                    <RefreshCw className={cn("w-3 h-3", isTestingPing && "animate-spin")} />
-                    {isTestingPing ? 'Menguji...' : 'Uji Ping'}
-                  </button>
-                </div>
+                </DetailCard>
 
                 {/* Performance Box */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-3xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Animasi & Frame Rate</span>
-                    <Cpu className="w-4 h-4 text-purple-500" />
-                  </div>
-                  <div className="py-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black tracking-tight">
+                <DetailCard title="Frame Rate" icon={Cpu}>
+                  <div className="flex flex-col h-full justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-2xl font-black tracking-tight text-text-primary">
                         {fpsVal !== null ? `${fpsVal} FPS` : 'Siap diuji'}
                       </span>
+                      <p className="text-[10px] text-text-muted uppercase font-bold">
+                        {fpsVal !== null 
+                          ? (fpsVal >= 55 ? '🟢 Mulus (60 FPS)' : fpsVal >= 35 ? '🟡 Sedang' : '🔴 Lagging')
+                          : `Hardware Cores: ${navigator.hardwareConcurrency || 'Standard'}`}
+                      </p>
                     </div>
-                    <p className="text-[10px] text-zinc-500 mt-1 uppercase font-semibold">
-                      {fpsVal !== null 
-                        ? (fpsVal >= 55 ? '🟢 Super Lancar (60 FPS)' : fpsVal >= 35 ? '🟡 Normal / Dapat Diterima' : '🔴 Lag (Butuh Bersih Cache)')
-                        : `Device Cores: ${navigator.hardwareConcurrency || 'Standard'}`}
-                    </p>
+                    <button
+                      onClick={runFpsBenchmark}
+                      disabled={isTestingFps}
+                      className="w-full py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Activity className={cn("w-3 h-3", isTestingFps && "animate-pulse")} />
+                      {isTestingFps ? 'Benchmarking...' : 'Test FPS'}
+                    </button>
                   </div>
-                  <button
-                    onClick={runFpsBenchmark}
-                    disabled={isTestingFps}
-                    className="w-full py-1.5 bg-zinc-100 hover:bg-zinc-250 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 disabled:opacity-55"
-                  >
-                    <Activity className={cn("w-3 h-3", isTestingFps && "animate-pulse")} />
-                    {isTestingFps ? 'Menguji FPS...' : 'Benchmark FPS'}
-                  </button>
-                </div>
+                </DetailCard>
 
-                {/* Fast Cache Purge and Whatsapp Log Box */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-3xl flex flex-col justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Sistem & Diagnostik</span>
-                      <HardDrive className="w-4 h-4 text-zinc-400" />
-                    </div>
-                    <span className="text-xs font-black block text-zinc-850 dark:text-zinc-100">Pemulihan Mandiri</span>
-                    <p className="text-[10px] text-zinc-500 leading-normal">
-                      Apakah aplikasi terasa lambat, tidak sinkron, atau halaman membeku? Bersihkan cache lokal sekarang.
+                {/* Fast Cache Purge Box */}
+                <DetailCard title="Pemulihan Mandiri" icon={HardDrive}>
+                 <div className="flex flex-col h-full justify-between gap-4">
+                    <p className="text-[11px] text-text-muted font-medium leading-relaxed">
+                      Bersihkan cache sistem jika aplikasi membeku atau tersendat.
                     </p>
+                    <div className="grid grid-cols-2 gap-2 mt-auto">
+                      <button
+                        onClick={hardResetCache}
+                        className="py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex flex-col items-center justify-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mb-0.5" />
+                        Reset
+                      </button>
+                      <button
+                        onClick={copyDiagnosticPayload}
+                        className="py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex flex-col items-center justify-center gap-1"
+                      >
+                        <Share2 className="w-3.5 h-3.5 mb-0.5" />
+                        Lapor
+                      </button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-4">
-                    <button
-                      onClick={hardResetCache}
-                      className="py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-[9px] font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Reset Cache
-                    </button>
-                    <button
-                      onClick={copyDiagnosticPayload}
-                      className="py-1.5 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary border border-brand-primary/20 rounded-xl text-[9px] font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
-                    >
-                      <Share2 className="w-3 h-3" />
-                      Kirim Lap
-                    </button>
-                  </div>
-                </div>
+                </DetailCard>
               </div>
 
               {/* Data Quality Sweep Auditor */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-850 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-brand-primary animate-pulse" />
-                    <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-white">Auditor Kualitas Data Mandiri</h4>
-                      <p className="text-[10px] text-zinc-500">Memeriksa secara otomatis data yang rusak, nomor ganda, atau kosong.</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-500">
+              <DetailCard 
+                title="Auditor Kualitas Data Mandiri" 
+                icon={Database}
+                action={
+                  <span className="text-[10px] font-mono bg-background px-2 py-1 flex items-center justify-center rounded-lg text-text-muted border border-border">
                     {loadingData ? 'Menscan...' : `Total Data: ${dataQualityAudit.totalChecked}`}
                   </span>
-                </div>
-
+                }
+              >
                 {loadingData ? (
-                  <div className="py-6 text-center space-y-2">
-                    <div className="w-6 h-6 border-2 border-brand-primary/25 border-t-brand-primary rounded-full animate-spin mx-auto" />
-                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Sedang melakukan audit data...</p>
+                  <div className="py-8 text-center space-y-3">
+                    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
+                    <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Sedang memindai data operasional...</p>
                   </div>
                 ) : dataQualityAudit.isHealthy ? (
-                  <div className="py-8 text-center space-y-2">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2 text-emerald-500">
-                      <CheckCircle2 className="w-5 h-5" />
+                  <div className="py-8 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-500">
+                      <CheckCircle2 className="w-6 h-6" />
                     </div>
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">Kualitas Data Sempurna (100% Bersih)</p>
-                    <p className="text-[10px] text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                      Luar biasa! Tidak terdeteksi adanya duplikasi nomor WA/Hp konsumen, data kosong, atau status aneh pada basis data lokal Anda.
+                    <p className="text-sm font-bold text-text-primary uppercase tracking-wide">Kualitas Data Sempurna (100% Bersih)</p>
+                    <p className="text-[11px] text-text-muted max-w-sm mx-auto leading-relaxed">
+                      Luar biasa! Tidak terdeteksi adanya duplikasi nomor WA/Hp konsumen, data kosong, atau status aneh pada basis data.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 no-scrollbar">
+                  <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 no-scrollbar">
 
                     {/* Duplicate WA warning block */}
                     {dataQualityAudit.duplicateClients.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-1 px-1">
-                          <Users className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">Terdeteksi Duplikasi Nomor WA/HP ({dataQualityAudit.duplicateClients.length})</span>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-amber-500">Terdeteksi Duplikasi Nomor WA/HP ({dataQualityAudit.duplicateClients.length})</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {dataQualityAudit.duplicateClients.map((dup, i) => (
-                            <div key={i} className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-2xl flex items-center justify-between gap-3">
+                            <div key={i} className="bg-amber-500/5 border border-amber-500/20 px-4 py-3 rounded-[1.25rem] flex items-center justify-between gap-3">
                               <div className="space-y-1">
-                                <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-400">{dup.phone}</p>
-                                <p className="text-[10px] text-zinc-500 leading-normal">Dimiliki oleh: <span className="font-extrabold dark:text-zinc-200">{dup.names}</span></p>
+                                <p className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">{dup.phone}</p>
+                                <p className="text-[10px] text-text-muted leading-normal">Dimiliki oleh: <span className="font-bold text-text-secondary">{dup.names}</span></p>
                               </div>
-                              <span className="text-[9px] font-extrabold px-2 py-0.5 bg-amber-500/15 text-amber-600 rounded">
+                              <span className="text-[10px] font-bold px-2 py-1 bg-amber-500/15 text-amber-600 rounded-lg">
                                 Ganda {dup.count}x
                               </span>
                             </div>
@@ -540,19 +507,19 @@ Copied directly from Operational Stabilization Console.`;
 
                     {/* Incomplete Client fields warning block */}
                     {dataQualityAudit.incompleteClients.length > 0 && (
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center gap-1 px-1">
-                          <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                          <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Konsumen Minim Identitas atau Alamat Kosong ({dataQualityAudit.incompleteClients.length})</span>
+                      <div className="space-y-3 pt-3 border-t border-border/30">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-destructive">Konsumen Minim Identitas atau Alamat Kosong ({dataQualityAudit.incompleteClients.length})</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {dataQualityAudit.incompleteClients.map((cli, i) => (
-                            <div key={i} className="bg-red-500/5 border border-red-500/15 p-3 rounded-2xl flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-bold">{cli.nama || 'No Name Found'}</p>
-                                <p className="text-[10px] text-zinc-400 mt-1">Alamat atau no telp belum lengkap demi standarisasi lapangan.</p>
+                            <div key={i} className="bg-destructive/5 border border-destructive/15 px-4 py-3 rounded-[1.25rem] flex items-center justify-between gap-3">
+                              <div className="space-y-1">
+                                <p className="text-[11px] font-bold text-text-primary">{cli.nama || 'No Name Found'}</p>
+                                <p className="text-[10px] text-text-muted leading-normal">Alamat atau no telp belum lengkap demi standarisasi lapangan.</p>
                               </div>
-                              <span className="text-[9px] uppercase font-mono bg-red-500/15 text-red-500 px-1.5 py-0.5 rounded leading-none">Incomplete</span>
+                              <span className="text-[10px] font-bold bg-destructive/15 text-destructive px-2 py-1 rounded-lg">Incomplete</span>
                             </div>
                           ))}
                         </div>
@@ -561,19 +528,19 @@ Copied directly from Operational Stabilization Console.`;
 
                     {/* Incomplete proposal orders warning block */}
                     {dataQualityAudit.incompleteOrders.length > 0 && (
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center gap-1 px-1">
-                          <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
-                          <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">Proposal Order Kurang Struktur Pembayaran ({dataQualityAudit.incompleteOrders.length})</span>
+                      <div className="space-y-3 pt-3 border-t border-border/30">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-orange-400" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-orange-400">Proposal Order Kurang Struktur Pembayaran ({dataQualityAudit.incompleteOrders.length})</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {dataQualityAudit.incompleteOrders.map((ord, i) => (
-                            <div key={i} className="bg-orange-500/5 border border-orange-500/15 p-3 rounded-2xl flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-bold">Barang: {ord.barang || 'Belum diisi'}</p>
-                                <p className="text-[10px] text-zinc-400 mt-0.5">Angsuran atau tenor bernilai nihil. Sangat rentan mempersulit kalkulasi.</p>
+                            <div key={i} className="bg-orange-500/5 border border-orange-500/15 px-4 py-3 rounded-[1.25rem] flex items-center justify-between gap-3">
+                              <div className="space-y-1">
+                                <p className="text-[11px] font-bold text-text-primary">Barang: {ord.barang || 'Belum diisi'}</p>
+                                <p className="text-[10px] text-text-muted leading-normal">Angsuran atau tenor bernilai nihil. Sangat rentan mempersulit kalkulasi.</p>
                               </div>
-                              <span className="text-[9px] uppercase font-mono bg-orange-500/15 text-orange-400 px-1.5 py-0.5 rounded leading-none">No Term</span>
+                              <span className="text-[10px] font-bold bg-orange-500/15 text-orange-400 px-2 py-1 rounded-lg">No Term</span>
                             </div>
                           ))}
                         </div>
@@ -582,7 +549,7 @@ Copied directly from Operational Stabilization Console.`;
 
                   </div>
                 )}
-              </div>
+              </DetailCard>
             </motion.div>
           )}
         </AnimatePresence>

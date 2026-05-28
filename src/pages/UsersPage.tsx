@@ -13,10 +13,10 @@ function CustomModal({ isOpen, onClose, title, children }: { isOpen: boolean, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/50">
+      <div className="relative w-full max-w-lg bg-card rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-zinc-100 border-border/50 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/50">
           <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h2>
-          <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+          <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-[1.25rem] hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
             <XCircle className="w-5 h-5" />
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function UsersPage() {
     <div className="w-full bg-transparent pb-24 md:pb-6 font-sans">
       
       {/* HEADER WITH CONTEXT */}
-      <div className="bg-white dark:bg-zinc-900 sticky top-0 z-40">
+      <div className="bg-card sticky top-0 z-40">
         <div className="bg-zinc-900 dark:bg-black text-[10px] font-black tracking-widest text-white uppercase py-1.5 px-4 md:px-6 flex items-center gap-2">
           <MapPin className="w-3 h-3 text-brand-primary" />
           <span>KONTEKS: {contextLabel}</span>
@@ -191,7 +191,7 @@ export default function UsersPage() {
               type="text" 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all font-medium"
+              className="w-full pl-9 pr-4 py-2.5 bg-card border border-border/50 rounded-[1.25rem] text-sm outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all font-medium"
             />
           </div>
           
@@ -200,7 +200,7 @@ export default function UsersPage() {
                 <select 
                    value={filterStatus}
                    onChange={(e) => setFilterStatus(e.target.value)}
-                   className="w-full appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300 outline-none focus:ring-2 focus:ring-brand-primary/20"
+                   className="w-full appearance-none bg-card border border-border/50 rounded-[1.25rem] px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300 outline-none focus:ring-2 focus:ring-brand-primary/20"
                 >
                    <option value="all">All Status</option>
                    <option value="pending">Pending</option>
@@ -214,7 +214,7 @@ export default function UsersPage() {
                 <select 
                    value={filterRole}
                    onChange={(e) => setFilterRole(e.target.value)}
-                   className="w-full appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300 outline-none focus:ring-2 focus:ring-brand-primary/20"
+                   className="w-full appearance-none bg-card border border-border/50 rounded-[1.25rem] px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300 outline-none focus:ring-2 focus:ring-brand-primary/20"
                 >
                    <option value="all">All Roles</option>
                    <option value={ROLES.SALES}>Sales</option>
@@ -231,10 +231,10 @@ export default function UsersPage() {
         </div>
 
         {/* LIST - HYBRID RESPONSIVE LAYOUT */}
-        <div className="bg-transparent md:bg-white md:dark:bg-zinc-900 md:rounded-3xl md:overflow-hidden md:shadow-sm">
+        <div className="bg-transparent md:bg-card md:bg-card md:rounded-3xl md:overflow-hidden md:shadow-sm">
           {loading ? (
             <div className="p-8 space-y-4">
-              {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-xl" />)}
+              {[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-[1.25rem]" />)}
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-16 text-center text-zinc-400 uppercase tracking-widest text-xs font-bold flex flex-col items-center gap-3">
@@ -247,7 +247,7 @@ export default function UsersPage() {
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+                    <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-border/50">
                       <th className="p-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Pengguna</th>
                       <th className="p-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Detail & Cabang</th>
                       <th className="p-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status / Role</th>
@@ -256,13 +256,13 @@ export default function UsersPage() {
                   </thead>
                   <tbody>
                     {filteredUsers.map(user => (
-                      <tr key={user.id} className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
+                      <tr key={user.id} className="border-b border-zinc-100 border-border/50/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             <img 
                               src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`} 
                               alt={user.displayName}
-                              className="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white"
+                              className="w-10 h-10 rounded-full border border-border/50 dark:border-zinc-700 bg-card"
                             />
                             <div>
                               <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">{user.displayName}</p>
@@ -289,7 +289,7 @@ export default function UsersPage() {
                             </div>
                             {user.role && (
                                <div className="flex items-center gap-1">
-                                 <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-[9px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                                 <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-[9px] font-black uppercase tracking-wider border border-border/50 dark:border-zinc-700">
                                    {user.role}
                                  </span>
                                  <button 
@@ -335,20 +335,20 @@ export default function UsersPage() {
               {/* MOBILE CARDS */}
               <div className="md:hidden flex flex-col gap-3">
                  {filteredUsers.map(user => (
-                   <div key={user.id} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+                   <div key={user.id} className="bg-card p-4 rounded-[1.5rem] shadow-sm flex flex-col gap-4">
                       <div className="flex items-start justify-between gap-3">
                          <div className="flex items-center gap-3 w-full min-w-0">
                            <img 
                               src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`} 
                               alt={user.displayName}
-                              className="w-12 h-12 shrink-0 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white"
+                              className="w-12 h-12 shrink-0 rounded-full border border-border/50 dark:border-zinc-700 bg-card"
                            />
                            <div className="flex flex-col min-w-0">
                              <div className="flex gap-2 items-center flex-wrap">
                                <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{user.displayName}</p>
                                {user.role && (
                                   <div className="flex items-center gap-1">
-                                    <span className="px-1.5 py-[2px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-[8px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                                    <span className="px-1.5 py-[2px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-[8px] font-black uppercase tracking-wider border border-border/50 dark:border-zinc-700">
                                       {user.role}
                                     </span>
                                     <button 
@@ -405,7 +405,7 @@ export default function UsersPage() {
       <CustomModal isOpen={!!selectedUser} onClose={closeModal} title="Konfirmasi Aksi">
         {selectedUser && (
           <form onSubmit={handleAction} className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl mb-4 border border-zinc-100 dark:border-zinc-700/50">
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-[1.25rem] mb-4 border border-zinc-100 dark:border-zinc-700/50">
               <img src={selectedUser.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedUser.displayName}`} alt="" className="w-10 h-10 rounded-full" />
               <div>
                 <p className="text-sm font-bold">{selectedUser.displayName}</p>
@@ -424,13 +424,13 @@ export default function UsersPage() {
                        type="text" 
                        value={roleInput} 
                        onChange={e => setRoleInput(e.target.value)}
-                       className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-brand-primary/20"
+                       className="w-full px-4 py-3 bg-zinc-50 bg-card border border-border/50 rounded-[1.25rem] text-sm font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-brand-primary/20"
                      />
                   ) : (
                     <select 
                       value={roleInput}
                       onChange={e => setRoleInput(e.target.value)}
-                      className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-brand-primary/20 appearance-none"
+                      className="w-full px-4 py-3 bg-zinc-50 bg-card border border-border/50 rounded-[1.25rem] text-sm font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-brand-primary/20 appearance-none"
                     >
                       <option value={ROLES.SALES}>Sales</option>
                       <option value={ROLES.SURVEY}>Survey</option>
@@ -483,12 +483,12 @@ export default function UsersPage() {
                   value={reasonInput}
                   onChange={e => setReasonInput(e.target.value)}
                   placeholder="e.g. Data tidak valid"
-                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-primary/20 font-medium"
+                  className="w-full px-4 py-3 bg-zinc-50 bg-card border border-border/50 rounded-[1.25rem] text-sm outline-none focus:ring-2 focus:ring-brand-primary/20 font-medium"
                 />
               </div>
             )}
 
-            <div className="pt-4 flex justify-end gap-3 mt-6 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="pt-4 flex justify-end gap-3 mt-6 border-t border-zinc-100 border-border/50">
               <button 
                 type="button" 
                 onClick={closeModal}
@@ -500,7 +500,7 @@ export default function UsersPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className={cn(
-                  "px-6 py-2 mt-4 rounded-xl text-[11px] font-black uppercase tracking-widest text-white flex items-center justify-center min-w-[120px] transition-all relative overflow-hidden",
+                  "px-6 py-2 mt-4 rounded-[1.25rem] text-[11px] font-black uppercase tracking-widest text-white flex items-center justify-center min-w-[120px] transition-all relative overflow-hidden",
                   actionType === 'approve' ? "bg-emerald-500 hover:bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]" :
                   actionType === 'reject' ? "bg-red-500 hover:bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.3)]" :
                   actionType === 'suspend' ? "bg-orange-500 hover:bg-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.3)]" :

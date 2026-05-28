@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "../hooks/use-toast";
 import { cn } from "../lib/utils";
 import { getActiveSystemDate } from "../utils/javaneseDate";
+import { ActionButton } from "../components/ui/buttons";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { toTitleCase } from "../utils/format";
 import dayjs from "dayjs";
@@ -57,7 +58,7 @@ const PlanItem = React.memo(({
       layout
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className={cn(
-        "group py-1.5 px-2.5 flex items-center gap-3 bg-transparent hover:bg-muted/30 rounded-2xl transition-all duration-200 border border-transparent",
+        "group py-1.5 px-2.5 flex items-center gap-3 bg-transparent hover:bg-muted/30 rounded-[1.5rem] transition-all duration-200 border border-transparent",
         iscurrentUser && "bg-background shadow-md border-border/60 ring-1 ring-primary/10 relative overflow-hidden cursor-pointer"
       )}
     >
@@ -471,7 +472,7 @@ export default function Dashboard({
           </p>
 
           <div className="flex flex-col items-center gap-1 mb-1">
-             <div className="h-px w-6 bg-zinc-200 dark:bg-white/10" />
+             <div className="h-px w-6 bg-zinc-200 dark:bg-card/10" />
              <h2 className="text-[7px] font-black text-zinc-400 dark:text-white/20 uppercase tracking-[0.3em]">
                MARKET TEMPERATURE
              </h2>
@@ -586,16 +587,13 @@ export default function Dashboard({
 
           <div className="card-base p-1 shadow-soft">
             {!myPlan && !loading && (
-              <div className="flex justify-center pt-2 pb-3">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              <div data-html2canvas-ignore="true" className="flex justify-center pt-3 pb-4">
+                <ActionButton
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center justify-center px-4 h-8 rounded-xl bg-foreground text-background font-black text-[9px] uppercase tracking-widest shadow-lg gap-2 group transition-all"
+                  icon={Plus}
                 >
-                  <Plus className="w-3 h-3 group-hover:rotate-90 transition-transform duration-300" />
                   TAMBAH RENCANA
-                </motion.button>
+                </ActionButton>
               </div>
             )}
 
@@ -620,7 +618,7 @@ export default function Dashboard({
                   exit={{ opacity: 0 }}
                   className="py-16 px-4 flex flex-col items-center justify-center text-center"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/[0.05] flex items-center justify-center mb-3">
+                  <div className="w-10 h-10 rounded-[1.5rem] bg-zinc-50 dark:bg-card/[0.02] border border-zinc-100 dark:border-white/[0.05] flex items-center justify-center mb-3">
                      <Users className="w-4 h-4 text-zinc-300 dark:text-white/10" />
                   </div>
                   <p className="text-[10px] text-zinc-400 dark:text-white/20 font-black uppercase tracking-[0.3em]">
@@ -660,8 +658,8 @@ export default function Dashboard({
                     SYNCED {dayjs().format("HH:mm")} WIB
                  </span>
                  <div className="flex items-center gap-1 opacity-20">
-                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
-                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-white/40" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-card/40" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300 dark:bg-card/40" />
                     <div className="w-0.5 h-0.5 rounded-full bg-primary" />
                  </div>
               </div>
@@ -705,7 +703,7 @@ export default function Dashboard({
                     placeholder="Cari pasar yang ingin dikunjungi..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
-                    className="w-full bg-muted/50 border border-border/60 rounded-2xl pl-12 pr-4 h-14 text-sm font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/40"
+                    className="w-full bg-muted/50 border border-border/60 rounded-full pl-12 pr-4 h-14 text-sm font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/40"
                   />
                   {searchQuery && (
                     <button
@@ -723,7 +721,7 @@ export default function Dashboard({
                     <select
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-full text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
                       <option value="" className="bg-background">Wilayah</option>
                       {WILAYAH_EXACT.map((w) => (
@@ -737,7 +735,7 @@ export default function Dashboard({
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-full text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
                       <option value="" className="bg-background">Kategori</option>
                       {KATEGORI_TYPES.map((k) => (
@@ -751,7 +749,7 @@ export default function Dashboard({
                     <select
                       value={selectedPasaran || ""}
                       onChange={(e) => setSelectedPasaran(e.target.value)}
-                      className="w-full h-12 bg-muted/40 px-4 rounded-xl text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                      className="w-full h-12 bg-muted/40 px-4 rounded-full text-xs font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
                     >
                       <option value="" className="bg-background">Pasaran</option>
                       {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
@@ -779,7 +777,7 @@ export default function Dashboard({
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
+                      className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-[1.5rem] p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
                     >
                       <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
                       <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
@@ -833,7 +831,7 @@ export default function Dashboard({
 
                             {/* Sub Category Selection */}
                             {selectedMarketName === m.nama_pasar && Array.isArray(m.kategori) && m.kategori.length > 1 && (
-                              <div className="mt-3 flex flex-wrap gap-2 p-1.5 bg-background/50 rounded-2xl w-fit border border-border shadow-soft">
+                              <div className="mt-3 flex flex-wrap gap-2 p-1.5 bg-background/50 rounded-[1.5rem] w-fit border border-border shadow-soft">
                                 {m.kategori.map((kat: any, katIdx: number) => {
                                   const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
                                   const label = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
@@ -846,7 +844,7 @@ export default function Dashboard({
                                         setSelectedSubCategory(String(katIdVal));
                                       }}
                                       className={cn(
-                                        "px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all",
+                                        "px-4 py-2 rounded-full text-[10px] font-black tracking-widest uppercase transition-all",
                                         selectedSubCategory === String(katIdVal)
                                           ? "bg-primary text-black border border-primary/20 scale-105"
                                           : "bg-muted text-muted-foreground hover:bg-muted-foreground/10",
@@ -877,14 +875,12 @@ export default function Dashboard({
 
               {/* Sticky Footer */}
               <div className="sticky bottom-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border/20 flex justify-center z-20">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <ActionButton
                   onClick={handleAddPlan}
-                  className="w-full max-w-xs h-11 bg-foreground text-background rounded-xl font-black tracking-[0.1em] text-[10px] shadow-lg transition-all duration-300 flex items-center justify-center relative border border-white/5"
+                  className="w-full max-w-xs border border-white/5"
                 >
-                  <span className="relative z-10">SIMPAN RENCANA</span>
-                </motion.button>
+                  SIMPAN RENCANA
+                </ActionButton>
               </div>
             </motion.div>
           </div>

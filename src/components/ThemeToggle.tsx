@@ -18,7 +18,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2.5 rounded-xl text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/5 transition-all duration-200 active:scale-95 group"
+      className="p-2.5 rounded-[1.25rem] text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/5 transition-all duration-200 active:scale-95 group"
       title="Toggle Theme"
     >
       <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">

@@ -49,7 +49,7 @@ export default function DocsPage() {
       <div className="max-w-6xl mx-auto px-4 space-y-6">
         
         {/* Main Sticky Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-850 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 dark:border-zinc-850 pb-6">
           <div className="space-y-1">
             <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-brand-primary" />
@@ -67,13 +67,13 @@ export default function DocsPage() {
               placeholder="Cari pedoman & sintaks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400"
+              className="w-full pl-9 pr-4 py-2 bg-card border border-border/50 rounded-[1.25rem] text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400"
             />
           </div>
         </div>
 
         {/* Big Alert Banner for developer discipline */}
-        <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 leading-relaxed flex items-start gap-3 shadow-md">
+        <div className="p-4 rounded-[1.5rem] bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 leading-relaxed flex items-start gap-3 shadow-md">
           <Terminal className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
           <div className="space-y-1">
             <span className="font-extrabold text-white block font-mono text-[10px] uppercase tracking-wider">DEV_RULE_PREREQUISITE // STANDARD OPERASIONAL SERVER & CLIENT</span>
@@ -84,7 +84,7 @@ export default function DocsPage() {
         </div>
 
         {/* Nested Interactive Tab Controllers */}
-        <div className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-850 pb-4">
+        <div className="flex flex-wrap gap-2 border-b border-border/50 dark:border-zinc-850 pb-4">
           {[
             { id: 'architecture', name: 'Arsitektur & Alur', icon: Map },
             { id: 'roles', name: 'Standar Peran & Status', icon: ShieldCheck },
@@ -98,10 +98,10 @@ export default function DocsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 px-4 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                className={`py-2 px-4 rounded-[1.25rem] text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
                   isActive 
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-md' 
-                    : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 border border-zinc-200 dark:border-zinc-800/80'
+                    ? 'bg-zinc-900 text-white dark:bg-card dark:text-zinc-950 shadow-md' 
+                    : 'bg-card text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-250 border border-border/50/80'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -128,7 +128,7 @@ export default function DocsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* Visual Section: App Flow */}
-                <div className="md:col-span-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
+                <div className="md:col-span-2 bg-card border border-border/50 rounded-3xl p-6 space-y-4">
                   <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                     <Workflow className="w-5 h-5 text-brand-primary" />
                     <div>
@@ -157,7 +157,7 @@ export default function DocsPage() {
                       <div className="space-y-1">
                         <span className="text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-200">Tahap 2: Rencana Pasar Harian (Market Plan)</span>
                         <p className="text-[11px] text-zinc-400 leading-normal">
-                          SPV Cabang menginisiasi titik penugasan wilayah di modul <strong className="text-indigo-500 font-mono text-[10px]">/Market-Plans</strong> berdasarkan jadwal dwi-mingguan pasar sirkuit. Membagi rute sirkulasi sales secara terpusat untuk memangkas duplikasi survei.
+                          SPV Cabang menginisiasi titik penugasan wilayah di modul <strong className="text-indigo-500 font-mono text-[10px]">/market-plans</strong> berdasarkan jadwal dwi-mingguan pasar sirkuit. Membagi rute sirkulasi sales secara terpusat untuk memangkas duplikasi survei.
                         </p>
                       </div>
                     </div>
@@ -188,7 +188,7 @@ export default function DocsPage() {
                 </div>
 
                 {/* Sub-Section visual app layout layers */}
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
+                <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-4">
                   <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                     <Layers className="w-5 h-5 text-zinc-400" />
                     <div>
@@ -199,22 +199,22 @@ export default function DocsPage() {
 
                   <div className="space-y-3 font-mono text-[10px]">
                     
-                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-850 space-y-1">
+                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-[1.25rem] border border-zinc-100 dark:border-zinc-850 space-y-1">
                       <span className="font-black text-zinc-900 dark:text-white uppercase text-[8px] bg-brand-primary/10 text-brand-primary px-1.5 py-0.5 rounded">View Layer</span>
                       <p className="text-zinc-500 text-[9px] leading-relaxed">Pages (`src/pages/*`) berisi UI fungsional berkondisi, statik dan visual layout.</p>
                     </div>
 
-                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-850 space-y-1">
+                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-[1.25rem] border border-zinc-100 dark:border-zinc-850 space-y-1">
                       <span className="font-black text-zinc-900 dark:text-white uppercase text-[8px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded">Route Guards</span>
                       <p className="text-zinc-500 text-[9px] leading-relaxed">`ModuleGuard` memetakan status `modules` secara reaktif sebelum merender visual target.</p>
                     </div>
 
-                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-850 space-y-1">
+                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-[1.25rem] border border-zinc-100 dark:border-zinc-850 space-y-1">
                       <span className="font-black text-zinc-900 dark:text-white uppercase text-[8px] bg-purple-500/10 text-purple-500 px-1.5 py-0.5 rounded">Service Proxy</span>
                       <p className="text-zinc-500 text-[9px] leading-relaxed">`src/lib/services.ts` melakukan komunikasi sinkron dengan Firebase Firestore API.</p>
                     </div>
 
-                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-850 space-y-1">
+                    <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded-[1.25rem] border border-zinc-100 dark:border-zinc-850 space-y-1">
                       <span className="font-black text-zinc-900 dark:text-white uppercase text-[8px] bg-zinc-500/10 text-zinc-400 px-1.5 py-0.5 rounded">Auth Context</span>
                       <p className="text-zinc-500 text-[9px] leading-relaxed">`AuthProvider` menyalurkan user metadata dan payload profile ke seluruh hierarki DOM.</p>
                     </div>
@@ -237,7 +237,7 @@ export default function DocsPage() {
               className="space-y-6"
             >
               {/* Roles Matrix and Definitions Card */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-5">
+              <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-5">
                 <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                   <Users className="w-5 h-5 text-brand-primary" />
                   <div>
@@ -249,7 +249,7 @@ export default function DocsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   
                   {/* Owner */}
-                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
                     <div className="space-y-1">
                       <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded leading-none">OWNER (SUPER_ROLE)</span>
                       <h4 className="text-sm font-bold block pt-1">Otoritas Konsep Mutlak</h4>
@@ -261,7 +261,7 @@ export default function DocsPage() {
                   </div>
 
                   {/* Staff */}
-                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
                     <div className="space-y-1">
                       <span className="text-[9px] font-black uppercase tracking-widest bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded leading-none">STAFF (BRANCH_ADMIN)</span>
                       <h4 className="text-sm font-bold block pt-1">Otoritas Wilayah Kerja</h4>
@@ -273,7 +273,7 @@ export default function DocsPage() {
                   </div>
 
                   {/* Sales & Survey */}
-                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-850 flex flex-col justify-between space-y-3">
                     <div className="space-y-1">
                       <span className="text-[9px] font-black uppercase tracking-widest bg-zinc-200 dark:bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded leading-none">SALES_TEAM / FIELD_AGENT</span>
                       <h4 className="text-sm font-bold block pt-1">Pelaksana Operasional Lapangan</h4>
@@ -288,7 +288,7 @@ export default function DocsPage() {
               </div>
 
               {/* Status Specification Tables */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
+              <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                   <FileCheck className="w-5 h-5 text-brand-primary" />
                   <div>
@@ -302,7 +302,7 @@ export default function DocsPage() {
                   {/* USER STATUS CODE */}
                   <div className="space-y-3">
                     <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 font-mono">1. Siklus Hidup Akun User</h4>
-                    <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-2xl p-4 space-y-3 text-xs font-mono">
+                    <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-[1.5rem] p-4 space-y-3 text-xs font-mono">
                       <div className="flex items-start justify-between">
                         <div>
                           <span className="text-[10px] font-semibold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">"pending"</span>
@@ -329,7 +329,7 @@ export default function DocsPage() {
                   {/* ORDER STATUS CODE */}
                   <div className="space-y-3">
                     <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 font-mono">2. Alur Pembayaran & Order</h4>
-                    <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-2xl p-4 space-y-3 text-xs font-mono">
+                    <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-[1.5rem] p-4 space-y-3 text-xs font-mono">
                       
                       <div className="flex items-start justify-between">
                         <div>
@@ -383,7 +383,7 @@ export default function DocsPage() {
               transition={{ duration: 0.15 }}
               className="space-y-6"
             >
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-5">
+              <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-5">
                 <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                   <Database className="w-5 h-5 text-brand-primary" />
                   <div>
@@ -399,8 +399,8 @@ export default function DocsPage() {
 
                   <div className="space-y-3 font-mono text-[11px]">
                     {/* users schema */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-2xl space-y-2">
-                      <div className="flex justify-between items-center bg-zinc-200/50 dark:bg-zinc-900 p-1.5 px-3 rounded-xl">
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-[1.5rem] space-y-2">
+                      <div className="flex justify-between items-center bg-zinc-200/50 bg-card p-1.5 px-3 rounded-[1.25rem]">
                         <span className="font-black text-zinc-900 dark:text-zinc-200">Koleksi: `/users/{'{userId}'}`</span>
                         <span className="text-[8px] uppercase bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded">Identity</span>
                       </div>
@@ -419,8 +419,8 @@ export default function DocsPage() {
                     </div>
 
                     {/* clients schema */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-2xl space-y-2">
-                      <div className="flex justify-between items-center bg-zinc-200/50 dark:bg-zinc-900 p-1.5 px-3 rounded-xl">
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-[1.5rem] space-y-2">
+                      <div className="flex justify-between items-center bg-zinc-200/50 bg-card p-1.5 px-3 rounded-[1.25rem]">
                         <span className="font-black text-zinc-900 dark:text-zinc-200">Koleksi: `/clients/{'{clientId}'}`</span>
                         <span className="text-[8px] uppercase bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded">Operational CRM</span>
                       </div>
@@ -440,8 +440,8 @@ export default function DocsPage() {
                     </div>
 
                     {/* orders schema */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-2xl space-y-2">
-                      <div className="flex justify-between items-center bg-zinc-200/50 dark:bg-zinc-900 p-1.5 px-3 rounded-xl">
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-[1.5rem] space-y-2">
+                      <div className="flex justify-between items-center bg-zinc-200/50 bg-card p-1.5 px-3 rounded-[1.25rem]">
                         <span className="font-black text-zinc-900 dark:text-zinc-200">Koleksi: `/orders/{'{orderId}'}`</span>
                         <span className="text-[8px] uppercase bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded">Financial Workflow</span>
                       </div>
@@ -470,14 +470,14 @@ export default function DocsPage() {
                     <span className="text-xs font-black uppercase tracking-wider text-zinc-450 dark:text-zinc-400 font-mono">Prinsip Keamanan Cabang (Firestore Security Rules)</span>
                     <button 
                       onClick={() => handleCopy(rulesSnip, 'securityRules')}
-                      className="px-2.5 py-1 text-[10px] font-mono hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-all inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-800"
+                      className="px-2.5 py-1 text-[10px] font-mono hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-all inline-flex items-center gap-1 border border-border/50"
                     >
                       {copiedText === 'securityRules' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                       Copy Rules Rule
                     </button>
                   </div>
 
-                  <pre className="text-[10px] leading-relaxed bg-zinc-950 text-zinc-300 p-4 rounded-2xl border border-zinc-850 overflow-x-auto no-scrollbar max-h-[250px] font-mono text-left">
+                  <pre className="text-[10px] leading-relaxed bg-zinc-950 text-zinc-300 p-4 rounded-[1.5rem] border border-zinc-850 overflow-x-auto no-scrollbar max-h-[250px] font-mono text-left">
                     {rulesSnip}
                   </pre>
                 </div>
@@ -496,7 +496,7 @@ export default function DocsPage() {
               transition={{ duration: 0.15 }}
               className="space-y-6"
             >
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
+              <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                   <Code2 className="w-5 h-5 text-brand-primary" />
                   <div>
@@ -514,21 +514,21 @@ export default function DocsPage() {
                     <span className="text-[10px] font-mono text-zinc-400 uppercase font-black">Pola Pengambilan Listerner Reaktif (Subskripsi Data)</span>
                     <button 
                       onClick={() => handleCopy(serviceSnip, 'serviceCode')}
-                      className="px-2.5 py-1 text-[10px] font-mono hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-all inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-800"
+                      className="px-2.5 py-1 text-[10px] font-mono hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-all inline-flex items-center gap-1 border border-border/50"
                     >
                       {copiedText === 'serviceCode' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                       Copy Code
                     </button>
                   </div>
 
-                  <pre className="text-[10px] leading-relaxed bg-zinc-950 text-zinc-300 p-4 rounded-2xl border border-zinc-850 overflow-x-auto no-scrollbar font-mono text-left">
+                  <pre className="text-[10px] leading-relaxed bg-zinc-950 text-zinc-300 p-4 rounded-[1.5rem] border border-zinc-850 overflow-x-auto no-scrollbar font-mono text-left">
                     {serviceSnip}
                   </pre>
                 </div>
 
                 {/* Technical Best Practices list */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-850">
-                  <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/10 space-y-1.5">
+                  <div className="p-4 bg-red-500/5 rounded-[1.5rem] border border-red-500/10 space-y-1.5">
                     <span className="font-black text-[9px] text-red-500 uppercase tracking-widest block font-mono">⚠️ JANGAN MEMAKAI INI (WARNING)</span>
                     <ul className="text-[10px] text-zinc-500 leading-normal space-y-1">
                       <li>• Import `collection` atau `getDocs` di dalam file halaman visual</li>
@@ -537,7 +537,7 @@ export default function DocsPage() {
                     </ul>
                   </div>
 
-                  <div className="p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 space-y-1.5">
+                  <div className="p-4 bg-emerald-500/5 rounded-[1.5rem] border border-emerald-500/10 space-y-1.5">
                     <span className="font-black text-[9px] text-emerald-500 uppercase tracking-widest block font-mono">🟢 BIASAKAN LAKUKAN INI (DO)</span>
                     <ul className="text-[10px] text-zinc-500 leading-normal space-y-1">
                       <li>• Selalu gunakan hook `useUserProfile` untuk melandasi role</li>
@@ -562,7 +562,7 @@ export default function DocsPage() {
               className="space-y-6"
             >
               {/* Cookbook Container Grid */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-5">
+              <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-5">
                 <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-3">
                   <Cpu className="w-5 h-5 text-brand-primary" />
                   <div>
@@ -580,14 +580,14 @@ export default function DocsPage() {
                       <CornerDownRight className="w-4 h-4 text-brand-primary" />
                       1. Bagaimana Cara Menambahkan Modul Baru Halaman?
                     </span>
-                    <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 text-xs text-zinc-500 leading-relaxed space-y-2">
+                    <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-850 text-xs text-zinc-500 leading-relaxed space-y-2">
                       <p>
                         Ikuti 3 tahapan standardisasi fungsional untuk menambah link ruko operasional baru:
                       </p>
                       <ol className="list-decimal pl-5 space-y-1 text-[11px] font-mono">
                         <li>Buka <strong className="text-brand-primary">src/config/modules.ts</strong>, lalu tambahkan baris konfigurasi modular baru di dalam konstanta `DEFAULT_MODULES` lengkap dengan ijin `allowedRoles`.</li>
                         <li>Buka <strong className="text-brand-primary">src/App.tsx</strong>, buat atau daftarkan element halaman Anda dibungkus dengan route guard modular:<br />
-                          <code className="text-[10px] bg-zinc-200 dark:bg-zinc-900 text-brand-primary px-1 rounded block mt-1 py-0.5">
+                          <code className="text-[10px] bg-zinc-200 bg-card text-brand-primary px-1 rounded block mt-1 py-0.5">
                             {"<Route path=\"/my-path\" element={<ModuleGuard moduleId=\"myModule\"><MyPage /></ModuleGuard>} />"}
                           </code>
                         </li>
@@ -602,7 +602,7 @@ export default function DocsPage() {
                       <CornerDownRight className="w-4 h-4 text-brand-primary" />
                       2. Bagaimana Cara Menambahkan Alur Otorisasi Peran Baru (New Role)?
                     </span>
-                    <div className="bg-zinc-50 dark:bg-[#060608] p-4 rounded-2xl border border-zinc-100 dark:border-zinc-850 text-xs text-zinc-500 leading-relaxed space-y-2">
+                    <div className="bg-zinc-50 dark:bg-[#060608] p-4 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-850 text-xs text-zinc-500 leading-relaxed space-y-2">
                       <ol className="list-decimal pl-5 space-y-1 text-[11px] font-mono">
                         <li>Buka file <strong className="text-brand-primary">src/config/roles.ts</strong>, tambahkan nama id peran secara harfiah di dalam tipe `ROLES`.</li>
                         <li>Update array skema validasi peran di file <strong className="text-brand-primary">firebase-blueprint.json</strong> pada properti Koleksi User - enum untuk sinkronisasi database.</li>

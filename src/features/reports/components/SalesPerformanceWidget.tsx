@@ -10,11 +10,11 @@ export function SalesPerformanceWidget({ sales }: { sales: SalesPerformanceMetri
   }
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl p-6">
+    <div className="bg-card border border-border/50 rounded-[1.5rem] p-6">
       <h3 className="text-sm font-bold uppercase tracking-widest mb-6">Sales Performance</h3>
       <div className="space-y-4">
         {sales.map((s, idx) => (
-          <div key={s.userId} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+          <div key={s.userId} className="flex items-center justify-between p-3 bg-muted/30 rounded-[1.25rem]">
              <div className="flex items-center gap-3">
                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                  {idx + 1}

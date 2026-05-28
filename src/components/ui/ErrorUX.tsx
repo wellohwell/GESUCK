@@ -50,7 +50,7 @@ export function ErrorUX({ error, onRetry, className, fallbackTitle }: ErrorUXPro
         className
       )}
     >
-      <div className="p-3.5 rounded-2xl bg-red-100/60 dark:bg-red-900/40 mb-4 text-red-600 dark:text-red-400">
+      <div className="p-3.5 rounded-[1.5rem] bg-red-100/60 dark:bg-red-900/40 mb-4 text-red-600 dark:text-red-400">
         <Icon className="w-7 h-7" />
       </div>
 
@@ -65,7 +65,7 @@ export function ErrorUX({ error, onRetry, className, fallbackTitle }: ErrorUXPro
       {onRetry && (
         <button
           onClick={onRetry}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-md"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-[1.25rem] text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-md"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Segarkan

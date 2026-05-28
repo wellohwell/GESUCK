@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { cn } from '../../lib/utils';
 import { usePricelist } from '../../hooks/usePricelist';
 import { useGeaGetra } from '../../hooks/useGeaGetra';
-import { PricelistPage } from './PricelistPage';
-import GeaGetraPage from './GeaGetraPage';
+import { PricelistPage } from './explore/PricelistPage';
+import GeaGetraPage from './explore/GeaGetraPage';
 import { ImageDetailView, ImageData } from '../../components/explore/ImageDetailView';
 import { useRuntime } from '../../providers/RuntimeProvider';
 
@@ -70,7 +71,7 @@ export default function ExplorePage() {
       return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(239,68,68,0.1)]">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -112,7 +113,7 @@ export default function ExplorePage() {
       return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,255,46,0.1)]">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(198,255,46,0.1)]">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -213,125 +214,129 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-300">
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-3 sm:pt-6">
-        <div className="flex flex-col gap-4">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-1 sm:pt-3">
+        <div className="flex flex-col gap-1">
             
-          {/* Header / Logo */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex flex-col w-fit items-center">
-              <h1 className="mt-2 text-xl font-black uppercase tracking-[0.25em] text-foreground transition-all flex items-center gap-1">
-                VORK<span className="font-normal text-foreground">TEAM</span>
-              </h1>
-              <div className="h-0.5 w-full bg-primary rounded-full mt-1" />
+          {/* Sticky Brand Header - Only Logo stays pinned */}
+          <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md pt-1.5 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col w-fit items-center">
+                <h1 className="text-lg font-black uppercase tracking-[0.25em] text-foreground transition-all flex items-center gap-1">
+                  VORK<span className="font-normal text-foreground">TEAM</span>
+                </h1>
+                <div className="h-0.5 w-full bg-primary rounded-full mt-0.5" />
+              </div>
             </div>
           </div>
 
-          {/* Sticky Search Bar & Filter */}
-          <div className="sticky top-2 z-40 w-full max-w-sm mx-auto flex flex-col gap-2">
-            
-            {/* Search Input - Single Border Only */}
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
-              <input
-                placeholder="Cari barang atau unit..."
-                defaultValue={currentSearch}
-                onChange={handleSearchChange}
-                className="w-full bg-card/70 border border-border/60 backdrop-blur-md 
-                           pl-11 pr-5 h-11 text-sm font-medium focus:outline-none 
-                           placeholder:text-muted-foreground rounded-2xl
-                           focus:border-primary/50 focus:bg-background/90 transition-all"
-              />
-            </div>
+          {/* Scrollable Interactive Content */}
+          <div className="flex flex-col gap-2.5">
+            {/* Search Bar & Filter */}
+            <div className="w-full max-w-sm mx-auto flex flex-col gap-1 px-0.5">
+              
+              {/* Search Input */}
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
+                <input
+                  placeholder="Cari barang atau unit..."
+                  defaultValue={currentSearch}
+                  onChange={handleSearchChange}
+                  className="w-full bg-card/70 border border-border/60 backdrop-blur-md 
+                             pl-9 pr-4 h-8 text-[11px] font-medium focus:outline-none 
+                             placeholder:text-muted-foreground rounded-full
+                             focus:border-primary/50 focus:bg-background/90 transition-all"
+                />
+              </div>
 
-            {!selectedImage && currentSearch.trim().length > 0 && brands.length > 0 && (
-              <div className="flex flex-col gap-1.5 bg-card/65 border border-border/40 backdrop-blur-md p-2.5 rounded-2xl shadow-sm transition-all">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
-                  Merk Terkait ({brands.length})
-                </span>
-                <div 
-                  className="flex gap-1.5 overflow-x-auto pb-1 max-w-full scroll-smooth"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <button
-                    onClick={() => setSelectedMerk('all')}
-                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border whitespace-nowrap ${
-                      selectedMerk === 'all'
-                        ? 'bg-foreground text-background border-transparent'
-                        : 'bg-background hover:bg-zinc-100 dark:hover:bg-zinc-850 border-border/50 text-muted-foreground hover:text-foreground'
-                    }`}
+              {!selectedImage && currentSearch.trim().length > 0 && brands.length > 0 && (
+                <div className="flex flex-col gap-1 transition-all">
+                  <div 
+                    className="flex gap-1.5 overflow-x-auto pb-1 max-w-full scroll-smooth no-scrollbar"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
-                    Semua
-                  </button>
-                  {brands.map(brand => (
                     <button
-                      key={brand}
-                      onClick={() => setSelectedMerk(selectedMerk === brand ? 'all' : brand)}
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border whitespace-nowrap ${
-                        selectedMerk === brand
-                          ? 'bg-primary text-primary-foreground border-transparent'
-                          : 'bg-background hover:bg-zinc-100 dark:hover:bg-zinc-850 border-border/50 text-muted-foreground hover:text-foreground'
+                      onClick={() => setSelectedMerk('all')}
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                        selectedMerk === 'all'
+                          ? 'bg-[#C6FF00] text-black'
+                          : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-foreground'
                       }`}
                     >
-                      {brand}
+                      Semua
                     </button>
-                  ))}
+                    {brands.map(brand => (
+                      <button
+                        key={brand}
+                        onClick={() => setSelectedMerk(selectedMerk === brand ? 'all' : brand)}
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                          selectedMerk === brand
+                            ? 'bg-[#C6FF00] text-black'
+                            : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-foreground'
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Tabs */}
-          <div className="flex justify-center w-full">
-            <div className="inline-flex items-center justify-center gap-2">
-              <button 
-                onClick={() => setActiveTab('pricelist')}
-                className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  activeTab === 'pricelist' 
-                    ? 'bg-primary text-primary-foreground scale-105' 
-                    : 'text-muted-foreground hover:text-primary'
-                }`}
-              >
-                Pricelist
-              </button>
-              <button 
-                onClick={() => setActiveTab('gea')}
-                className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  activeTab === 'gea' 
-                    ? 'bg-primary text-primary-foreground scale-105' 
-                    : 'text-muted-foreground hover:text-primary'
-                }`}
-              >
-                Gea & Getra
-              </button>
+              )}
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="mt-1">
-            {selectedImage ? (
-              <ImageDetailView 
-                image={selectedImage} 
-                imageList={currentImageList}
-                onBack={() => setSelectedImage(null)}
-                onSelectImage={(img) => setSelectedImage(img)}
-              />
-            ) : (
-              <>
-                {activeTab === 'pricelist' && (
-                  <PricelistPage searchQuery={currentSearch} sortBy={sortBy} selectedMerk={selectedMerk} />
-                )}
-                {activeTab === 'gea' && (
-                  <GeaGetraPage 
-                    searchQuery={currentSearch} 
-                    selectedMerk={selectedMerk}
-                    onImageClick={(img, list) => {
-                      setSelectedImage(img);
-                      setCurrentImageList(list);
-                    }} 
-                  />
-                )}
-              </>
-            )}
+            {/* Tabs */}
+            <div className="flex justify-center w-full">
+              <div className="inline-flex items-center gap-0.5 p-0.5 rounded-full bg-card/70 border border-border/40 backdrop-blur-md">
+                <button 
+                  onClick={() => setActiveTab('pricelist')}
+                  className={cn(
+                    "px-4 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-300",
+                    activeTab === 'pricelist' 
+                      ? 'bg-[#C6FF00] text-black shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Pricelist
+                </button>
+                <button 
+                  onClick={() => setActiveTab('gea')}
+                  className={cn(
+                    "px-4 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-300",
+                    activeTab === 'gea' 
+                      ? 'bg-[#C6FF00] text-black shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Gea & Getra
+                </button>
+              </div>
+            </div>
+
+            {/* Content Results */}
+            <div className="mt-0">
+              {selectedImage ? (
+                <ImageDetailView 
+                  image={selectedImage} 
+                  imageList={currentImageList}
+                  onBack={() => setSelectedImage(null)}
+                  onSelectImage={(img) => setSelectedImage(img)}
+                />
+              ) : (
+                <>
+                  {activeTab === 'pricelist' && (
+                    <PricelistPage searchQuery={currentSearch} sortBy={sortBy} selectedMerk={selectedMerk} />
+                  )}
+                  {activeTab === 'gea' && (
+                    <GeaGetraPage 
+                      searchQuery={currentSearch} 
+                      selectedMerk={selectedMerk}
+                      onImageClick={(img, list) => {
+                        setSelectedImage(img);
+                        setCurrentImageList(list);
+                      }} 
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </main>

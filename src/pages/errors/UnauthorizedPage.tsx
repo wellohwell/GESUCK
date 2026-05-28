@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ActionButton } from '../../components/ui/buttons';
 
 export default function UnauthorizedPage() {
   const navigate = useNavigate();
@@ -14,13 +15,12 @@ export default function UnauthorizedPage() {
       <p className="text-muted-foreground mb-8 text-sm max-w-[280px]">
         You do not have the required permissions to access this page. Please contact your administrator if you believe this is an error.
       </p>
-      <button 
+      <ActionButton
         onClick={() => navigate('/', { replace: true })}
-        className="px-6 py-3 bg-foreground text-background font-bold text-sm rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity active:scale-95"
+        icon={ArrowLeft}
       >
-        <ArrowLeft className="w-4 h-4" />
         Return to Home
-      </button>
+      </ActionButton>
     </div>
   );
 }

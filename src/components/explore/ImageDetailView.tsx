@@ -45,9 +45,9 @@ const MainImage = ({ src, alt }: { src: string; alt: string }) => {
   }, [src]);
 
   return (
-    <div className="w-full aspect-square relative bg-zinc-100 dark:bg-white/5 rounded-2xl flex items-center justify-center overflow-hidden">
+    <div className="w-full aspect-square relative bg-zinc-100 dark:bg-card/5 rounded-[1.5rem] flex items-center justify-center overflow-hidden">
       {!isLoaded && !isError && (
-        <div className="absolute inset-0 bg-zinc-200 dark:bg-white/10 animate-pulse rounded-2xl" />
+        <div className="absolute inset-0 bg-zinc-200 dark:bg-card/10 animate-pulse rounded-[1.5rem]" />
       )}
       {isError && (
         <div className="text-center text-red-500 p-4 flex flex-col items-center gap-2">
@@ -184,7 +184,7 @@ export function ImageDetailView({ image, imageList, onBack, onSelectImage }: Ima
       <header className="flex items-center gap-3">
         <button 
           onClick={onBack} 
-          className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-card/5 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -206,14 +206,14 @@ export function ImageDetailView({ image, imageList, onBack, onSelectImage }: Ima
       <div className="grid grid-cols-2 gap-3">
         <button 
           onClick={handleDownload} 
-          className="flex items-center justify-center gap-2 py-3 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-900 dark:text-white rounded-2xl transition-all"
+          className="flex items-center justify-center gap-2 py-3 bg-zinc-100 dark:bg-card/5 hover:bg-zinc-200 dark:hover:bg-card/10 text-zinc-900 dark:text-white rounded-[1.5rem] transition-all"
         >
             <Download className="w-4 h-4"/>
             <span className="text-xs font-bold">Unduh</span>
         </button>
          <button 
             onClick={handleShare} 
-            className="flex items-center justify-center gap-2 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl transition-all hover:opacity-90"
+            className="flex items-center justify-center gap-2 py-3 bg-zinc-900 dark:bg-card text-white dark:text-zinc-900 rounded-[1.5rem] transition-all hover:opacity-90"
          >
             <Share2 className="w-4 h-4"/>
             <span className="text-xs font-bold">Bagikan</span>

@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Loader2, PackageX, ChevronRight } from 'lucide-react';
-import { usePricelist } from '../../hooks/usePricelist';
-import { SimulatorModal } from '../../components/pricelist/SimulatorModal';
-import { Product } from '../../types/pricelist';
-import { formatRp } from '../../lib/pricing/simulateInstallment';
-import { SortType } from './ExplorePage';
+import { usePricelist } from '../../../hooks/usePricelist';
+import { SimulatorModal } from '../../../components/pricelist/SimulatorModal';
+import { Product } from '../../../types/pricelist';
+import { formatRp } from '../../../lib/pricing/simulateInstallment';
+import { SortType } from '../WorkspaceExplorePage';
 
 interface Props {
   searchQuery: string;
@@ -16,14 +16,14 @@ const ProductItem = React.memo(({ product, onClick }: { product: Product, onClic
   return (
     <div 
       onClick={onClick}
-      className="grid grid-cols-1 md:grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-2 md:gap-4 px-6 py-2.5 md:py-2 hover:bg-zinc-50 dark:hover:bg-white/[0.01] cursor-pointer transition-colors group"
+      className="grid grid-cols-1 md:grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-2 md:gap-4 px-6 py-2.5 md:py-2 hover:bg-zinc-50 dark:hover:bg-card/[0.01] cursor-pointer transition-colors group"
     >
        {/* Mobile Layout (Table-like rows) */}
        <div className="flex items-center justify-between md:hidden w-full gap-4">
           <div className="flex flex-col gap-0 min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{product.merk}</span>
-              <div className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-white/10" />
+              <div className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-card/10" />
               <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 truncate leading-none uppercase tracking-tighter">{product.type}</span>
             </div>
             <span className="font-bold text-[12px] text-zinc-900 dark:text-zinc-100 leading-tight truncate uppercase mt-0.5">{product.model}</span>
@@ -129,7 +129,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
 
   if (error) {
     return (
-      <div className="p-8 text-center bg-red-50 dark:bg-red-500/10 rounded-2xl max-w-sm mx-auto mt-10">
+      <div className="p-8 text-center bg-red-50 dark:bg-red-500/10 rounded-[1.5rem] max-w-sm mx-auto mt-10">
         <p className="text-red-500 text-sm font-semibold">Gagal memuat data:</p>
         <p className="text-red-400 text-xs mt-1">{error}</p>
       </div>
@@ -148,9 +148,9 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
         /* List View */
         filteredData.length > 0 ? (
           <div className="flex flex-col gap-4">
-            <div className="bg-white dark:bg-[#111] overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10 shadow-md">
+            <div className="bg-card overflow-hidden rounded-[1.25rem] shadow-sm">
               {/* Desktop Table Header */}
-              <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-2.5 bg-zinc-50/80 dark:bg-white/5 border-b border-zinc-200 dark:border-white/10">
+              <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-2.5 bg-zinc-50/80 dark:bg-card/5">
                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MERK</div>
                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MODEL</div>
                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">TYPE</div>
@@ -158,7 +158,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
               </div>
 
               {/* List Body */}
-              <div className="flex flex-col divide-y divide-zinc-100 dark:divide-white/5">
+              <div className="flex flex-col">
                 {displayedData.map((product, index) => (
                   <ProductItem 
                     key={product.id || index} 
@@ -173,7 +173,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
               <div className="flex justify-center mt-2">
                 <button 
                   onClick={() => setDisplayLimit(prev => prev + 30)}
-                  className="px-8 h-10 rounded-xl bg-muted/50 dark:bg-white/5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-foreground transition-all border border-zinc-200 dark:border-white/10"
+                  className="px-8 h-10 rounded-full bg-muted/50 dark:bg-card/5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-foreground transition-all"
                 >
                   Tampilkan Berikutnya ({filteredData.length - displayLimit})
                 </button>
@@ -183,7 +183,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
         ) : (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-card/5 flex items-center justify-center mb-4">
               <PackageX className="w-7 h-7 text-zinc-400" />
             </div>
             <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Produk Tidak Ditemukan</h3>

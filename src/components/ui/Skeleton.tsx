@@ -15,7 +15,7 @@ export function Skeleton({ className, variant = 'rectangular', ...props }: Skele
         "after:bg-gradient-to-r after:from-transparent after:via-white/10 dark:after:via-white/5 after:to-transparent",
         variant === 'text' && "h-4 w-3/4 rounded-lg",
         variant === 'circular' && "rounded-full",
-        variant === 'rectangular' && "rounded-2xl",
+        variant === 'rectangular' && "rounded-[1.5rem]",
         variant === 'card' && "rounded-3xl p-6 h-36 border border-border/40",
         className
       )}

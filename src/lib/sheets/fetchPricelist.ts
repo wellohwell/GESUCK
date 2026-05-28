@@ -18,27 +18,45 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
   }
   const sheetId = extractSpreadsheetId(customSpreadsheetId);
   
-  const sheetName = encodeURIComponent(customSheetName || "List Harga");
-  // Menggunakan API GViz Google Docs untuk raw data tanpa publis JSON ribet
-  const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+  const sheetName = customSheetName || "List Harga";
+  // Gunakan proxy API backend untuk menghindari CORS
+  const sheetUrl = `/api/pricelist?sheetId=${sheetId}&sheetName=${encodeURIComponent(sheetName)}`;
 
   try {
-    const response = await fetch(sheetUrl, {
-      method: "GET",
-      // Important to omit credentials and specify mode to avoid CORS/Cookie issues on public sheets
-      credentials: "omit",
-      mode: "cors",
-      cache: "no-store"
-    });
+    const response = await fetch(sheetUrl);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const text = await response.text();
     
-    // Extract the JSON object from the function call wrapper google.visualization.Query.setResponse(...)
-    const jsonString = text.substring(text.indexOf('(') + 1, text.lastIndexOf(')'));
-    const jsonObject = JSON.parse(jsonString);
+    // Check if the response matches HTML documents
+    const trimmed = text.trim();
+    if (trimmed.startsWith('<!') || trimmed.includes('<html') || trimmed.includes('<HTML') || trimmed.includes('<body') || trimmed.includes('<div')) {
+      throw new Error(`Google Sheets mengembalikan halaman web (HTML). Pastikan spreadsheet diset ke "Siapa saja yang memiliki link dapat melihat" (Public/Pembaca) dan Nama Sheet "${sheetName}" sudah tertera dengan benar di Spreadsheet.`);
+    }
 
-    if (!jsonObject.table || !jsonObject.table.rows || !jsonObject.table.cols) {
-      throw new Error("Format JSON Google Sheets tidak valid. Pastikan sheet berisi tabel data.");
+    let jsonString = '';
+    let jsonObject: any = null;
+
+    if (text.includes('google.visualization.Query.setResponse')) {
+      const startIdx = text.indexOf('(');
+      const endIdx = text.lastIndexOf(')');
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        jsonString = text.substring(startIdx + 1, endIdx);
+      } else {
+        jsonString = text;
+      }
+    } else {
+      jsonString = text;
+    }
+
+    try {
+      jsonObject = JSON.parse(jsonString);
+    } catch (parseError: any) {
+      const sampleText = text.substring(0, 100).replace(/\r?\n|\r/g, " ");
+      throw new Error(`Data tidak dapat diparse sebagai JSON. Pastikan ID Spreadsheet "${sheetId}" benar. (Cuplikan data: "${sampleText}...")`);
+    }
+
+    if (!jsonObject || !jsonObject.table || !jsonObject.table.rows || !jsonObject.table.cols) {
+      throw new Error("Format data Google Sheets tidak berisi tabel yang valid. Pastikan Spreadsheet memiliki kolom dan baris yang sesuai.");
     }
 
     const headers = jsonObject.table.cols.map((col: any) => (col.label || '').toUpperCase().trim());

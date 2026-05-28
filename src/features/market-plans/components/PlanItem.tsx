@@ -29,8 +29,8 @@ export const PlanItem = React.memo(({
       layout
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className={cn(
-        "group py-2 md:py-3 px-3 md:px-4 flex items-center gap-3 md:gap-4 bg-transparent hover:bg-muted/30 rounded-2xl transition-all duration-200 border border-transparent",
-        iscurrentUser && "bg-background md:bg-background/80 shadow-md border-border/60 ring-1 ring-primary/10 relative overflow-hidden cursor-pointer"
+        "group py-2 md:py-3 px-1 flex items-center gap-3 md:gap-4 bg-transparent transition-all duration-300 border-b border-white/[0.03] last:border-0",
+        iscurrentUser && "relative"
       )}
     >
       {iscurrentUser && (
@@ -104,14 +104,14 @@ export const PlanItem = React.memo(({
       </div>
 
       <div className="text-right flex flex-col items-end gap-1 md:gap-1.5 relative z-10">
-        <p className="text-[8px] md:text-xs text-zinc-300 dark:text-white/30 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
+        <p className="text-[8px] md:text-xs text-zinc-400 dark:text-white/40 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
           {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
         </p>
         {(iscurrentUser || isManager) && (
           <button
             data-html2canvas-ignore="true"
             onClick={(e) => onDelete(e, plan.id)}
-            className="p-1 md:p-1.5 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+            className="p-1 md:p-1.5 rounded-md text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
           >
             <Trash2 className="w-2.5 md:w-3.5 h-2.5 md:h-3.5" />
           </button>

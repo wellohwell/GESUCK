@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Loader2, PackageX } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { ImageData } from '../../components/explore/ImageDetailView';
-import { useGeaGetra, GeaGetraItem } from '../../hooks/useGeaGetra';
+import type { ImageData } from '../../../components/explore/ImageDetailView';
+import { useGeaGetra, GeaGetraItem } from '../../../hooks/useGeaGetra';
 
 const convertToThumbnailLink = (url: string): string => {
     if (!url) return '';
@@ -22,7 +22,7 @@ const ImageCard = React.memo(({ item, onClick }: { item: GeaGetraItem, onClick: 
 
   return (
     <motion.div
-      className="w-full aspect-square cursor-pointer overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group"
+      className="w-full aspect-square cursor-pointer overflow-hidden rounded-xl bg-zinc-100 dark:bg-card/5 group"
       onClick={onClick}
     >
         {isError ? (
@@ -112,7 +112,7 @@ export default function GeaGetraPage({
 
   if (error) {
     return (
-      <div className="p-8 text-center bg-red-50 dark:bg-red-500/10 rounded-2xl max-w-sm mx-auto mt-10">
+      <div className="p-8 text-center bg-red-50 dark:bg-red-500/10 rounded-[1.5rem] max-w-sm mx-auto mt-10">
           <p className="text-sm font-bold text-red-500">{error}</p>
       </div>
     );
@@ -125,7 +125,7 @@ export default function GeaGetraPage({
   if (filteredData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-card/5 flex items-center justify-center mb-4">
               <PackageX className="w-7 h-7 text-zinc-400" />
             </div>
             <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Gambar Tidak Ditemukan</h3>
@@ -148,7 +148,7 @@ export default function GeaGetraPage({
           <div className="flex justify-center mt-6">
             <button 
               onClick={() => setDisplayLimit(prev => prev + 20)}
-              className="px-8 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-foreground transition-all border border-zinc-200 dark:border-white/10"
+              className="px-8 h-10 rounded-full bg-zinc-100 dark:bg-card/5 text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-foreground transition-all"
             >
               Lihat Lebih Banyak ({filteredData.length - displayLimit} lagi)
             </button>

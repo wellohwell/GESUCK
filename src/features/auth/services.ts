@@ -34,3 +34,11 @@ export const createUserProfile = async (uid: string, data: Partial<UserProfile>)
     ...data,
   });
 };
+
+export const updateUserProfile = async (uid: string, data: Partial<UserProfile>): Promise<void> => {
+  const docRef = doc(db, 'users', uid);
+  await setDoc(docRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+};

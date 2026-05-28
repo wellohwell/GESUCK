@@ -39,7 +39,7 @@ export function Toast({ toast: t, onDismiss }: { toast: ToastProps; onDismiss: (
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "pointer-events-auto relative flex w-full sm:w-auto min-w-[300px] max-w-[400px] items-start gap-4 rounded-2xl p-4 shadow-xl",
+        "pointer-events-auto relative flex w-full sm:w-auto min-w-[300px] max-w-[400px] items-start gap-4 rounded-[1.5rem] p-4 shadow-xl",
         "bg-card/80 backdrop-blur-xl border border-border/50 text-foreground"
       )}
       style={{

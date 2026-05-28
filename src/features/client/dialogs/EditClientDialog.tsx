@@ -94,9 +94,9 @@ export function EditClientDialog({ isOpen, onClose, client }: EditClientDialogPr
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-white dark:bg-zinc-950 md:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-900 dark:text-zinc-100"
+            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-background md:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-900 dark:text-zinc-100"
           >
-            <div className="sticky top-0 z-10 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center justify-between">
               <h2 className="text-base font-semibold tracking-wide">Edit Data Konsumen</h2>
               <IconButton onClick={onClose} icon={ChevronRight} className="rotate-90" />
             </div>

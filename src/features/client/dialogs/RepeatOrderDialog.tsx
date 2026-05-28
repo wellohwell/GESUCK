@@ -67,22 +67,44 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
       const payload = {
         nama: selectedClient.nama,
         nomor: selectedClient.nomor,
-        usaha: selectedClient.usaha || "",
         alamat: selectedClient.alamat || "",
-        produk: repeatOrderForm.barang, // mapped to produk
+        usaha: selectedClient.usaha || "",
+
+        produk: repeatOrderForm.barang,
         angsuran: angsuranNum,
         tenor: tenorNum,
         tenorType: repeatOrderForm.tenorType,
         omset: omset,
-        proses: "", // initialized as empty
-        stage: "pipeline",
-        status: "survey",
-        note: "",
+
+        kategori: "repeat",
+
+        orderStatus: "submitted",
+        currentStep: "survey",
+        stage: "pipeline", // for back-compat
+
+        survey: {
+          status: "submitted",
+          note: "",
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser?.email || uid
+        },
+
+        warehouse: {
+          status: "pending",
+          updatedAt: serverTimestamp(),
+          updatedBy: ""
+        },
+
+        archiveReason: "",
+
         ownerId: uid,
         branchId: branchId,
-        kategori: "repeat",
+
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+
+        // Keep legacy status field to make sure no breakages happen in rest of app
+        status: "survey"
       };
 
       console.log("Saving repeat order payload to Firestore 'clients' collection:", payload);
@@ -124,9 +146,9 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-white dark:bg-zinc-950 md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-background md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
           >
-            <div className="sticky top-0 z-10 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center justify-between">
               <h2 className="text-base font-semibold tracking-wide">
                 {showRepeatOrderForm ? 'Repeat Order' : 'Cari Konsumen (RO)'}
               </h2>
@@ -144,7 +166,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
                       placeholder="Masukkan nama, nomor, atau alamat..."
                       value={clientSearchQuery}
                       onChange={e => setClientSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 h-11 bg-zinc-100 dark:bg-zinc-900 border-none rounded-2xl text-sm font-medium"
+                      className="w-full pl-12 pr-4 h-11 bg-zinc-100 bg-card border-none rounded-[1.5rem] text-sm font-medium"
                     />
                   </div>
 
@@ -154,7 +176,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
                       <div 
                         key={client.id}
                         onClick={() => { setSelectedClient(client); setShowRepeatOrderForm(true); }}
-                        className="p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl hover:border-brand-primary/30 transition-all cursor-pointer"
+                        className="p-4 bg-zinc-50 bg-card border border-zinc-100 border-border/50 rounded-[1.5rem] hover:border-brand-primary/30 transition-all cursor-pointer"
                       >
                         <h4 className="font-semibold text-sm">{client.nama}</h4>
                         <p className="text-xs text-zinc-500">{client.alamat}</p>
@@ -164,7 +186,7 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
                 </>
               ) : (
                 <div className="space-y-5">
-                  <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
+                  <div className="p-4 bg-brand-primary/5 rounded-[1.5rem] border border-brand-primary/10">
                     <p className="text-[10px] font-bold text-brand-primary tracking-widest mb-1">Pilih Konsumen:</p>
                     <h3 className="text-base font-semibold">{selectedClient.nama}</h3>
                     <p className="text-xs text-zinc-500">{selectedClient.nomor}</p>

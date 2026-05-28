@@ -21,7 +21,7 @@ const formatIDR = (val: string | number) => {
 };
 
 export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submitLabel, isRepeat }: ClientFormProps) {
-  const inputClass = "w-full px-4 h-11 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.05] focus:border-primary/40 focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold placeholder:text-zinc-400 dark:placeholder:text-zinc-650";
+  const inputClass = "w-full px-4 h-11 bg-zinc-50 bg-card border border-border/50 dark:border-white/[0.05] focus:border-primary/40 focus:bg-card dark:focus:bg-zinc-950 focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-[1.5rem] text-sm font-semibold placeholder:text-zinc-400 dark:placeholder:text-zinc-650";
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -66,7 +66,7 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
         </div>
       )}
 
-      <div className="space-y-y space-y-3 pt-5 border-t border-zinc-150/60 dark:border-zinc-800/60">
+      <div className="space-y-y space-y-3 pt-5 border-t border-zinc-150/60 border-border/50/60">
         <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 tracking-widest ml-1">Order Detail</p>
         <div className="space-y-2">
           <input 
@@ -85,7 +85,7 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
             className={inputClass} 
           />
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-white/[0.05] h-11">
+            <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-[1.5rem] border border-border/50 dark:border-white/[0.05] h-11">
               {[
                 { id: 'hari', label: 'Hari' },
                 { id: 'bulan', label: 'Bulan' }
@@ -94,9 +94,9 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
                   key={type.id}
                   type="button"
                   onClick={() => setForm({ ...form, tenorType: type.id, tenor: '' })}
-                  className={`flex-1 flex items-center justify-center rounded-xl text-[10px] font-bold transition-all ${
+                  className={`flex-1 flex items-center justify-center rounded-[1.25rem] text-[10px] font-bold transition-all ${
                     form.tenorType === type.id
-                      ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm border border-zinc-200 dark:border-white/10'
+                      ? 'bg-card text-primary shadow-sm border border-border/50 dark:border-white/10'
                       : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
                   }`}
                 >
@@ -124,7 +124,7 @@ export function ClientForm({ form, setForm, onSubmit, isSubmitting, title, submi
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-white dark:bg-black pt-4 pb-2">
+      <div className="sticky bottom-0 bg-card dark:bg-black pt-4 pb-2">
         <PrimaryButton type="submit" isLoading={isSubmitting} className="w-full">
           {submitLabel || 'Simpan'}
         </PrimaryButton>

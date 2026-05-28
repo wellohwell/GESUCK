@@ -75,7 +75,7 @@ export default function TimelinePage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pb-24">
       {/* HEADER */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40">
+      <div className="bg-card border-b border-border/50 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight flex items-center gap-2 italic">
@@ -92,7 +92,7 @@ export default function TimelinePage() {
                   placeholder="Cari aktivitas..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-9 py-2 bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all font-medium"
+                  className="w-full pl-9 pr-9 py-2 bg-zinc-100 dark:bg-zinc-800 border-none rounded-[1.25rem] text-xs outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all font-medium"
                 />
                 {searchQuery && (
                   <button
@@ -112,8 +112,8 @@ export default function TimelinePage() {
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-2 border",
                       filterCategory === cat.id 
-                        ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent" 
-                        : "bg-white dark:bg-zinc-900 text-zinc-500 border-zinc-200 dark:border-zinc-800"
+                        ? "bg-zinc-900 dark:bg-card text-white dark:text-zinc-900 border-transparent" 
+                        : "bg-card text-zinc-500 border-border/50"
                     )}
                   >
                     <cat.icon className="w-3 h-3" />
@@ -159,7 +159,7 @@ export default function TimelinePage() {
                   </div>
 
                   {/* Card Content */}
-                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm group-hover:shadow-md transition-all group-hover:-translate-y-0.5">
+                  <div className="bg-card border border-border/50 rounded-[1.5rem] p-4 shadow-sm group-hover:shadow-md transition-all group-hover:-translate-y-0.5">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{activity.category}</span>
@@ -178,7 +178,7 @@ export default function TimelinePage() {
                       {activity.description}
                     </p>
 
-                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-zinc-100 border-border/50 flex items-center justify-between">
                        <div className="flex items-center gap-2">
                           <div className="w-5 h-5 rounded-full bg-brand-primary" />
                           <div className="flex flex-col">

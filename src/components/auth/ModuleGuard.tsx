@@ -47,10 +47,10 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
       case 'disabled':
         return {
           icon: AlertOctagon,
-          iconColor: 'text-zinc-400 dark:text-zinc-600 bg-zinc-100 dark:bg-zinc-900',
+          iconColor: 'text-zinc-400 dark:text-zinc-600 bg-zinc-100 bg-card',
           title: 'Modul Dinonaktifkan',
           badge: 'Deactivated',
-          badgeColor: 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500',
+          badgeColor: 'bg-zinc-100 bg-card text-zinc-500',
           description: `Modul "${moduleConfig?.name || moduleId}" saat ini sedang ditutup atau dikunci secara global oleh Administrator Pusat demi kestabilan dan penyelarasan alur kerja harian.`
         };
       case 'maintenance':
@@ -83,7 +83,7 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
       default:
         return {
           icon: HelpCircle,
-          iconColor: 'text-zinc-400 bg-zinc-100 dark:bg-zinc-900',
+          iconColor: 'text-zinc-400 bg-zinc-100 bg-card',
           title: 'Akses Terhambat',
           badge: 'Restricted',
           badgeColor: 'bg-zinc-100 text-zinc-500',
@@ -101,10 +101,10 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl"
+        className="max-w-md w-full bg-card border border-border/50 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl"
       >
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${info.iconColor}`}>
+          <div className={`w-14 h-14 rounded-[1.5rem] flex items-center justify-center ${info.iconColor}`}>
             <IconComponent className="w-7 h-7" />
           </div>
           
@@ -122,7 +122,7 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
         </div>
 
         {/* Diagnostic Metadata Footer */}
-        <div className="bg-zinc-50 dark:bg-zinc-950 rounded-2xl p-4 text-[10px] space-y-1.5 border border-zinc-200/50 dark:border-zinc-850">
+        <div className="bg-zinc-50 dark:bg-zinc-950 rounded-[1.5rem] p-4 text-[10px] space-y-1.5 border border-border/50/50 dark:border-zinc-850">
           <div className="flex justify-between text-zinc-400 dark:text-zinc-500 font-bold uppercase">
             <span>PARAMETER OPERASIONAL</span>
             <span>DIAGNOSTIK</span>
@@ -146,7 +146,7 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
         <div className="text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md hover:shadow-lg active:scale-97"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded-[1.25rem] text-xs font-black uppercase tracking-widest transition-all shadow-md hover:shadow-lg active:scale-97"
           >
             <Home className="w-3.5 h-3.5" />
             Kembali Ke Dashboard

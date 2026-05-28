@@ -25,7 +25,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const glassmorphism = "bg-white/70 backdrop-blur-md border border-white/20 shadow-xl";
+export const glassmorphism = "bg-card/70 backdrop-blur-md border border-white/20 shadow-xl";
 export const innerShadow = "shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]";
 
 export function formatCurrency(value: number) {

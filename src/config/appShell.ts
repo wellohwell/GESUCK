@@ -27,7 +27,7 @@ export const DEFAULT_WORKSPACES: Record<string, string> = {
 };
 
 // Ultimate fallback route if a user has no eligible workspaces or experiences any dead-end
-export const FALLBACK_WORKSPACE = "/profile";
+export const FALLBACK_WORKSPACE = "/workspace/profile";
 
 // Fully serializable configuration for dynamic navigation management
 export interface DynamicNavItem {
@@ -135,7 +135,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'marketPlans',
     label: 'Plans',
     icon: 'calendar',
-    route: '/workspace/Market-Plans',
+    route: '/workspace/market-plans',
     visible: true,
     enabled: true,
     order: 4,
@@ -197,7 +197,7 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     id: 'profile',
     label: 'Profile',
     icon: 'usercircle',
-    route: '/profile',
+    route: '/workspace/profile',
     visible: true,
     enabled: true,
     order: 9,

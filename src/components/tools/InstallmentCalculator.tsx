@@ -159,6 +159,11 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
 
     const angsuranUntukClipboard = nawarNum > 0 ? nawarNum : angsuranHarian;
 
+    if (angsuranUntukClipboard < 5000) {
+      toast.error('Minimal angsuran per hari adalah Rp 5.000');
+      return;
+    }
+
     let potonganText = '';
     if (dpNum > 0 || nawarNum > 0) {
         potonganText = `Est. Potongan/DP: ${formatRupiah(estimasiPotongan)}`;
@@ -195,7 +200,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 text-left">
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Harga / Modal</label>
-                <RupiahInput placeholder="Rp 0" value={modal} onValueChange={setModal} autoMultiply={true} className="py-2.5" />
+                <RupiahInput placeholder="0" value={modal} onValueChange={setModal} autoMultiply={true} className="py-2.5" />
             </div>
             
             <div className="space-y-1 text-left">
@@ -203,7 +208,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 <select 
                   value={tipe} 
                   onChange={(e) => setTipe(e.target.value as TipeProduk)}
-                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full bg-secondary border border-border rounded-full px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tipe Produk</option>
                   {Object.keys(aturanMargin).map((key) => (
@@ -216,7 +221,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 text-left">
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">DP / Uang Muka</label>
-                <RupiahInput placeholder="Rp 0" value={dp} onValueChange={setDp} className="py-2.5" />
+                <RupiahInput placeholder="0" value={dp} onValueChange={setDp} className="py-2.5" />
                 {tipe === 'HP' && (dp || 0) < 100000 && (
                   <p className="text-[9px] text-red-500 font-bold ml-1">Minimal DP Rp 100.000</p>
                 )}
@@ -226,7 +231,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 <select 
                   value={tenor} 
                   onChange={(e) => setTenor(Number(e.target.value) as Tenor)}
-                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full bg-secondary border border-border rounded-full px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tenor</option>
                   {[30, 60, 90, 120, 150, 180]
@@ -238,15 +243,20 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             </div>
         </div>
         
-        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-xl shadow-sm mt-2">
+        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-full shadow-sm mt-2">
             <span className="font-black text-[9px] uppercase tracking-wider opacity-80">Angsuran / Hari</span>
             <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
         </div>
+        {angsuranHarian > 0 && angsuranHarian < 5000 && (
+          <p className="text-[9px] text-red-500 font-bold ml-1 text-center -mt-1 uppercase animate-pulse">
+            Minimal angsuran / hari Rp 5.000
+          </p>
+        )}
 
         <div className="space-y-1 text-left">
             <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Harga Nawar</label>
             <RupiahInput 
-              placeholder="Rp 0" 
+              placeholder="0" 
               value={nawar} 
               onValueChange={setNawar}
               className={cn("py-2.5", isNawarFilled && "border-red-500 ring-red-500 ring-1")}
@@ -255,21 +265,24 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         </div>
 
         <div className={cn(
-            "flex justify-between items-center px-4 py-3 rounded-xl transition-colors",
+            "flex justify-between items-center px-4 py-3 rounded-full transition-colors",
             isNawarFilled 
                 ? "bg-red-500 text-white shadow-sm" 
-                : "bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white"
+                : "bg-white text-black shadow-sm"
         )}>
-            <span className="font-black text-[9px] uppercase tracking-wider opacity-60">Est. Potongan / DP</span>
+            <span className={cn(
+                "font-black text-[9px] uppercase tracking-wider opacity-60",
+                isNawarFilled ? "text-white" : "text-black"
+            )}>Est. Potongan / DP</span>
             <span className="font-black text-lg">{formatRupiah(estimasiPotongan)}</span>
         </div>
 
         <button 
           onClick={copyToClipboard} 
-          disabled={!modal || !tipe || !tenor}
-          className="w-full bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+          disabled={!modal || !tipe || !tenor || (angsuranHarian > 0 && angsuranHarian < 5000 && !isNawarFilled)}
+          className="w-full bg-white text-zinc-900 font-bold py-3.5 rounded-full flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
         >
-            <Copy className="w-4 h-4" />
+            <Copy className="w-4 h-4 text-zinc-900" />
             <span className="text-sm">Salin Hasil</span>
         </button>
       </div>

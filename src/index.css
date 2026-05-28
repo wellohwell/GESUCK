@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -7,15 +6,17 @@
   --font-display: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
 
-  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
-  --shadow-premium: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 4px 40px -4px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
+  --shadow-depth: 0 20px 40px -8px rgba(0, 0, 0, 0.12);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -30,124 +31,86 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-
+  
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
-  --color-bg-primary: var(--background);
-  --color-bg-secondary: var(--secondary);
-  --color-bg-tertiary: var(--tertiary);
   --color-card-surface: var(--card-surface);
   --color-input-surface: var(--input-surface);
   --color-border-default: var(--border-default);
-
-  --color-lime-primary: #C6FF2E;
-  --color-lime-soft: #D7FF33;
 }
 
-/* ==================== LIGHT & DARK MODE ==================== */
 @layer base {
   :root {
-    /* ==================== PREMIUM LIGHT WORKSPACE ==================== */
-    --background: #F6F7F9;
-    --foreground: #111111;
+    /* PREMIUM DARK FINTECH THEME - NEON GREEN */
+    --background: #06080A; /* Ultra deep space / true dark */
+    --foreground: #FFFFFF;
     
-    --card: #FFFFFF;
-    --card-foreground: #111111;
+    --card: #0E1218; /* Solid deep base for cards */
+    --card-foreground: #FFFFFF;
     
-    --popover: #FFFFFF;
-    --popover-foreground: #111111;
+    --popover: #0E1218; 
+    --popover-foreground: #FFFFFF;
     
-    --primary: #C6FF2E;
-    --primary-foreground: #0A0A0A;
+    --primary: #CCFF00; /* Neon Lime / Chartreuse */
+    --primary-foreground: #000000;
     
-    --secondary: #F6F7F9;
-    --secondary-foreground: rgba(0,0,0,0.65);
+    --secondary: rgba(255, 255, 255, 0.08); /* Frosted surface */
+    --secondary-foreground: #A1A1AA;
     
-    --tertiary: #FFFFFF;
+    --tertiary: rgba(255, 255, 255, 0.04);
     
-    --muted: #F6F7F9;
-    --muted-foreground: rgba(0,0,0,0.4);
+    --muted: rgba(255, 255, 255, 0.04);
+    --muted-foreground: #71717A; /* Zinc 500 */
     
-    --accent: #C6FF2E;
-    --accent-foreground: #0A0A0A;
+    --accent: #CCFF00; /* Neon Lime */
+    --accent-foreground: #000000;
     
-    --destructive: #EF4444;
+    --destructive: #EF4444; /* Soft Red */
     --destructive-foreground: #FFFFFF;
     
-    --border: rgba(0,0,0,0.06);
-    --input: #FFFFFF;
-    --ring: #C6FF2E;
-    
-    --radius: 1.25rem;
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.04);
+    --ring: rgba(204, 255, 0, 0.3);
 
-    --text-primary: #111111;
-    --text-secondary: rgba(0,0,0,0.65);
-    --text-muted: rgba(0,0,0,0.4);
-    --card-surface: #FFFFFF;
-    --input-surface: #FFFFFF;
-    --border-default: rgba(0,0,0,0.06);
+    --radius: 1.5rem;
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --card-surface: rgba(14, 18, 24, 0.6); /* Translucent variation */
+    --input-surface: rgba(255, 255, 255, 0.04);
+    --border-default: rgba(255, 255, 255, 0.08);
   }
 
   .dark {
-    /* ==================== PREMIUM DARK WORKSPACE ==================== */
-    --background: #0F1115;
-    --foreground: #FFFFFF;
-    
-    --card: #171A20;
-    --card-foreground: #FFFFFF;
-    
-    --popover: #171A20;
-    --popover-foreground: #FFFFFF;
-    
-    --primary: #C6FF2E;
-    --primary-foreground: #0A0A0A;
-    
-    --secondary: #1E222B;
-    --secondary-foreground: rgba(255,255,255,0.72);
-    
-    --tertiary: #1E222B;
-    
-    --muted: #1E222B;
-    --muted-foreground: rgba(255,255,255,0.4);
-    
-    --accent: #C6FF2E;
-    --accent-foreground: #0A0A0A;
-    
-    --destructive: #F87171;
-    --destructive-foreground: #FFFFFF;
-    
-    --border: rgba(255,255,255,0.06);
-    --input: #1E222B;
-    --ring: #C6FF2E;
-
-    --text-primary: #FFFFFF;
-    --text-secondary: rgba(255,255,255,0.72);
-    --text-muted: rgba(255,255,255,0.4);
-    --card-surface: #171A20;
-    --input-surface: #1E222B;
-    --border-default: rgba(255,255,255,0.06);
+    /* Inherit from root, everything is dark now */
   }
 
   * {
-    @apply border-border outline-none transition-all duration-300;
+    @apply border-border outline-none transition-colors duration-300;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary-foreground overflow-x-hidden;
+    @apply text-foreground font-sans antialiased overflow-x-hidden;
+    background: radial-gradient(circle at 50% -20%, #171E28, #06080A 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-black tracking-tight text-text-primary;
+    @apply font-display font-semibold tracking-tight text-text-primary;
   }
 
-  /* Autofill custom look to prevent white browser flash and preserve theme */
   input:-webkit-autofill,
   input:-webkit-autofill:hover, 
   input:-webkit-autofill:focus, 
@@ -158,51 +121,65 @@
   }
 }
 
-/* ==================== COMPONENTS ==================== */
 @layer components {
+  /* Core UI Tokens for the Redesign */
+  .fintech-card {
+    @apply bg-card/40 backdrop-blur-md border border-border/50 rounded-3xl shadow-soft;
+  }
+  
+  .fintech-surface {
+    @apply bg-background/80 backdrop-blur-lg border border-border/30 rounded-[2.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+  }
+  
+  .fintech-panel {
+    @apply bg-card/40 backdrop-blur-md border border-border/40 rounded-2xl shadow-depth;
+  }
+  
+  .fintech-input {
+    @apply bg-input border border-border/50 rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all;
+  }
+
+  /* Backwards compatibility for existing components */
   .card-base {
-    @apply bg-card border border-border rounded-2xl shadow-soft hover:shadow-premium transition-all duration-300;
+    @apply bg-card/40 backdrop-blur-md border border-border/50 rounded-3xl shadow-soft;
   }
 
   .floating-panel {
-    @apply bg-card/95 backdrop-blur-xl border border-border rounded-3xl shadow-premium;
+    @apply bg-card/40 backdrop-blur-md border border-border/40 rounded-2xl shadow-depth;
   }
 
   .glass {
-    @apply bg-background/70 backdrop-blur-md border border-border/50;
+    @apply bg-card/30 backdrop-blur-sm border border-border/40;
   }
 }
 
-/* ==================== UTILITIES ==================== */
 @layer utilities {
   .text-gradient-lime {
-    @apply bg-gradient-to-br from-lime-primary to-[#a3e600] bg-clip-text text-transparent;
+    @apply text-primary;
   }
 
   .bg-gradient-lime {
-    @apply bg-gradient-to-br from-lime-primary to-[#a3e600];
+    @apply bg-primary;
   }
 
   .shadow-glow-lime {
-    box-shadow: 0 0 25px rgba(198, 255, 0, 0.3);
+    box-shadow: none;
   }
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
-  @apply w-1;
+  @apply w-1.5;
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full hover:bg-primary/50;
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40;
 }
 
-/* Mobile adjustment */
 @media (max-width: 640px) {
   :root {
-    --radius: 0.85rem;
+    --radius: 1rem;
   }
 }
 

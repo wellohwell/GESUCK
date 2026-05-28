@@ -91,7 +91,7 @@ export default function Login() {
             whileTap={isMobile ? {} : { scale: 0.98 }}
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full max-w-[260px] inline-flex items-center justify-center gap-3 h-11 bg-white text-black rounded-xl font-black text-[10px] shadow-premium hover:shadow-glow-lime transition-all tracking-[0.1em] uppercase disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
+            className="w-full max-w-[260px] inline-flex items-center justify-center gap-3 h-11 bg-white text-black rounded-full font-black text-[10px] shadow-premium hover:shadow-glow-lime transition-all tracking-[0.1em] uppercase disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
           >
             {!isMobile && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/[0.03] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />}
             {loading ? (

@@ -12,17 +12,43 @@ export interface ButtonProps {
   isLoading?: boolean;
 }
 
-const baseStyles = "inline-flex items-center justify-center gap-2 transition-all duration-200 ease-out rounded-full font-semibold text-sm tracking-wide h-12 px-6 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+const baseStyles = "inline-flex items-center justify-center gap-2 transition-all duration-300 ease-out font-black uppercase tracking-widest disabled:opacity-50 disabled:pointer-events-none active:scale-[0.95] group";
 
 export function PrimaryButton({ className, children, icon: Icon, isLoading, ...props }: ButtonProps) {
   return (
     <button 
-      className={cn(baseStyles, "bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.35)] hover:brightness-110", className)} 
+      className={cn(
+        baseStyles, 
+        "h-10 md:h-12 px-6 md:px-8 rounded-xl md:rounded-2xl",
+        "bg-primary text-black shadow-lg shadow-primary/20 hover:brightness-110", 
+        "text-[10px] md:text-xs",
+        className
+      )} 
       disabled={isLoading || props.disabled}
       {...props}
     >
-      {isLoading && <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />}
-      {Icon && !isLoading && <Icon className="w-4 h-4" />}
+      {isLoading && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
+      {Icon && !isLoading && <Icon className="w-3.5 md:w-4 h-3.5 md:h-4 group-hover:rotate-90 transition-transform duration-300" />}
+      {children}
+    </button>
+  );
+}
+
+export function ActionButton({ className, children, icon: Icon, isLoading, ...props }: ButtonProps) {
+  return (
+    <button 
+      className={cn(
+        baseStyles, 
+        "h-10 md:h-12 px-6 md:px-8 rounded-xl md:rounded-2xl",
+        "bg-foreground text-background shadow-xl hover:opacity-90", 
+        "text-[10px] md:text-xs",
+        className
+      )} 
+      disabled={isLoading || props.disabled}
+      {...props}
+    >
+      {isLoading && <div className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />}
+      {Icon && !isLoading && <Icon className="w-3.5 md:w-4 h-3.5 md:h-4 group-hover:rotate-90 transition-transform duration-300" />}
       {children}
     </button>
   );
@@ -31,12 +57,18 @@ export function PrimaryButton({ className, children, icon: Icon, isLoading, ...p
 export function SecondaryButton({ className, children, icon: Icon, isLoading, ...props }: ButtonProps) {
   return (
     <button 
-      className={cn(baseStyles, "bg-muted/40 text-foreground border border-border/50 hover:bg-muted/60", className)} 
+      className={cn(
+        baseStyles, 
+        "h-10 md:h-12 px-6 md:px-8 rounded-xl md:rounded-2xl",
+        "bg-muted/40 text-foreground border border-border/50 hover:bg-muted/60", 
+        "text-[10px] md:text-xs",
+        className
+      )} 
       disabled={isLoading || props.disabled}
       {...props}
     >
       {isLoading && <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />}
-      {Icon && !isLoading && <Icon className="w-4 h-4" />}
+      {Icon && !isLoading && <Icon className="w-3.5 md:w-4 h-3.5 md:h-4 transition-transform group-hover:rotate-90 duration-300" />}
       {children}
     </button>
   );
@@ -45,12 +77,18 @@ export function SecondaryButton({ className, children, icon: Icon, isLoading, ..
 export function GhostButton({ className, children, icon: Icon, isLoading, ...props }: ButtonProps) {
   return (
     <button 
-      className={cn(baseStyles, "bg-transparent text-foreground hover:bg-primary/10 hover:text-primary", className)} 
+      className={cn(
+        baseStyles, 
+        "h-10 md:h-12 px-6 md:px-8 rounded-xl md:rounded-2xl",
+        "bg-transparent text-foreground hover:bg-white/5", 
+        "text-[10px] md:text-xs",
+        className
+      )} 
       disabled={isLoading || props.disabled}
       {...props}
     >
       {isLoading && <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />}
-      {Icon && !isLoading && <Icon className="w-4 h-4" />}
+      {Icon && !isLoading && <Icon className="w-3.5 md:w-4 h-3.5 md:h-4 transition-transform group-hover:rotate-90 duration-300" />}
       {children}
     </button>
   );
@@ -59,7 +97,7 @@ export function GhostButton({ className, children, icon: Icon, isLoading, ...pro
 export function IconButton({ className, icon: Icon, isLoading, ...props }: ButtonProps) {
   return (
     <button 
-      className={cn("p-2 rounded-xl transition-all duration-200 hover:bg-muted/60", className)} 
+      className={cn("p-2 rounded-[1.25rem] transition-all duration-200 hover:bg-muted/60", className)} 
       disabled={isLoading || props.disabled}
       {...props}
     >

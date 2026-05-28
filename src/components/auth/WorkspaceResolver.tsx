@@ -27,13 +27,13 @@ export const WorkspaceResolver: React.FC = () => {
 
     // Helper to map route to moduleId
     const getModuleIdFromRoute = (route: string): string => {
-      if (route.startsWith('/home')) return 'home';
-      if (route.startsWith('/client')) return 'client';
-      if (route.startsWith('/explore')) return 'explore';
-      if (route.startsWith('/Market-Plans')) return 'marketPlans';
-      if (route.startsWith('/report')) return 'report';
-      if (route.startsWith('/tools')) return 'tools';
-      if (route.startsWith('/timeline')) return 'timeline';
+      if (route.startsWith('/workspace/home')) return 'home';
+      if (route.startsWith('/workspace/client')) return 'client';
+      if (route.startsWith('/workspace/explore')) return 'explore';
+      if (route.startsWith('/workspace/market-plans')) return 'marketPlans';
+      if (route.startsWith('/workspace/report')) return 'report';
+      if (route.startsWith('/workspace/tools')) return 'tools';
+      if (route.startsWith('/workspace/timeline')) return 'timeline';
       if (route.startsWith('/admin')) return 'adminUsers';
       return '';
     };
@@ -59,13 +59,13 @@ export const WorkspaceResolver: React.FC = () => {
         // Pick the first eligible workspace
         const bestModuleId = eligibleModules[0];
         const routeMap: Record<string, string> = {
-          home: '/home',
-          client: '/client',
-          explore: '/explore',
-          marketPlans: '/Market-Plans',
-          report: '/report',
-          tools: '/tools',
-          timeline: '/timeline',
+          home: '/workspace/home',
+          client: '/workspace/client',
+          explore: '/workspace/explore',
+          marketPlans: '/workspace/market-plans',
+          report: '/workspace/report',
+          tools: '/workspace/tools',
+          timeline: '/workspace/timeline',
           adminUsers: '/admin/modules',
         };
         targetRoute = routeMap[bestModuleId] || FALLBACK_WORKSPACE;

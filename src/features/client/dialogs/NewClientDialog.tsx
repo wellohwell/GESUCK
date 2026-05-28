@@ -53,22 +53,44 @@ export function NewClientDialog({ isOpen, onClose }: NewClientDialogProps) {
       const payload = {
         nama: newOrderForm.nama,
         nomor: newOrderForm.nomor,
-        usaha: newOrderForm.usaha || "",
         alamat: newOrderForm.alamat,
-        produk: newOrderForm.barang, // mapped to produk as requested
+        usaha: newOrderForm.usaha || "",
+
+        produk: newOrderForm.barang,
         angsuran: angsuranNum,
         tenor: tenorNum,
         tenorType: newOrderForm.tenorType,
         omset: omset,
-        proses: "", // initialized as empty string as requested
-        stage: "pipeline",
-        status: "survey",
-        note: "",
-        ownerId: uid, // for security rules
-        branchId: branchId, // for security rules
+
         kategori: "baru",
+
+        orderStatus: "submitted",
+        currentStep: "survey",
+        stage: "pipeline", // for backwards compatibility with query listeners
+
+        survey: {
+          status: "submitted",
+          note: "",
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser?.email || uid
+        },
+
+        warehouse: {
+          status: "pending",
+          updatedAt: serverTimestamp(),
+          updatedBy: ""
+        },
+
+        archiveReason: "",
+
+        ownerId: uid,
+        branchId: branchId,
+
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+
+        // Keep legacy status field to make sure no breakages happen in rest of app
+        status: "survey"
       };
 
       console.log("Saving payload to Firestore 'clients' collection:", payload);
@@ -113,9 +135,9 @@ export function NewClientDialog({ isOpen, onClose }: NewClientDialogProps) {
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-white dark:bg-zinc-950 md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-background md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
           >
-            <div className="sticky top-0 z-10 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center justify-between">
               <h2 className="text-base font-semibold tracking-wide">Konsumen Baru</h2>
               <IconButton onClick={onClose} icon={ChevronRight} className="rotate-90" />
             </div>

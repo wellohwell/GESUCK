@@ -30,11 +30,12 @@ import dayjs from "dayjs";
 import dayOfYear from "dayjs/plugin/dayOfYear";
 import "dayjs/locale/id";
 
-import { useRole } from "../hooks/authHooks";
+import { useRole, useBranch } from "../hooks/authHooks";
 import { ROLES } from "../config/roles";
 import { useModal } from "../hooks/use-modal";
 import { MasterDataView, MarketFormContent } from "./admin/Master";
 import { useSearchParams } from "react-router-dom";
+import { ActionButton } from "../components/ui/buttons";
 import Report from "./Report";
 import { TambahRencanaModal } from "../features/market-plans/modals/TambahRencanaModal";
 import { PlanItem } from "../features/market-plans/components/PlanItem";
@@ -76,6 +77,8 @@ export default function MarketPlans({
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
   const [showPendingTooltip, setShowPendingTooltip] = useState(false);
 
+  const { branchId } = useBranch();
+  
   // Form State
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -123,7 +126,7 @@ export default function MarketPlans({
   const handleDeleteMarket = async (id: string, name: string) => {
     if (!window.confirm(`Hapus pasar "${name}"?`)) return;
     try {
-      await removeMarket(id);
+      await removeMarket(id, branchId);
       toast.info("Pasar berhasil dihapus");
     } catch (e) {
       toast.error("Gagal menghapus pasar");
@@ -148,18 +151,23 @@ export default function MarketPlans({
   }, [showModal]);
 
   useEffect(() => {
+    if (!branchId) return;
+
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
+      // Filter plans by branch if necessary (if market_plans collection doesn't have tenant isolation yet)
       setPlans(
-        data.sort(
-          (a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0),
-        ),
+        data
+          .filter(p => !p.branchId || p.branchId === branchId)
+          .sort(
+            (a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0),
+          ),
       );
       setLoading(false);
     });
 
-    const unsubMarkets = subscribeMarkets(setMarkets);
-    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans);
-    const unsubUsers = subscribeUsers(setUsers);
+    const unsubMarkets = subscribeMarkets(setMarkets, branchId);
+    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans); // Usually for analytics, might want to filter this too
+    const unsubUsers = subscribeUsers(setUsers, branchId);
 
     return () => {
       unsubPlans();
@@ -167,7 +175,7 @@ export default function MarketPlans({
       unsubAllPlans();
       unsubUsers();
     };
-  }, [activeDate.isoDate]);
+  }, [activeDate.isoDate, branchId]);
 
   const userMap = useMemo(() => {
     const map: Record<string, { name: string; photoURL?: string }> = {};
@@ -332,6 +340,7 @@ export default function MarketPlans({
       }
 
       await addMarketPlan({
+        branchId: branchId,
         city: toTitleCase(selectedMarket?.wilayah || selectedCity),
         marketType: finalCategory,
         marketName: toTitleCase(selectedMarketName),
@@ -469,256 +478,285 @@ export default function MarketPlans({
         canAccessMaster ? "pt-4 md:pt-12" : "pt-2 md:pt-6"
       )}>
         {activeTab === 'plans' ? (
-          showModal ? (
-            isMasterFormOpen ? (
-              <div className="w-full flex-1 flex flex-col relative h-[calc(100dvh-120px)] sm:h-[80vh] min-h-[500px] mt-2 mb-10 bg-white dark:bg-black rounded-2xl border border-border shadow-sm">
-                <MarketFormContent 
-                  market={masterMarketToEdit} 
-                  onClose={() => {
-                    setIsMasterFormOpen(false);
-                    setMasterMarketToEdit(null);
-                  }} 
-                />
-              </div>
-            ) : (
-              <div className="w-full flex-1 flex flex-col relative h-[calc(100dvh-120px)] sm:h-[80vh] min-h-[500px] mt-2 mb-10 bg-transparent sm:bg-white sm:dark:bg-black sm:rounded-2xl border-none sm:border sm:border-border shadow-none sm:shadow-sm animate-in fade-in zoom-in-95 duration-300">
-                {/* Floating Clean Close Button */}
-                <button 
-                  onClick={() => setShowModal(false)}
-                  type="button"
-                  className="absolute right-2 top-2 sm:right-4 sm:top-4 z-30 text-muted-foreground hover:text-foreground transition-all p-2.5 bg-muted/40 hover:bg-muted/60 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80 rounded-full flex items-center justify-center border border-border/10 shrink-0 shadow-sm"
-                  aria-label="Kembali"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
-                 <div className="px-4 sm:px-6 pt-12 pb-32 flex-1 overflow-y-auto no-scrollbar w-full max-w-3xl mx-auto relative">
-                   {/* Sticky Filter & Header Section */}
-                   <div className="sticky top-0 z-20 bg-background sm:bg-white sm:dark:bg-black pt-2 pb-4 space-y-4 mb-4 border-b border-border/20">
-                     {/* Search Box */}
-                     <div className="relative group w-full">
-                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-                       <input
-                         type="text"
-                         placeholder="Cari pasar atau wilayah..."
-                         value={searchQuery}
-                         onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
-                         className="w-full bg-muted/50 border border-border/60 rounded-xl pl-10 pr-4 h-10 text-[11px] font-bold outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30"
-                       />
-                       {searchQuery && (
-                         <button
-                           onClick={() => setSearchQuery("")}
-                           className="absolute right-3.5 top-1/2 -translate-y-1/2 tap-target rounded-full hover:bg-muted transition-colors"
-                         >
-                           <X className="w-3.5 h-3.5 text-muted-foreground" />
-                         </button>
-                       )}
-                     </div>
-
-                     {/* Filters Hub */}
-                     <div className="grid grid-cols-3 gap-2 py-0.5">
-                       {/* City Selector */}
-                       <div className="relative">
-                         <select
-                           value={selectedCity}
-                           onChange={(e) => setSelectedCity(e.target.value)}
-                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                         >
-                           <option value="" className="bg-background">WILAYAH</option>
-                           {WILAYAH_EXACT.map((w) => (
-                             <option key={w} value={w} className="bg-background">{w.toUpperCase()}</option>
-                           ))}
-                         </select>
-                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-                       </div>
-
-                       {/* Type Selector */}
-                       <div className="relative">
-                         <select
-                           value={selectedType}
-                           onChange={(e) => setSelectedType(e.target.value)}
-                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                         >
-                           <option value="" className="bg-background">KATEGORI</option>
-                           {KATEGORI_TYPES.map((k) => (
-                             <option key={k.id} value={k.id} className="bg-background">{k.label.toUpperCase()}</option>
-                           ))}
-                         </select>
-                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-                       </div>
-
-                       {/* Pasaran Selector */}
-                       <div className="relative">
-                         <select
-                           value={selectedPasaran || ""}
-                           onChange={(e) => setSelectedPasaran(e.target.value)}
-                           className="w-full h-[38px] bg-muted/45 px-2.5 rounded-lg text-[9px] font-black border-none outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
-                         >
-                           <option value="" className="bg-background">PASARAN</option>
-                           {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
-                             <option key={p} value={p} className="bg-background">{p.toUpperCase()}</option>
-                           ))}
-                         </select>
-                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-                       </div>
-                     </div>
-
-                     {/* "Pasar Tersedia" Header */}
-                     <div className="flex items-center justify-between px-1 pt-2 border-b border-border/20 pb-2">
-                       <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                         Pasar Tersedia
-                       </label>
-                       <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 tracking-widest">
-                         {availableMarkets.length} TOTAL
-                       </span>
-                     </div>
-                   </div>
-
-               {/* Available Markets List */}
-               <div className="relative">
-
-                <AnimatePresence>
-                  {pasaranWarning && !searchQuery && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-3 mb-3 flex gap-3 overflow-hidden shadow-sm shadow-yellow-500/5"
-                    >
-                      <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
-                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200/60 leading-relaxed">
-                        {pasaranWarning}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="flex flex-col gap-1">
-                     {availableMarkets.length > 0 ? (
-                      availableMarkets.map((m) => {
-                         const key = `${normalizeMarketName(m.nama_pasar)}|${normalizeCityName(m.wilayah)}`;
-                         const takerName = takenMarketsMap[key];
-                         const isTaken = !!takerName;
-                         const isSelected = selectedMarketName === m.nama_pasar && selectedMarketCity === m.wilayah;
-                         return (
-                           <div
-                            key={m.id}
-                            onClick={() => !isTaken && handleMarketClick(m)}
-                            className={cn(
-                              "flex items-center justify-between p-4 mb-3 transition-all rounded-2xl shadow-sm border",
-                              isTaken 
-                                ? "opacity-60 bg-zinc-100/30 dark:bg-zinc-950/20 border-zinc-200/40 dark:border-white/5 cursor-not-allowed" 
-                                : "active:scale-[0.99] group cursor-pointer border-border/40 dark:border-white/[0.04] bg-muted/15 dark:bg-zinc-900/30 hover:bg-muted/25 dark:hover:bg-zinc-900/60",
-                              isSelected && !isTaken && "bg-primary/10 border-primary/40 dark:border-primary/40 dark:bg-primary/[0.04] ring-1 ring-primary/20"
-                            )}
-                          >
-                            <div className="min-w-0 flex-1 pr-1">
-                              <h4 className={cn(
-                                "font-semibold text-sm leading-tight tracking-tight truncate transition-colors",
-                                isSelected && !isTaken ? "text-primary" : "text-foreground",
-                                isTaken && "text-muted-foreground/75"
-                              )}>
-                              {toTitleCase(m.nama_pasar)}
-                            </h4>
-                            <div className="text-[11px] font-bold text-muted-foreground/80 tracking-wide mt-0.5">
-                              {toTitleCase(m.wilayah)}
-                            </div>
-                            <div className="flex flex-col gap-1 mt-1">
-                              {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((kat: any, kIdx: number) => {
-                                const katId = typeof kat === "object" ? kat.kode || kat.id : kat;
-                                const isPasaranJawa = katId === "PASARAN_JAWA";
-                                
-                                let infoLabel = "";
-                                if (isPasaranJawa) {
-                                  infoLabel = (m.pasaran || []).map(p => p.toUpperCase()).join(", ") || "HARI INI";
-                                } else {
-                                  const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
-                                  infoLabel = toTitleCase(String(labelText).replace("Pasar ", ""));
-                                }
-
-                                let scheduleText = "";
-                                if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
-                                  scheduleText = m.jam_buka[katId] || Object.values(m.jam_buka)[0] || "";
-                                } else {
-                                  scheduleText = m.jam_buka || "";
-                                }
-
-                                return (
-                                  <div key={`${m.id}-kat-${kIdx}`} className="flex items-center gap-1.5 text-[11px] font-bold text-primary tracking-tight">
-                                    <span>🕐</span>
-                                    <span>{infoLabel} - {scheduleText}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-
-                            {isTaken && (
-                              <div className="mt-2 text-[10px] font-black text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg w-fit tracking-wider uppercase">
-                                pasar ini telah dipilih {takerName}
+          <>
+            <AnimatePresence>
+            {showModal && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed inset-0 z-[100] bg-background flex flex-col font-sans"
+              >
+                {isMasterFormOpen ? (
+                  <div className="w-full flex-1 flex flex-col relative h-full bg-card dark:bg-black overflow-hidden">
+                    <MarketFormContent 
+                      market={masterMarketToEdit} 
+                      onClose={() => {
+                        setIsMasterFormOpen(false);
+                        setMasterMarketToEdit(null);
+                      }} 
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {/* A. Sticky Header */}
+                    <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/10 pt-safe pb-1 group/header">
+                      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6">
+                        <div className="flex items-center justify-between h-12 mb-1">
+                           <div className="flex items-center gap-2">
+                              <h2 className="text-[11px] font-black tracking-[0.2em] uppercase text-foreground/80">TAMBAH RENCANA</h2>
+                              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                                 <div className="w-1 h-1 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(198,255,46,0.5)]" />
+                                 <span className="text-[8px] font-black text-primary tracking-widest leading-none">LIVE</span>
                               </div>
-                            )}
+                           </div>
+                           <button 
+                             onClick={() => setShowModal(false)}
+                             className="w-8 h-8 rounded-full bg-muted/40 hover:bg-muted/60 flex items-center justify-center border border-border/10 text-muted-foreground transition-all active:scale-95"
+                           >
+                             <X className="w-3.5 h-3.5" />
+                           </button>
+                        </div>
 
-                            {/* Sub Category Selection - Always show if multi-category and selected */}
-                            {isSelected && !isTaken && Array.isArray(m.kategori) && m.kategori.length > 1 && (
-                              <div className="mt-2.5 flex flex-wrap gap-1.5 p-1.5 bg-zinc-50 dark:bg-white/[0.02] rounded-xl w-fit border border-zinc-100 dark:border-white/5 shadow-inner">
-                                {m.kategori.map((kat: any, katIdx: number) => {
-                                  const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
-                                  const labelValue = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
-                                  const labelStr = typeof labelValue === "object" ? String(labelValue.label || katIdVal) : String(labelValue);
-                                  const isSelected = selectedSubCategory === String(katIdVal);
-                                  
-                                  return (
-                                    <button
-                                      key={`${m.id}-choice-${katIdVal}-${katIdx}`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedSubCategory(String(katIdVal));
-                                      }}
-                                      className={cn(
-                                        "px-4 py-1.5 rounded-lg text-[9px] font-black tracking-[0.05em] uppercase transition-all duration-200",
-                                        isSelected
-                                          ? "bg-primary text-black shadow-[0_2px_8px_rgba(183,232,0,0.2)] scale-105"
-                                          : "bg-zinc-200 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-white/10",
-                                      )}
-                                    >
-                                      {labelStr.replace("Pasar ", "")}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
+                        {/* Search Bar */}
+                        <div className="relative group/search w-full mb-3">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30 group-focus-within/search:text-primary transition-colors" />
+                          <input
+                            type="text"
+                            placeholder="Cari pasar atau wilayah..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(toTitleCase(e.target.value))}
+                            className="w-full bg-muted/30 border border-border/20 rounded-[1.25rem] pl-9 pr-4 h-10 text-[10px] font-bold outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all text-foreground placeholder:text-muted-foreground/20"
+                          />
+                          {searchQuery && (
+                            <button
+                              onClick={() => setSearchQuery("")}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted transition-colors"
+                            >
+                              <X className="w-3 h-3 text-muted-foreground/40" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Headers for filters */}
+                        <div className="grid grid-cols-3 gap-2 px-1 mb-1">
+                           <label className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">WILAYAH</label>
+                           <label className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">KATEGORI</label>
+                           <label className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">PASARAN</label>
+                        </div>
+
+                        {/* Selects */}
+                        <div className="grid grid-cols-3 gap-2 pb-3">
+                          <div className="relative">
+                            <select
+                              value={selectedCity}
+                              onChange={(e) => setSelectedCity(e.target.value)}
+                              className="w-full h-10 bg-muted/45 px-3 rounded-xl text-[10px] font-black border border-border/10 outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                            >
+                              <option value="" className="bg-background">SEMUA</option>
+                              {WILAYAH_EXACT.map((w) => (
+                                <option key={w} value={w} className="bg-background">{w.toUpperCase()}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+                          </div>
+
+                          <div className="relative">
+                            <select
+                              value={selectedType}
+                              onChange={(e) => setSelectedType(e.target.value)}
+                              className="w-full h-10 bg-muted/45 px-3 rounded-xl text-[10px] font-black border border-border/10 outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                            >
+                              <option value="" className="bg-background">SEMUA</option>
+                              {KATEGORI_TYPES.map((k) => (
+                                <option key={k.id} value={k.id} className="bg-background">{k.label.toUpperCase()}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+                          </div>
+
+                          <div className="relative">
+                            <select
+                              value={selectedPasaran || ""}
+                              onChange={(e) => setSelectedPasaran(e.target.value)}
+                              className="w-full h-10 bg-muted/45 px-3 rounded-xl text-[10px] font-black border border-border/10 outline-none focus:ring-0 text-foreground appearance-none cursor-pointer transition-all uppercase tracking-tighter"
+                            >
+                              <option value="" className="bg-background">SEMUA</option>
+                              {["PAHING", "PON", "WAGE", "KLIWON", "LEGI"].map((p) => (
+                                <option key={p} value={p} className="bg-background">{p.toUpperCase()}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
                           </div>
                         </div>
-                       );
-                      })
-                    ) : (
-                      <div className="py-20 text-center text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] opacity-30">
-                        Data Tidak Ditemukan
                       </div>
-                    )}
-                </div>
-              </div>
-               </div>
+                    </header>
 
-              {/* Floating Save Button - Perfectly matching Bottom Nav style */}
-              <div className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pointer-events-none">
-                <nav className="bg-white/90 dark:bg-black/90 backdrop-blur-2xl rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] p-1.5 pointer-events-auto min-w-[200px]">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleAddPlan}
-                    className="relative w-full flex items-center justify-center gap-2 h-9 sm:h-10 px-8 rounded-full bg-primary text-primary-foreground shadow-[0_0_15px_rgba(198,255,46,0.3)] transition-all group pointer-events-auto"
-                  >
-                    <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px] font-bold tracking-tight uppercase">
-                      SIMPAN RENCANA
-                    </span>
-                  </motion.button>
-                </nav>
-              </div>
-            </div>
-          )
-        ) : (
+                    {/* B. Content Scroll */}
+                    <main className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-20">
+                      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6">
+                        <div className="flex items-center justify-between px-1 mb-6">
+                           <label className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.25rem]">
+                             PASAR TERSEDIA
+                           </label>
+                           <span className="text-[10px] font-black text-primary bg-primary/10 px-3.5 py-1 rounded-full border border-primary/20 tracking-widest">
+                             {availableMarkets.length} TOTAL
+                           </span>
+                        </div>
+
+                        <AnimatePresence mode="popLayout">
+                          {pasaranWarning && !searchQuery && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-[1.5rem] p-4 mb-5 flex gap-3 overflow-hidden shadow-sm"
+                            >
+                              <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+                              <p className="text-xs font-bold text-yellow-800 dark:text-yellow-200/60 leading-relaxed uppercase tracking-tight">
+                                {pasaranWarning}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <div className="grid grid-cols-1 gap-3">
+                             {availableMarkets.length > 0 ? (
+                              availableMarkets.map((m) => {
+                                 const key = `${normalizeMarketName(m.nama_pasar)}|${normalizeCityName(m.wilayah)}`;
+                                 const takerName = takenMarketsMap[key];
+                                 const isTaken = !!takerName;
+                                 const isSelected = selectedMarketName === m.nama_pasar && selectedMarketCity === m.wilayah;
+                                 return (
+                                   <div
+                                    key={m.id}
+                                    onClick={() => !isTaken && handleMarketClick(m)}
+                                    className={cn(
+                                      "flex flex-col p-4 transition-all rounded-[1.5rem] shadow-sm relative overflow-hidden group",
+                                      isTaken 
+                                        ? "opacity-60 bg-zinc-100/30 dark:bg-zinc-950/20 cursor-not-allowed border border-transparent" 
+                                        : "active:scale-[0.985] cursor-pointer bg-muted/10 dark:bg-muted/5 hover:bg-muted/20 dark:hover:bg-zinc-900 shadow-none hover:shadow-md border border-border/10 hover:border-primary/20",
+                                      isSelected && !isTaken && "bg-primary/[0.03] dark:bg-primary/[0.05] border-primary/30 ring-1 ring-primary/20 shadow-primary/5"
+                                    )}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="min-w-0 flex-1 pr-1">
+                                        <h4 className={cn(
+                                          "font-semibold text-[13px] md:text-sm leading-tight tracking-tight truncate transition-colors",
+                                          isSelected && !isTaken ? "text-primary" : "text-foreground",
+                                          isTaken && "text-muted-foreground/60"
+                                        )}>
+                                          {toTitleCase(m.nama_pasar)}
+                                        </h4>
+                                        <div className="text-[10px] font-black text-muted-foreground/60 tracking-wider mt-0.5 uppercase">
+                                          {toTitleCase(m.wilayah)}
+                                        </div>
+                                      </div>
+                                      
+                                      {isSelected && !isTaken && (
+                                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-[0_0_12px_rgba(198,255,46,0.3)]">
+                                          <CheckCircle2 className="w-3 h-3 text-black" />
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1 mt-3">
+                                      {(Array.isArray(m.kategori) ? m.kategori : [m.kategori]).map((kat: any, kIdx: number) => {
+                                        const katId = typeof kat === "object" ? kat.kode || kat.id : kat;
+                                        const isPasaranJawa = katId === "PASARAN_JAWA";
+                                        
+                                        let infoLabel = "";
+                                        if (isPasaranJawa) {
+                                          infoLabel = (m.pasaran || []).map(p => p.toUpperCase()).join(", ") || "HARI INI";
+                                        } else {
+                                          const labelText = KATEGORI_TYPES.find(t => t.id === katId)?.label || katId;
+                                          infoLabel = String(labelText).replace("Pasar ", "").toUpperCase();
+                                        }
+
+                                        let scheduleText = "";
+                                        if (typeof m.jam_buka === "object" && m.jam_buka !== null) {
+                                          scheduleText = m.jam_buka[katId] || Object.values(m.jam_buka)[0] || "";
+                                        } else {
+                                          scheduleText = m.jam_buka || "";
+                                        }
+
+                                        return (
+                                          <div key={`${m.id}-kat-${kIdx}`} className="flex items-center gap-1.5 text-[9px] font-black text-primary tracking-widest uppercase">
+                                            <span className="opacity-70 group-hover:rotate-12 transition-transform h-3">🕐</span>
+                                            <span className="text-primary">{infoLabel} - {scheduleText}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {isTaken && (
+                                      <div className="mt-3 text-[9px] font-black text-rose-500 bg-rose-500/5 px-3 py-1 rounded-full border border-rose-500/10 w-fit tracking-wider uppercase flex items-center gap-1.5">
+                                        <Users className="w-3 h-3" />
+                                        <span>PASAR INI TELAH DIPILIH {takerName}</span>
+                                      </div>
+                                    )}
+
+                                    {isSelected && !isTaken && Array.isArray(m.kategori) && m.kategori.length > 1 && (
+                                      <div className="mt-4 flex flex-wrap gap-1.5 p-1 rounded-[1.25rem] w-full">
+                                        {m.kategori.map((kat: any, katIdx: number) => {
+                                          const katIdVal = typeof kat === "object" ? kat.kode || kat.id || katIdx : kat;
+                                          const labelValue = typeof kat === "object" ? kat.label : KATEGORI_TYPES.find((k) => k.id === kat)?.label || kat;
+                                          const labelStr = typeof labelValue === "object" ? String(labelValue.label || katIdVal) : String(labelValue);
+                                          const isKatSelected = selectedSubCategory === String(katIdVal);
+                                          
+                                          return (
+                                            <button
+                                              key={`${m.id}-choice-${katIdVal}-${katIdx}`}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedSubCategory(String(katIdVal));
+                                              }}
+                                              className={cn(
+                                                "flex-1 px-3 py-2 rounded-xl text-[9px] font-black tracking-widest uppercase transition-all duration-200 border",
+                                                isKatSelected
+                                                  ? "bg-primary text-black border-primary shadow-[0_4px_12px_rgba(198,255,46,0.2)] scale-[1.02]"
+                                                  : "bg-muted/40 dark:bg-white/5 text-muted-foreground border-transparent hover:bg-muted/60 dark:hover:bg-white/10",
+                                              )}
+                                            >
+                                              {labelStr.replace("Pasar ", "")}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                               );
+                              })
+                            ) : (
+                              <div className="py-20 text-center flex flex-col items-center justify-center opacity-40">
+                                <Search className="w-10 h-10 mb-4 text-muted-foreground/30" />
+                                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em]">
+                                  Data Tidak Ditemukan
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    </main>
+
+                    {/* C. Sticky Bottom Action */}
+                    <footer className="sticky bottom-0 z-40 bg-background/90 backdrop-blur-2xl border-t border-border/10 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex justify-center shadow-[0_-12px_30px_rgba(0,0,0,0.05)]">
+                      <div className="max-w-3xl mx-auto w-full">
+                        <ActionButton
+                          onClick={handleAddPlan}
+                          disabled={!selectedMarketName}
+                          icon={CheckCircle2}
+                          className="w-full"
+                        >
+                          {selectedMarketName ? `SIMPAN: ${selectedMarketName}` : 'PILIH PASAR TERLEBIH DAHULU'}
+                        </ActionButton>
+                      </div>
+                    </footer>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="md:grid md:grid-cols-12 md:gap-12 md:items-start w-full relative">
             {/* Header Hero */}
             <section className="mb-4 md:mb-0 text-center md:text-left pt-0.5 relative md:col-span-5 lg:col-span-4 md:sticky md:top-24">
@@ -733,7 +771,7 @@ export default function MarketPlans({
           </p>
 
           <div className="flex flex-col items-center md:items-start gap-1.5 mb-2">
-             <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+             <div className="h-px w-8 bg-zinc-200 dark:bg-card/10" />
              <h2 className="text-[8px] md:text-[10px] font-black text-zinc-400 dark:text-white/20 uppercase tracking-[0.3em] md:tracking-[0.4em]">
                MARKET TEMPERATURE
              </h2>
@@ -823,7 +861,7 @@ export default function MarketPlans({
           <section className="mb-4 md:mb-6">
             <div className="flex items-center justify-between mb-2 px-1">
               <div className="flex items-center gap-2">
-                <div className="w-4 md:w-5 h-4 md:h-5 bg-primary rounded-md flex items-center justify-center shadow-[0_2px_8px_rgba(198,255,46,0.2)]">
+                <div className="w-4 md:w-5 h-4 md:h-5 bg-primary rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(198,255,46,0.2)]">
                    <Users className="w-2.5 md:w-3 h-2.5 md:h-3 text-black" />
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -849,7 +887,7 @@ export default function MarketPlans({
                           
                           {/* Rich Polished Custom Tooltip */}
                           <span 
-                            className={`absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-48 bg-zinc-950 dark:bg-zinc-900 text-white rounded-xl p-2.5 shadow-xl text-[10px] font-bold leading-normal transition-all duration-200 z-[120] text-left ring-1 ring-white/10 ${
+                            className={`absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-48 bg-zinc-950 bg-card text-white rounded-[1.25rem] p-2.5 shadow-xl text-[10px] font-bold leading-normal transition-all duration-200 z-[120] text-left ring-1 ring-white/10 ${
                               showPendingTooltip 
                                 ? 'opacity-100 visible pointer-events-auto' 
                                 : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none'
@@ -887,15 +925,12 @@ export default function MarketPlans({
             <div className="card-base p-1.5 md:p-2 shadow-soft">
               {!myPlan && !loading && (
                 <div data-html2canvas-ignore="true" className="flex justify-center pt-3 pb-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.95 }}
+                  <ActionButton
                     onClick={() => setShowModal(true)}
-                    className="inline-flex items-center justify-center px-6 md:px-8 h-10 md:h-12 rounded-xl md:rounded-2xl bg-foreground text-background font-black text-[10px] md:text-xs uppercase tracking-widest shadow-lg gap-2 group transition-all"
+                    icon={Plus}
                   >
-                    <Plus className="w-3.5 md:w-4 h-3.5 md:h-4 group-hover:rotate-90 transition-transform duration-300" />
                     TAMBAH RENCANA
-                  </motion.button>
+                  </ActionButton>
                 </div>
               )}
 
@@ -905,7 +940,7 @@ export default function MarketPlans({
                     <motion.div
                       key={`skeleton-${i}`}
                       exit={{ opacity: 0 }}
-                      className="h-14 md:h-16 skeleton my-1 md:my-2 flex items-center gap-3 px-3 md:px-4 mx-0.5 md:mx-1 rounded-2xl"
+                      className="h-14 md:h-16 skeleton my-1 md:my-2 flex items-center gap-3 px-3 md:px-4 mx-0.5 md:mx-1 rounded-[1.5rem]"
                     >
                       <div className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-foreground/5 shadow-inner" />
                       <div className="flex-1 space-y-2.5">
@@ -920,10 +955,10 @@ export default function MarketPlans({
                     exit={{ opacity: 0 }}
                     className="py-20 md:py-32 px-4 flex flex-col items-center justify-center text-center"
                   >
-                    <div className="w-12 md:w-16 h-12 md:h-16 rounded-2xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-100 dark:border-white/[0.05] flex items-center justify-center mb-4">
-                       <Users className="w-5 md:w-6 h-5 md:h-6 text-zinc-300 dark:text-white/10" />
+                    <div className="w-12 md:w-16 h-12 md:h-16 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-inner">
+                       <Users className="w-5 md:w-6 h-5 md:h-6 text-zinc-400 dark:text-white/40" />
                     </div>
-                    <p className="text-[11px] md:text-xs text-zinc-400 dark:text-white/20 font-black uppercase tracking-[0.3em] md:tracking-[0.4em]">
+                    <p className="text-[11px] md:text-xs text-zinc-400 dark:text-white/40 font-black uppercase tracking-[0.3em] md:tracking-[0.4em]">
                       SISTEM BELUM MENERIMA DATA
                     </p>
                   </motion.div>
@@ -962,8 +997,8 @@ export default function MarketPlans({
                       SYNCED {dayjs().format("HH:mm")} WIB
                    </span>
                    <div className="flex items-center gap-1.5 opacity-30 md:opacity-40">
-                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-white/50" />
-                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-white/50" />
+                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-card/50" />
+                      <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-zinc-400 dark:bg-card/50" />
                       <div className="w-0.5 md:w-1 h-0.5 md:h-1 rounded-full bg-primary" />
                    </div>
                 </div>
@@ -971,7 +1006,7 @@ export default function MarketPlans({
           </footer>
         </div>
       </div>
-      )
+    </>
     ) : (
       <div className="w-full">
         {isMasterFormOpen ? (

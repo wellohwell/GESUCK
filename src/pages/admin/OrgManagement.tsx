@@ -214,7 +214,7 @@ export default function OrgManagement() {
 
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap shrink-0"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-[1.25rem] transition-all shadow-md active:scale-95 whitespace-nowrap shrink-0"
         >
           <Plus className="w-4 h-4" />
           Tambah Cabang
@@ -282,7 +282,7 @@ export default function OrgManagement() {
               placeholder="Cari ID atau nama cabang..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-secondary border border-border rounded-xl placeholder-muted-foreground text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-9 pr-4 py-2 text-xs bg-secondary border border-border rounded-[1.25rem] placeholder-muted-foreground text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
@@ -346,7 +346,7 @@ export default function OrgManagement() {
                     </div>
 
                     {/* Spreadsheets Configuration */}
-                    <div className="space-y-2 mb-4 bg-secondary/50 p-3.5 rounded-2xl border border-border">
+                    <div className="space-y-2 mb-4 bg-secondary/50 p-3.5 rounded-[1.5rem] border border-border">
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                         <FileSpreadsheet className="w-3.5 h-3.5" />
                         Spreadsheets Integrasi
@@ -390,7 +390,7 @@ export default function OrgManagement() {
                   <div className="px-6 py-4 bg-secondary/50 border-t border-border flex items-center justify-between gap-2">
                     <button
                       onClick={() => startEdit(b)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-secondary/60 hover:bg-secondary text-xs font-bold uppercase tracking-wider rounded-xl transition-colors border border-border"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-secondary/60 hover:bg-secondary text-xs font-bold uppercase tracking-wider rounded-[1.25rem] transition-colors border border-border"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       Konfigurasi Cabang
@@ -398,7 +398,7 @@ export default function OrgManagement() {
                     
                     <button
                       onClick={() => archiveBranchToggle(b)}
-                      className={`px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-xl border transition-colors ${
+                      className={`px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-[1.25rem] border transition-colors ${
                         b.archived
                           ? "bg-green-600/10 hover:bg-green-600/20 text-green-700 dark:text-green-400 border-green-500/20"
                           : "bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
@@ -431,9 +431,9 @@ export default function OrgManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-lg bg-card border border-border/50 shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-col max-h-[90vh]"
             >
-              <header className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/50">
+              <header className="px-6 py-4 border-b border-zinc-100 border-border/50 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/50">
                 <div>
                   <h3 className="text-base font-black flex items-center gap-2 text-zinc-900 dark:text-white">
                     <Settings2 className="w-5 h-5 text-accent" />
@@ -453,7 +453,7 @@ export default function OrgManagement() {
 
               <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
                 {formError && (
-                  <div className="p-4 bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-2xl text-xs flex items-center gap-3">
+                  <div className="p-4 bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-[1.5rem] text-xs flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <span className="font-bold">{formError}</span>
                   </div>
@@ -469,7 +469,7 @@ export default function OrgManagement() {
                       value={formId}
                       onChange={(e) => setFormId(e.target.value.toUpperCase())}
                       placeholder="e.g. YK01, SL02, KLT03"
-                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border disabled:opacity-50 text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono font-bold"
+                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border disabled:opacity-50 text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono font-bold"
                       required
                     />
                   </div>
@@ -482,7 +482,7 @@ export default function OrgManagement() {
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Jogja, Solo, Klaten"
-                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-bold"
+                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-bold"
                       required
                     />
                   </div>
@@ -506,7 +506,7 @@ export default function OrgManagement() {
                         value={formExplore}
                         onChange={(e) => setFormExplore(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk navigasi eksplorasi"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                     <div>
@@ -516,7 +516,7 @@ export default function OrgManagement() {
                         value={formPricing}
                         onChange={(e) => setFormPricing(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk default kalkulator harga"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                     <div>
@@ -526,7 +526,7 @@ export default function OrgManagement() {
                         value={formCatalog}
                         onChange={(e) => setFormCatalog(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk katalog visual sales"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -551,11 +551,11 @@ export default function OrgManagement() {
                       placeholder="Cari user (nama / email / status / peran)..."
                       value={adminSearch}
                       onChange={(e) => setAdminSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 text-[11px] bg-secondary border border-border rounded-xl text-foreground focus:outline-none"
+                      className="w-full pl-9 pr-4 py-2 text-[11px] bg-secondary border border-border rounded-[1.25rem] text-foreground focus:outline-none"
                     />
                   </div>
 
-                  <div className="max-h-40 overflow-y-auto border border-border rounded-2xl bg-secondary/35 divide-y divide-border">
+                  <div className="max-h-40 overflow-y-auto border border-border rounded-[1.5rem] bg-secondary/35 divide-y divide-border">
                     {users
                       .filter(u => {
                         const s = adminSearch.toLowerCase();
@@ -593,7 +593,7 @@ export default function OrgManagement() {
                 </div>
 
                 {/* Active Toggle Option */}
-                <div className="flex items-center justify-between p-4 bg-secondary/40 border border-border rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-secondary/40 border border-border rounded-[1.5rem]">
                   <div>
                     <span className="text-[11px] font-black uppercase tracking-wider block">Aktifkan Cabang</span>
                     <span className="text-[10px] text-muted-foreground">Cabang non-aktif tidak akan muncul saat onboarding user baru.</span>
@@ -605,25 +605,25 @@ export default function OrgManagement() {
                       formActive ? "bg-green-500" : "bg-zinc-400 dark:bg-zinc-700"
                     }`}
                   >
-                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
+                    <div className={`w-5 h-5 bg-card rounded-full shadow-md transition-transform duration-200 ${
                       formActive ? "translate-x-6" : "translate-x-0"
                     }`} />
                   </button>
                 </div>
               </form>
 
-              <footer className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-end gap-3 bg-zinc-50 dark:bg-zinc-950/50">
+              <footer className="px-6 py-4 border-t border-zinc-100 border-border/50 flex items-center justify-end gap-3 bg-zinc-50 dark:bg-zinc-950/50">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-[1.25rem] transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-[1.25rem] transition-all shadow-md active:scale-95"
                 >
                   Simpan Konfigurasi
                 </button>

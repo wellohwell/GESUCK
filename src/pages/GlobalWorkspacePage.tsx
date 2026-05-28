@@ -38,7 +38,7 @@ export default function GlobalWorkspacePage() {
     setBranchContext(branchId);
     toast.success(`Berhasil memuat konteks tenant untuk Cabang: ${branchId.toUpperCase()}`);
     // Navigate to homepage of that branch
-    navigate('/home');
+    navigate('/workspace/home');
   };
 
   // Inspect particular branch data in Firestore
@@ -87,7 +87,7 @@ export default function GlobalWorkspacePage() {
             </p>
           </div>
           
-          <div className="flex flex-col gap-2 bg-zinc-950 border border-zinc-850 p-4 rounded-2xl font-mono text-[11px] text-zinc-400 min-w-[240px]">
+          <div className="flex flex-col gap-2 bg-zinc-950 border border-zinc-850 p-4 rounded-[1.5rem] font-mono text-[11px] text-zinc-400 min-w-[240px]">
             <div className="flex justify-between border-b border-zinc-900 pb-1.5 font-bold text-zinc-300">
               <span>IDENTITAS SENSOR</span>
               <span>GLOBAL API</span>
@@ -133,7 +133,7 @@ export default function GlobalWorkspacePage() {
                   setSelectedBranchId(e.target.value);
                   handleInspectBranch(e.target.value);
                 }}
-                className="w-full bg-[#18181b] border border-zinc-800 focus:border-brand-primary rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-primary font-medium"
+                className="w-full bg-[#18181b] border border-zinc-800 focus:border-brand-primary rounded-[1.25rem] px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-primary font-medium"
               >
                 <option value="">-- PILIH CABANG TENANT --</option>
                 {allBranchesList.map((b) => (
@@ -148,7 +148,7 @@ export default function GlobalWorkspacePage() {
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => handleActivateBranch(selectedBranchId)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#d2f34c] hover:bg-[#c1e23b] text-zinc-950 font-black text-xs uppercase tracking-wider py-3 rounded-xl transition-all shadow-md active:scale-97"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider py-3 rounded-lg transition-all shadow-sm active:scale-97"
                 >
                   <ArrowRightLeft className="w-3.5 h-3.5" />
                   Masuk Konteks Tenant
@@ -167,13 +167,13 @@ export default function GlobalWorkspacePage() {
             </div>
             
             <div className="grid grid-cols-2 gap-4 pt-2">
-              <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-900">
+              <div className="bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-900">
                 <span className="text-[9px] text-zinc-500 font-bold uppercase block">Total Tenan</span>
                 <span className="text-2xl font-black text-white">{allBranchesList.length}</span>
               </div>
-              <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-900">
+              <div className="bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-900">
                 <span className="text-[9px] text-zinc-500 font-bold uppercase block">Modul Global</span>
-                <span className="text-2xl font-black text-[#d2f34c]">{Object.keys(modules).length}</span>
+                <span className="text-2xl font-black text-primary">{Object.keys(modules).length}</span>
               </div>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function GlobalWorkspacePage() {
           <div className="flex-1 flex flex-col justify-between">
             {activeTab === 'branches' && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-xl border border-zinc-900">
+                <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-[1.25rem] border border-zinc-900">
                   <div className="flex items-center gap-2">
                     <Database className="w-4 h-4 text-zinc-400" />
                     <span className="text-xs text-zinc-300 font-mono">Datasource Isolation Verification</span>
@@ -231,13 +231,13 @@ export default function GlobalWorkspacePage() {
 
                 {inspectedBranchConfig ? (
                   <div className="space-y-4">
-                    <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-900 font-mono text-[11px] leading-relaxed overflow-x-auto text-zinc-400 max-h-[300px]">
+                    <div className="bg-zinc-950 p-4 rounded-[1.5rem] border border-zinc-900 font-mono text-[11px] leading-relaxed overflow-x-auto text-zinc-400 max-h-[300px]">
                       <span className="text-[10px] text-zinc-500 font-bold block mb-2">// RAW DATABASE RUNTIME DOCUMENT</span>
                       <pre>{JSON.stringify(inspectedBranchConfig, null, 2)}</pre>
                     </div>
 
                     {/* Datasource validation status */}
-                    <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-900">
+                    <div className="p-4 rounded-[1.5rem] bg-zinc-950 border border-zinc-900">
                       <h3 className="text-xs font-bold uppercase text-zinc-300 mb-2">Pemeriksaan Multi-Tenant</h3>
                       <div className="space-y-2 text-xs">
                         <div className="flex justify-between">
@@ -264,7 +264,7 @@ export default function GlobalWorkspacePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-500 space-y-3 bg-zinc-950 rounded-2xl border border-zinc-900">
+                  <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-500 space-y-3 bg-zinc-950 rounded-[1.5rem] border border-zinc-900">
                     <Sliders className="w-10 h-10 text-zinc-700 animate-pulse" />
                     <p className="text-xs">
                       Silakan pilih cabang di sebelah kiri untuk menginspeksi datasource spreadsheet, modul, dan properti runtime terisolasi secara real-time.
@@ -281,7 +281,7 @@ export default function GlobalWorkspacePage() {
                   {Object.keys(modules).map((modId) => {
                     const m = modules[modId];
                     return (
-                      <div key={modId} className="bg-zinc-950 p-4 rounded-xl border border-zinc-900 space-y-2">
+                      <div key={modId} className="bg-zinc-950 p-4 rounded-[1.25rem] border border-zinc-900 space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-bold text-white uppercase">{m.name}</span>
                           <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
@@ -300,17 +300,17 @@ export default function GlobalWorkspacePage() {
 
             {activeTab === 'diagnostics' && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 bg-zinc-950 p-3 rounded-xl border border-zinc-900">
+                <div className="flex items-center gap-2 bg-zinc-950 p-3 rounded-[1.25rem] border border-zinc-900">
                   <Terminal className="w-4 h-4 text-amber-500" />
                   <span className="text-xs font-mono text-zinc-300">Live Secure Audit Telemetry</span>
                 </div>
                 
-                <div className="space-y-2 font-mono text-[10px] bg-zinc-950 p-4 rounded-xl border border-zinc-900 text-zinc-400 max-h-[250px] overflow-y-auto">
+                <div className="space-y-2 font-mono text-[10px] bg-zinc-950 p-4 rounded-[1.25rem] border border-zinc-900 text-zinc-400 max-h-[250px] overflow-y-auto">
                   <p className="text-emerald-500">[AUTH] User verified as global type successfully.</p>
                   <p className="text-emerald-500">[AUTH] Root admin hardcoded bypass validated.</p>
                   <p className="text-amber-500">[ISOLATION] Tenant fallback detection: REMOVED DEFAULT_SHEET_ID.</p>
-                  <p className="text-[#d2f34c]">[ISOLATION] GJP Purwokerto is empty : explore.enabled forced to false (PASSED).</p>
-                  <p className="text-[#d2f34c]">[ISOLATION] GJY Yogyakarta has valid spreadsheetId : access allowed (PASSED).</p>
+                  <p className="text-primary">[ISOLATION] GJP Purwokerto is empty : explore.enabled forced to false (PASSED).</p>
+                  <p className="text-primary">[ISOLATION] GJY Yogyakarta has valid spreadsheetId : access allowed (PASSED).</p>
                   <p className="text-zinc-500">[LOGS] Telemetry running normally on port 3000 mapping ingress stream.</p>
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function GlobalWorkspacePage() {
 
             {/* Impersonation state alert if applicable */}
             {activeBranchContext && (
-              <div className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex justify-between items-center">
+              <div className="mt-6 p-4 rounded-[1.5rem] bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex justify-between items-center">
                 <span>Saat ini Anda berada di dalam konteks impersonsasi: <b>{activeBranchContext.toUpperCase()}</b></span>
                 <button
                   onClick={() => {

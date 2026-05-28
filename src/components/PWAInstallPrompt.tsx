@@ -65,10 +65,10 @@ export default function PWAInstallPrompt() {
         exit={{ y: 50, opacity: 0 }}
         className="fixed bottom-20 left-4 right-4 z-[9999] md:left-auto md:right-6 md:w-96"
       >
-        <div className="bg-zinc-950/80 backdrop-blur-xl border border-[#C6FF2E]/30 rounded-3xl p-5 shadow-2xl flex items-center justify-between gap-4">
+        <div className="bg-zinc-950/80 backdrop-blur-xl border border-primary/20 rounded-[1.5rem] p-5 shadow-2xl flex items-center justify-between gap-4">
           <div className="flex gap-4 items-center flex-1">
-            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
-              <Download className="w-6 h-6 text-[#C6FF2E]" />
+            <div className="w-12 h-12 bg-card/5 rounded-[1.25rem] flex items-center justify-center border border-white/5">
+              <Download className="w-6 h-6 text-primary" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-black text-white">Install VORK TEAM</span>
@@ -76,7 +76,7 @@ export default function PWAInstallPrompt() {
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button 
               onClick={handleDismiss}
               className="px-3 py-2 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors"
@@ -85,7 +85,7 @@ export default function PWAInstallPrompt() {
             </button>
             <button
               onClick={handleInstallClick}
-              className="px-4 py-2 bg-[#C6FF2E] text-black text-[11px] font-black rounded-full hover:bg-[#C6FF2E]/90 transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-primary text-primary-foreground text-[11px] font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5"
             >
               Install
               <ArrowRight className="w-3.5 h-3.5" />

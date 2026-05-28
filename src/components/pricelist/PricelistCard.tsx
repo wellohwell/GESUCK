@@ -11,10 +11,10 @@ interface Props {
 export const PricelistCard: React.FC<Props> = ({ product, onOpenSimulator }) => {
   return (
     <div 
-      className="group bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 rounded-[24px] overflow-hidden hover:border-zinc-300 dark:hover:border-white/20 transition-all flex flex-col h-full hover:shadow-xl dark:hover:shadow-black/50"
+      className="group bg-card border border-border/50 dark:border-white/10 rounded-[24px] overflow-hidden hover:border-zinc-300 dark:hover:border-white/20 transition-all flex flex-col h-full hover:shadow-xl dark:hover:shadow-black/50"
     >
-      <div className="relative aspect-square w-full bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 overflow-hidden flex items-center justify-center p-6">
-        <div className="absolute top-4 left-4 bg-white/80 dark:bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider border border-white/20 shadow-sm z-10">
+      <div className="relative aspect-square w-full bg-zinc-50 bg-card border-b border-zinc-100 dark:border-white/5 overflow-hidden flex items-center justify-center p-6">
+        <div className="absolute top-4 left-4 bg-card/80 dark:bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider border border-white/20 shadow-sm z-10">
           {product.kategori}
         </div>
         
@@ -55,7 +55,7 @@ export const PricelistCard: React.FC<Props> = ({ product, onOpenSimulator }) => 
           
           <button
             onClick={() => onOpenSimulator(product)}
-            className="w-full sm:w-auto bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2.5 rounded-full text-xs font-bold transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-md flex-shrink-0"
+            className="w-full sm:w-auto bg-zinc-900 dark:bg-card text-white dark:text-zinc-900 px-4 py-2.5 rounded-full text-xs font-bold transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 flex items-center justify-center gap-1.5 shadow-md flex-shrink-0"
           >
             <Smartphone className="w-4 h-4" />
             <span className="hidden sm:inline">Simulasi</span>

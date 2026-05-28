@@ -231,7 +231,7 @@ export default function AdminMasterPage() {
   return (
     <div className="w-full flex-1 flex flex-col pt-2 pb-24">
       {/* Sticky Action Bar */}
-      <div className="sticky top-4 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-white/95 dark:bg-black/95 backdrop-blur-md border border-zinc-200 dark:border-white/10 rounded-2xl md:rounded-3xl shadow-sm md:items-center justify-between mb-6">
+      <div className="sticky top-4 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-card/95 dark:bg-black/95 backdrop-blur-md border border-border/50 dark:border-white/10 rounded-[1.5rem] md:rounded-3xl shadow-sm md:items-center justify-between mb-6">
         <div className="flex-1 flex items-center gap-2 relative">
           <Search className="absolute left-3 w-4 h-4 text-zinc-400" />
           <input
@@ -239,13 +239,13 @@ export default function AdminMasterPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cari master pasar..."
-            className="w-full h-10 md:h-11 bg-zinc-50 dark:bg-white/5 border-transparent focus:border-zinc-300 dark:focus:border-white/20 rounded-xl pl-9 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all"
+            className="w-full h-10 md:h-11 bg-zinc-50 dark:bg-card/5 border-transparent focus:border-zinc-300 dark:focus:border-white/20 rounded-[1.25rem] pl-9 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all"
           />
         </div>
          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
           <button 
             onClick={handleExport}
-            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors flex-shrink-0"
+            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 bg-card hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border/50 rounded-[1.25rem] text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors flex-shrink-0"
           >
             <Download className="w-4 h-4" />
             <span className="hidden md:inline">Eksport</span>
@@ -253,7 +253,7 @@ export default function AdminMasterPage() {
           
           <div className="relative flex-shrink-0">
              <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-             <button className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors pointer-events-none">
+             <button className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 bg-card hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border/50 rounded-[1.25rem] text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors pointer-events-none">
               <Upload className="w-4 h-4" />
               <span className="hidden md:inline">Import</span>
              </button>
@@ -261,7 +261,7 @@ export default function AdminMasterPage() {
 
           <button 
             onClick={() => openEditor()}
-            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-4 bg-[#d2f34c] hover:bg-[#b8d63b] active:scale-95 text-black rounded-xl text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-[#d2f34c]/20 flex-shrink-0"
+            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-4 bg-[#d2f34c] hover:bg-[#b8d63b] active:scale-95 text-black rounded-[1.25rem] text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-[#d2f34c]/20 flex-shrink-0"
           >
             <Plus className="w-5 h-5 text-black font-black" strokeWidth={3.5} />
             <span className="hidden md:inline">Baru</span>
@@ -274,12 +274,12 @@ export default function AdminMasterPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-20 bg-zinc-100 dark:bg-white/5 animate-pulse rounded-2xl w-full" />
+              <div key={i} className="h-20 bg-zinc-100 dark:bg-card/5 animate-pulse rounded-[1.5rem] w-full" />
             ))}
           </div>
         ) : filteredData.length === 0 ? (
           <div className="py-20 text-center flex flex-col items-center justify-center">
-             <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+             <div className="w-16 h-16 bg-zinc-100 bg-card rounded-full flex items-center justify-center mb-4">
                 <SearchX className="w-8 h-8 text-zinc-400" />
              </div>
              <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300">Data Master Kosong</h3>
@@ -304,14 +304,14 @@ export default function AdminMasterPage() {
                   <div
                     key={item.id}
                     className={cn(
-                      "flex flex-col justify-between p-4.5 transition-all bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl hover:bg-zinc-50 dark:hover:bg-white/[0.01] shadow-sm hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 group min-h-[180px]",
+                      "flex flex-col justify-between p-4.5 transition-all bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] hover:bg-zinc-50 dark:hover:bg-card/[0.01] shadow-sm hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 group min-h-[180px]",
                       isInactive && "opacity-60 bg-zinc-50/50 dark:bg-zinc-950/40"
                     )}
                   >
                     <div className="min-w-0 flex-1 flex flex-col">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-extrabold text-sm md:text-base leading-tight tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-[#C6FF2E] transition-colors truncate">
+                          <h4 className="font-extrabold text-sm md:text-base leading-tight tracking-tight text-zinc-900 dark:text-white group-hover:text-primary transition-colors truncate">
                             {toTitleCase(item.name)}
                           </h4>
                           <div className="flex items-center gap-1 mt-0.5 text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
@@ -333,7 +333,7 @@ export default function AdminMasterPage() {
                             "flex-shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider transition-all scale-95 hover:scale-100 cursor-pointer",
                             item.active
                               ? "bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/20"
-                              : "bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10"
+                              : "bg-zinc-100 dark:bg-card/5 text-zinc-500 dark:text-zinc-400 border border-border/50 dark:border-white/10"
                           )}
                         >
                           {item.active ? "Aktif" : "Muted"}
@@ -348,7 +348,7 @@ export default function AdminMasterPage() {
                           return (
                             <div 
                               key={op.id || oIdx} 
-                              className="bg-zinc-50/10 dark:bg-black/30 border border-zinc-100 dark:border-white/5 rounded-xl p-2 flex flex-col gap-1"
+                              className="bg-zinc-50/10 dark:bg-black/30 border border-zinc-100 dark:border-white/5 rounded-[1.25rem] p-2 flex flex-col gap-1"
                             >
                               <div className="flex items-center justify-between">
                                 <span className={cn(
@@ -357,7 +357,7 @@ export default function AdminMasterPage() {
                                     ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono" 
                                     : isPagi 
                                       ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" 
-                                      : "bg-[#C6FF2E]/10 text-zinc-700 dark:text-[#C6FF2E]"
+                                      : "bg-primary/10 text-primary"
                                 )}>
                                   {op.jenis.replace("PASAR_", "")}
                                 </span>
@@ -395,14 +395,14 @@ export default function AdminMasterPage() {
                       <div className="flex gap-1.5">
                         <button 
                           onClick={() => openEditor(item)} 
-                          className="p-1 px-2 text-zinc-650 hover:text-black dark:text-zinc-400 dark:hover:text-[#C6FF2E] bg-zinc-50 hover:bg-[#C6FF2E]/10 dark:bg-white/5 dark:hover:bg-[#C6FF2E]/10 rounded-lg transition-colors border border-zinc-200/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                          className="p-1 px-2 text-zinc-650 hover:text-black dark:text-zinc-450 dark:hover:text-primary bg-zinc-50 hover:bg-primary/10 dark:bg-card/5 dark:hover:bg-primary/10 rounded-lg transition-colors border border-border/50/50 dark:border-white/5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                         >
                           <Pencil className="w-3 h-3" />
                           Edit
                         </button>
                         <button 
                           onClick={() => handleDelete(item)} 
-                          className="p-1 px-2 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-white/5 dark:hover:bg-red-500/10 rounded-lg transition-colors border border-zinc-200/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                          className="p-1 px-2 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-card/5 dark:hover:bg-red-500/10 rounded-lg transition-colors border border-border/50/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           Hapus
@@ -452,7 +452,7 @@ function MarketEditorSheet({ initialData, onClose, branchId, profile }: { initia
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 220 }}
-        className="relative w-full max-w-xl h-[92vh] md:h-[88vh] bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-white/10 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden pb-safe"
+        className="relative w-full max-w-xl h-[92vh] md:h-[88vh] bg-zinc-50 dark:bg-zinc-950 border-t border-border/50 dark:border-white/10 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden pb-safe"
       >
         <MarketEditorForm initialData={initialData} onClose={onClose} branchId={branchId} profile={profile} />
       </motion.div>
@@ -674,7 +674,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-white/5">
+      <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-card/95 bg-card/95 backdrop-blur-md border-b border-border/50/80 dark:border-white/5">
         <div>
           <h3 className="text-base font-black uppercase tracking-wider text-zinc-900 dark:text-white">
             {initialData ? "Edit Master Pasar" : "Tambah Master Pasar"}
@@ -695,9 +695,9 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
       {/* Scrollable Content Pane */}
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 scrollbar-thin">
         {/* SECTION 1: Master Market Information */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm space-y-4">
+        <div className="bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] p-4 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
-            <Building2 className="w-4 h-4 text-[#C6FF2E]" />
+            <Building2 className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
               Informasi Utama Pasar
             </h3>
@@ -712,7 +712,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
               required 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all" 
+              className="w-full h-11 px-4 rounded-[1.25rem] border border-border/50 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-primary transition-all" 
               placeholder="Contoh: Pasar Beringharjo" 
             />
           </div>
@@ -735,7 +735,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                   }
                 }}
                 required
-                className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all cursor-pointer"
+                className="w-full h-11 px-4 rounded-[1.25rem] border border-border/50 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-primary transition-all cursor-pointer"
               >
                 <option value="">Pilih Wilayah...</option>
                 {(BRANCH_WILAYAH_MAP[branchId?.toUpperCase()] || BRANCH_WILAYAH_MAP["GJY"] || []).map(opt => (
@@ -750,7 +750,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                   required 
                   value={city} 
                   onChange={(e) => setCity(e.target.value)} 
-                  className="w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-all" 
+                  className="w-full h-11 px-4 rounded-[1.25rem] border border-border/50 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-primary transition-all" 
                   placeholder="Ketik nama wilayah baru/kustom..." 
                 />
               )}
@@ -761,7 +761,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
         {/* SECTION 2: Operational Schedule List */}
         <div className="space-y-3.5 pb-10">
           <div className="flex items-center gap-2 pl-1 mb-1">
-            <Layers className="w-4 h-4 text-[#C6FF2E]" />
+            <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
               Daftar Jadwal Operasional
             </h3>
@@ -772,12 +772,12 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
             return (
               <div 
                 key={op.id} 
-                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm relative space-y-4"
+                className="bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] p-4 shadow-sm relative space-y-4"
               >
                 {/* Micro Header with Prune Option */}
                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/5 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#C6FF2E]/10 text-zinc-800 dark:text-[#C6FF2E] font-black text-[10px] flex items-center justify-center border border-[#C6FF2E]/20 font-mono">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center border border-primary/25 font-mono">
                       {opIdx + 1}
                     </span>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200 font-mono">
@@ -795,12 +795,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                   )}
                 </div>
 
-                {/* Jenis Pasar selector (segmented pills / adaptive chips) */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
                     Jenis Pasar
                   </label>
-                  <div className="grid grid-cols-3 gap-1 p-1 bg-zinc-100 dark:bg-zinc-950 rounded-xl border border-transparent dark:border-white/5">
+                  <div className="grid grid-cols-3 gap-1 p-1 bg-zinc-100 dark:bg-zinc-950 rounded-[1.25rem] border border-transparent dark:border-white/5">
                     {[
                       { id: "PASAR_UMUM", label: "Pasar Umum" },
                       { id: "PASAR_PAGI", label: "Pasar Pagi" },
@@ -813,12 +812,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                           key={typeItem.id}
                           onClick={() => handleChangeJenis(op.id, typeItem.id as any)}
                           className={cn(
-                            "h-9 rounded-lg text-[10px] font-black tracking-wider transition-all cursor-pointer uppercase",
+                            "h-9 rounded-lg text-[10px] font-bold tracking-wider transition-all cursor-pointer uppercase",
                             isSelected
-                              ? "bg-[#C6FF2E] text-black shadow-md shadow-[#C6FF2E]/10 font-black border-[#C6FF2E]"
+                              ? "bg-primary text-primary-foreground font-bold shadow"
                               : "text-zinc-550 dark:text-zinc-450 hover:text-zinc-900 dark:hover:text-zinc-100"
                           )}
-                          style={isSelected ? { backgroundColor: "#C6FF2E", color: "#000000" } : {}}
                         >
                           {typeItem.label.replace("Pasar ", "")}
                         </button>
@@ -846,12 +844,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                             key={day}
                             onClick={() => handleToggleDay(op.id, day)}
                             className={cn(
-                              "flex-1 min-w-[55px] h-9 rounded-lg text-[9px] font-black tracking-wider border transition-all cursor-pointer",
+                              "flex-1 min-w-[55px] h-9 rounded-lg text-[9px] font-bold tracking-wider border transition-all cursor-pointer",
                               isActive
-                                ? "bg-[#C6FF2E]/10 border-[#C6FF2E] text-[#C6FF2E] shadow-sm"
-                                : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                ? "bg-primary/10 border-primary text-primary shadow-sm"
+                                : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-300"
                             )}
-                            style={isActive ? { borderColor: "#C6FF2E", color: "#C6FF2E" } : {}}
                           >
                             {day}
                           </button>
@@ -864,9 +861,9 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
 
                     if (!showCustom) {
                       return (
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-[#C6FF2E]/5 dark:bg-[#C6FF2E]/5 border border-[#C6FF2E]/15">
+                        <div className="flex items-center justify-between p-3 rounded-[1.25rem] bg-primary/5 dark:bg-primary/5 border border-primary/15">
                           <div className="flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-[#C6FF2E]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-[#10B981]" />
                             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
                               Buka Setiap Hari (Senin - Minggu)
                             </span>
@@ -874,7 +871,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                           <button
                             type="button"
                             onClick={() => setCustomDaysOps(prev => ({ ...prev, [op.id]: true }))}
-                            className="text-[9px] font-black text-zinc-500 hover:text-[#C6FF2E] dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider underline cursor-pointer"
+                            className="text-[9px] font-bold text-zinc-500 hover:text-primary dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider underline cursor-pointer"
                           >
                             Ubah
                           </button>
@@ -894,7 +891,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                               setCustomDaysOps(prev => ({ ...prev, [op.id]: false }));
                               setOperations(prevOps => prevOps.map(item => item.id === op.id ? { ...item, hariOperasi: [...WEEKDAYS] } : item));
                             }}
-                            className="text-[9px] font-black text-emerald-600 dark:text-[#C6FF2E] hover:underline uppercase tracking-wider cursor-pointer"
+                            className="text-[9px] font-bold text-emerald-600 dark:text-primary hover:underline uppercase tracking-wider cursor-pointer"
                           >
                             Setiap Hari
                           </button>
@@ -909,12 +906,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                                 key={day}
                                 onClick={() => handleToggleDay(op.id, day)}
                                 className={cn(
-                                  "h-9 rounded-lg text-[9px] font-black border transition-all cursor-pointer uppercase font-mono",
+                                  "h-9 rounded-lg text-[9px] font-bold border transition-all cursor-pointer uppercase font-mono",
                                   isActive
-                                    ? "bg-[#C6FF2E]/10 border-[#C6FF2E] text-[#C6FF2E] shadow-sm"
-                                    : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-zinc-200 dark:border-white/5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                    ? "bg-primary/10 border-primary text-primary shadow-sm"
+                                    : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
                                 )}
-                                style={isActive ? { borderColor: "#C6FF2E", color: "#C6FF2E" } : {}}
                               >
                                 {shortLabel}
                               </button>
@@ -937,7 +933,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                       required
                       value={op.jamBuka}
                       onChange={(e) => handleChangeTime(op.id, "jamBuka", e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-colors"
+                      className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors"
                     />
                   </div>
                   <div className="space-y-1">
@@ -949,7 +945,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                       required
                       value={op.jamTutup}
                       onChange={(e) => handleChangeTime(op.id, "jamTutup", e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-[#C6FF2E] transition-colors"
+                      className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -960,11 +956,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
       </div>
 
       {/* Sticky Bottom Actions Action Panel (SafeArea optimized) */}
-      <div className="sticky bottom-0 z-10 p-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/5 flex gap-3">
+      <div className="sticky bottom-0 z-10 p-4 bg-card/95 bg-card/95 backdrop-blur-md border-t border-border/50 dark:border-white/5 flex gap-3">
         <button
           type="button"
           onClick={handleAddOperation}
-          className="flex-1 h-12 flex items-center justify-center gap-1.5 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/10 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+          className="flex-1 h-12 flex items-center justify-center gap-1.5 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-card/5 dark:hover:bg-card/10 text-zinc-800 dark:text-zinc-200 border border-border/50 dark:border-white/10 rounded-[1.25rem] text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4 text-zinc-550 dark:text-zinc-400" strokeWidth={3} />
           Jadwal
@@ -972,8 +968,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
         <button
           type="submit"
           disabled={saving}
-          className="flex-[2.5] h-12 flex items-center justify-center gap-2 bg-[#C6FF2E] hover:bg-[#b8d63b] text-black rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-md shadow-[#C6FF2E]/20 cursor-pointer"
-          style={{ backgroundColor: "#C6FF2E", color: "#000000" }}
+          className="flex-[2.5] h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-[1.25rem] text-xs font-bold uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm cursor-pointer"
         >
           {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</> : "SIMPAN PASAR"}
         </button>
@@ -998,7 +993,7 @@ export const KATEGORI_OPTIONS = [
 
 export function MasterDataView({ markets, onAdd, onEdit, onDelete, search, setSearch, filters }: any) {
   return (
-    <div className="p-4 border border-zinc-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/5 opacity-50">
+    <div className="p-4 border border-border/50 dark:border-white/10 rounded-[1.5rem] bg-card dark:bg-card/5 opacity-50">
        <p className="text-zinc-500 text-sm font-medium text-center">Tampilan legacy Data Master telah dipindahkan. Mohon gunakan panel admin utama.</p>
     </div>
   );
@@ -1017,7 +1012,7 @@ export function MarketFormContent({ market, onClose }: any) {
   };
   
   return (
-     <div className="w-full flex-1 flex flex-col h-[85vh] bg-zinc-50 dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-white/5 shadow-lg overflow-hidden">
+     <div className="w-full flex-1 flex flex-col h-[85vh] bg-zinc-50 dark:bg-zinc-950 rounded-lg border border-border/50 dark:border-white/5 shadow-lg overflow-hidden">
         <div className="flex-1 overflow-y-auto">
            <MarketEditorForm 
              initialData={market ? {

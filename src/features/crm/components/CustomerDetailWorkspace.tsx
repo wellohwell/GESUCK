@@ -11,7 +11,7 @@ export function CustomerDetailWorkspace({ customer, orders, onRepeatOrder }: Cus
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Profile Overview */}
-      <div className="col-span-1 border border-border/50 bg-card p-6 rounded-2xl">
+      <div className="col-span-1 border border-border/50 bg-card p-6 rounded-[1.5rem]">
         <h2 className="text-xl font-bold uppercase tracking-wide">{customer.name || customer.nama}</h2>
         <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
           {customer.businessName || customer.usaha || 'Personal'}
@@ -34,7 +34,7 @@ export function CustomerDetailWorkspace({ customer, orders, onRepeatOrder }: Cus
 
         <button 
           onClick={onRepeatOrder}
-          className="w-full mt-6 py-3 bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs rounded-xl hover:opacity-90 active:scale-95 transition-all"
+          className="w-full mt-6 py-3 bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs rounded-full hover:opacity-90 active:scale-95 transition-all"
         >
           Create Repeat Order
         </button>
@@ -42,14 +42,14 @@ export function CustomerDetailWorkspace({ customer, orders, onRepeatOrder }: Cus
 
       {/* Timeline & Order History */}
       <div className="col-span-1 lg:col-span-2 space-y-6">
-        <div className="border border-border/50 bg-card p-6 rounded-2xl">
+        <div className="border border-border/50 bg-card p-6 rounded-[1.5rem]">
           <h3 className="text-sm font-bold uppercase tracking-widest mb-4">Order History</h3>
           <div className="space-y-3">
             {orders.length === 0 ? (
               <p className="text-xs text-muted-foreground">No orders found.</p>
             ) : (
               orders.map(order => (
-                <div key={order.id} className="p-4 bg-muted/30 rounded-xl flex justify-between items-center">
+                <div key={order.id} className="p-4 bg-muted/30 rounded-full flex justify-between items-center px-6">
                   <div>
                     <p className="font-bold text-sm">{order.itemName || order.barang}</p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">

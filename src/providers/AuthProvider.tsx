@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../firebase/config';
 import { UserProfile } from '../features/auth/types';
 import { getUserProfile, createUserProfile } from '../features/auth/services';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { normalizeUserProfile } from '../features/users/utils/normalizeUserProfile';
 import { subscribeBranches } from '../lib/services';
 import { isOwner as checkIsOwner } from '../lib/permissions';
@@ -52,25 +52,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [branchesLoading, setBranchesLoading] = useState(true);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
+    let profileUnsub: () => void = () => {};
+
+    const authUnsub = onAuthStateChanged(auth, async (u) => {
       setFirebaseUser(u);
       setLoading(true);
+      
       if (u) {
+        // First get the initial profile to ensure it exists
         const rawProfile = await getUserProfile(u.uid);
-        let p;
         if (!rawProfile) {
           await createUserProfile(u.uid, { email: u.email || "", name: u.displayName || "", photoURL: u.photoURL || "" });
-          const newRawProfile = await getUserProfile(u.uid);
-          p = normalizeUserProfile(u.uid, newRawProfile || {});
-        } else {
-          p = normalizeUserProfile(u.uid, rawProfile);
         }
-        setProfile(p);
+
+        // Setup real-time listener for profile
+        const profileDocRef = doc(db, 'users', u.uid);
+        profileUnsub = onSnapshot(profileDocRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const p = normalizeUserProfile(u.uid, snapshot.data());
+            setProfile(p);
+          }
+          setLoading(false);
+        });
       } else {
         setProfile(null);
+        setLoading(false);
+        profileUnsub();
       }
-      setLoading(false);
     });
+
+    return () => {
+      authUnsub();
+      profileUnsub();
+    };
   }, []);
 
   useEffect(() => {

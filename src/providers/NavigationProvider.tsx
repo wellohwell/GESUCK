@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { useAuth } from './AuthProvider';
 import { useModules } from './ModuleProvider';
 import { DEFAULT_DYNAMIC_NAV_ITEMS, DynamicNavItem } from '../config/appShell';
-import { toast } from 'react-toastify';
+import { toast } from '../hooks/use-toast';
 
 interface NavigationContextType {
   navItems: DynamicNavItem[];

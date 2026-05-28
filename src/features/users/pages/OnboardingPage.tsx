@@ -49,7 +49,7 @@ export const OnboardingPage = () => {
             >
                 {/* Header branding & Greeting */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-4 shadow-[0_0_20px_rgba(198,255,46,0.1)]">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-[1.5rem] bg-primary/10 border border-primary/20 text-primary mb-4 shadow-[0_0_20px_rgba(198,255,46,0.1)]">
                         <ShieldCheck className="w-6 h-6" />
                     </div>
                     <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground uppercase">
@@ -69,7 +69,7 @@ export const OnboardingPage = () => {
                                 value={formData.name} 
                                 onChange={e => setFormData({...formData, name: e.target.value})} 
                                 placeholder="Masukkan nama resmi Anda" 
-                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-xl px-4 outline-none text-xs font-sans font-semibold tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20" 
+                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-full px-4 outline-none text-xs font-sans font-semibold tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20" 
                                 required 
                                 disabled={isLoading}
                             />
@@ -87,7 +87,7 @@ export const OnboardingPage = () => {
                                 value={formData.phone} 
                                 onChange={e => setFormData({...formData, phone: e.target.value})} 
                                 placeholder="Contoh: 08123456789" 
-                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-xl px-4 outline-none text-xs font-mono font-medium tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20" 
+                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-full px-4 outline-none text-xs font-mono font-medium tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20" 
                                 required 
                                 disabled={isLoading}
                                 type="tel"
@@ -105,7 +105,7 @@ export const OnboardingPage = () => {
                             <select 
                                 value={formData.branchId} 
                                 onChange={e => setFormData({...formData, branchId: e.target.value})} 
-                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-xl px-4 outline-none text-xs font-sans font-bold tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20 cursor-pointer appearance-none" 
+                                className="w-full h-11 bg-background/50 focus:bg-background/80 border border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground rounded-full px-4 outline-none text-xs font-sans font-bold tracking-wide transition-all duration-300 focus:ring-1 focus:ring-primary/20 cursor-pointer appearance-none" 
                                 required
                                 disabled={isLoading}
                             >
@@ -136,28 +136,28 @@ export const OnboardingPage = () => {
                                 disabled={isLoading}
                                 onClick={() => setFormData({...formData, requestedRole: 'sales'})}
                                 className={cn(
-                                    "h-11 rounded-xl border flex flex-col justify-center items-center transition-all text-[10px] font-black uppercase tracking-wider",
+                                    "h-11 rounded-full border flex flex-col justify-center items-center transition-all text-[10px] font-black uppercase tracking-wider",
                                     formData.requestedRole === 'sales'
-                                        ? "bg-primary text-primary-foreground border-transparent shadow-[0_3px_10px_rgba(198,255,46,0.12)]"
+                                        ? "bg-primary text-black border-transparent shadow-[0_3px_10px_rgba(198,255,46,0.12)]"
                                         : "bg-background/40 hover:bg-background/80 border-border text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                <span className="text-black">Sales</span>
-                                <span className="text-black text-[7.5px] opacity-80 font-medium normal-case tracking-normal">Kunjungan &amp; Order</span>
+                                <span>Sales</span>
+                                <span className="text-[7.5px] opacity-85 font-medium normal-case tracking-normal">Kunjungan &amp; Order</span>
                             </button>
                             <button
                                 type="button"
                                 disabled={isLoading}
                                 onClick={() => setFormData({...formData, requestedRole: 'staff'})}
                                 className={cn(
-                                    "h-11 rounded-xl border flex flex-col justify-center items-center transition-all text-[10px] font-black uppercase tracking-wider",
+                                    "h-11 rounded-full border flex flex-col justify-center items-center transition-all text-[10px] font-black uppercase tracking-wider",
                                     formData.requestedRole === 'staff'
-                                        ? "bg-primary text-primary-foreground border-transparent shadow-[0_3px_10px_rgba(198,255,46,0.12)]"
+                                        ? "bg-primary text-black border-transparent shadow-[0_3px_10px_rgba(198,255,46,0.12)]"
                                         : "bg-background/40 hover:bg-background/80 border-border text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                <span className="text-black">Admin</span>
-                                <span className="text-black text-[7.5px] opacity-80 font-medium normal-case tracking-normal">Verifikasi &amp; Operator</span>
+                                <span>Admin</span>
+                                <span className="text-[7.5px] opacity-85 font-medium normal-case tracking-normal">Verifikasi &amp; Operator</span>
                             </button>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ export const OnboardingPage = () => {
                         <button 
                             type="submit" 
                             disabled={isLoading}
-                            className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/95 font-black text-xs uppercase tracking-widest shadow-md hover:shadow-primary/10 transition-all duration-300 rounded-xl active:scale-95 cursor-pointer flex items-center justify-center gap-2 select-none"
+                            className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/95 font-black text-xs uppercase tracking-widest shadow-md hover:shadow-primary/10 transition-all duration-300 rounded-full active:scale-95 cursor-pointer flex items-center justify-center gap-2 select-none"
                         >
                             {isLoading ? (
                                 <>

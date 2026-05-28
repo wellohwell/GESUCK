@@ -24,7 +24,7 @@ export default function OperationalReportPage() {
           <ReportFilterBar filters={filters} onChange={setFilters} />
 
           {error && (
-            <div className="p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-sm font-bold uppercase tracking-wide">
+            <div className="p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-[1.25rem] text-sm font-bold uppercase tracking-wide">
               {error}
             </div>
           )}

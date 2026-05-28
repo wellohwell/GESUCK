@@ -174,7 +174,7 @@ function ConfirmDialogContent({ options, onClose }: { options: ConfirmOptions; o
         {
           onClick: handleCancel,
           disabled: loading,
-          className: 'px-4 py-2 text-sm font-semibold text-foreground bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-805 rounded-xl transition-all disabled:opacity-50 active:scale-95'
+          className: 'px-4 py-2 text-sm font-semibold text-foreground bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-805 rounded-[1.25rem] transition-all disabled:opacity-50 active:scale-95'
         },
         options.cancelText || 'Batal'
       ),
@@ -183,7 +183,7 @@ function ConfirmDialogContent({ options, onClose }: { options: ConfirmOptions; o
         {
           onClick: handleConfirm,
           disabled: loading,
-          className: `flex items-center justify-center min-w-[90px] px-4 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 active:scale-95 ${
+          className: `flex items-center justify-center min-w-[90px] px-4 py-2 text-sm font-semibold rounded-[1.25rem] transition-all disabled:opacity-50 active:scale-95 ${
             options.confirmVariant === 'danger'
               ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
               : 'bg-primary text-primary-foreground hover:bg-primary/90'

@@ -46,7 +46,7 @@ export function RupiahInput({ id, value, onValueChange, placeholder, className, 
         onChange={handleChange}
         placeholder={placeholder}
         className={cn(
-          "w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-3 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all",
+          "w-full bg-secondary border border-border rounded-full pl-10 pr-4 py-3 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all",
           className
         )}
       />
