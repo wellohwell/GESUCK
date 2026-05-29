@@ -107,14 +107,14 @@ export const PlanItem = React.memo(({
         <div className="flex items-center gap-1.5 md:gap-2 text-zinc-500 flex-wrap">
           {hideDeleteButton ? (
             <span className="px-2 py-0.5 rounded-[4px] bg-primary text-zinc-950 text-[8px] md:text-[9.5px] font-black tracking-wider uppercase leading-none shrink-0 shadow-sm border border-primary/20">
-              {toTitleCase(resolvedUser?.name || plan.userName || "User")}
+              {toTitleCase((resolvedUser?.name || plan.userName || "User").split(' ')[0])}
             </span>
           ) : (
             <span className={cn(
               "text-[8px] md:text-[10px] font-black tracking-widest uppercase leading-none whitespace-normal break-words",
               "text-primary"
             )}>
-              {toTitleCase(resolvedUser?.name || plan.userName || "User")}
+              {toTitleCase((resolvedUser?.name || plan.userName || "User").split(' ')[0])}
             </span>
           )}
           <div className="w-[1.5px] h-[1.5px] md:w-1 md:h-1 rounded-full bg-muted-foreground/30 shrink-0" />
