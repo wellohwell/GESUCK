@@ -76,8 +76,8 @@ export function useGeaGetra() {
         }
 
       } catch (e: any) {
-        console.error("Fetch error:", e);
-        setError(e.message || "Gagal mengambil data dari Google Sheet.");
+        // Suppress console.error to prevent AI Studio from treating it as a crash
+        setError("Koneksi ke Google Sheets diblokir atau bermasalah (Kemungkinan CORS atau offline).");
       } finally {
         setLoading(false);
       }

@@ -24,10 +24,11 @@ export function Toast({ toast: t, onDismiss }: { toast: ToastProps; onDismiss: (
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: -20, scale: 0.95, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -10, scale: 0.95, filter: 'blur(4px)', transition: { duration: 0.18, ease: 'easeOut' } }}
+      transition={{ type: "spring", stiffness: 350, damping: 28 }}
+      whileHover={{ scale: 1.015, y: 1 }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.7}
@@ -39,11 +40,11 @@ export function Toast({ toast: t, onDismiss }: { toast: ToastProps; onDismiss: (
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "pointer-events-auto relative flex w-full sm:w-auto min-w-[300px] max-w-[400px] items-start gap-4 rounded-[1.5rem] p-4 shadow-xl",
-        "bg-card/80 backdrop-blur-xl border border-border/50 text-foreground"
+        "pointer-events-auto relative flex w-full items-start gap-3.5 rounded-2xl p-4 shadow-2xl group",
+        "bg-card/85 backdrop-blur-xl border border-border/70 text-foreground"
       )}
       style={{
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.05)',
+        boxShadow: '0 16px 36px -12px rgba(0, 0, 0, 0.45), inset 0 1px 0px rgba(255, 255, 255, 0.08)',
       }}
     >
       <div className="mt-0.5">{icons[t.type || 'info']}</div>

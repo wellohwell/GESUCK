@@ -12,16 +12,13 @@ export const AuthRedirectGate: React.FC<AuthRedirectGateProps> = ({ children }) 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="min-h-screen bg-transparent dark:bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none animate-pulse">
         <div className="relative flex justify-center items-center">
-          {/* Outer glowing pulsing ring */}
-          <div className="absolute w-16 h-16 rounded-full border border-primary/10 animate-pulse scale-125"></div>
-          {/* Inner spin card */}
-          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          {/* Subtle glowing pulsing ring */}
+          <div className="absolute w-12 h-12 rounded-full border border-brand-primary/20 animate-ping"></div>
+          {/* Inner spin circle */}
+          <div className="w-8 h-8 border-2 border-brand-primary/10 border-t-brand-primary rounded-full animate-spin"></div>
         </div>
-        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 animate-pulse">
-          Memulihkan Sesi Pengguna...
-        </p>
       </div>
     );
   }

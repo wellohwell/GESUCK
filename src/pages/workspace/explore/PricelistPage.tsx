@@ -148,7 +148,7 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
         /* List View */
         filteredData.length > 0 ? (
           <div className="flex flex-col gap-4">
-            <div className="bg-card overflow-hidden rounded-[1.25rem] shadow-sm">
+            <div className="flex flex-col gap-1">
               {/* Desktop Table Header */}
               <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-2.5 bg-zinc-50/80 dark:bg-card/5">
                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MERK</div>

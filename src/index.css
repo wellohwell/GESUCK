@@ -151,7 +151,32 @@
   .glass {
     @apply bg-card/30 backdrop-blur-sm border border-border/40;
   }
+
+  /* Installment Calculator Nawar effect */
+  .angsuran-value {
+    position: relative;
+    display: inline-block;
+    transition: opacity .25s ease;
+  }
+  
+  .angsuran-value.has-nawar {
+    opacity: .55;
+  }
+  
+  .angsuran-value.has-nawar::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    top: 50%;
+    height: 3px;
+    background: currentColor;
+    border-radius: 999px;
+    transform: translateY(-50%);
+    opacity: .9;
+  }
 }
+
 
 @layer utilities {
   .text-gradient-lime {

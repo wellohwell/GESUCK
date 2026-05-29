@@ -39,6 +39,8 @@ import { ActionButton } from "../components/ui/buttons";
 import Report from "./Report";
 import { TambahRencanaModal } from "../features/market-plans/modals/TambahRencanaModal";
 import { PlanItem } from "../features/market-plans/components/PlanItem";
+import { SharedMarketPlanRenderer } from "../features/market-plans/components/SharedMarketPlanRenderer";
+import { MarketTemperature } from "../features/market-plans/components/MarketTemperature";
 
 dayjs.extend(dayOfYear);
 dayjs.locale("id");
@@ -76,6 +78,23 @@ export default function MarketPlans({
   const [showModal, setShowModal] = useState(false);
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
   const [showPendingTooltip, setShowPendingTooltip] = useState(false);
+  const pendingTooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (pendingTooltipRef.current && !pendingTooltipRef.current.contains(event.target as Node)) {
+        setShowPendingTooltip(false);
+      }
+    }
+    if (showPendingTooltip) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showPendingTooltip]);
 
   const { branchId } = useBranch();
   
@@ -190,17 +209,14 @@ export default function MarketPlans({
     return map;
   }, [users]);
 
-  const pendingSpvCount = useMemo(() => {
-    const spvUsers = users.filter(u => u.role === 'spv');
-    const spvWithPlans = plans.filter(p => spvUsers.some(u => u.id === p.userId));
-    return Math.max(0, spvUsers.length - spvWithPlans.length);
+  const pendingUsersList = useMemo(() => {
+    const requiredRoles = ['spv', 'sales', 'supervisor'];
+    const usersRequired = users.filter((u: any) => u.role && requiredRoles.includes(u.role.toLowerCase()));
+    const usersWithPlansIds = new Set(plans.map(p => p.userId));
+    return usersRequired.filter(u => !usersWithPlansIds.has(u.id));
   }, [users, plans]);
 
-  const pendingSpvUsers = useMemo(() => {
-    const spvUsers = users.filter(u => u.role === 'spv');
-    const spvWithPlansIds = new Set(plans.map(p => p.userId));
-    return spvUsers.filter(u => !spvWithPlansIds.has(u.id));
-  }, [users, plans]);
+  const pendingUsersCount = pendingUsersList.length;
 
   const normalizeMarketName = (name: string): string => {
     if (!name) return "";
@@ -462,7 +478,16 @@ export default function MarketPlans({
   }, [allPlans, markets]);
 
   if (activeTab === 'laporan') {
-    return <Report onBack={() => setActiveTab('plans')} />;
+    return (
+      <Report 
+        onBack={() => setActiveTab('plans')} 
+        computedPlans={plans}
+        computedUserMap={userMap}
+        marketTemperature={marketTemperature}
+        pendingUsersCount={pendingUsersCount}
+        pendingUsersList={pendingUsersList}
+      />
+    );
   }
 
   return (
@@ -647,6 +672,27 @@ export default function MarketPlans({
                                           isTaken && "text-muted-foreground/60"
                                         )}>
                                           {toTitleCase(m.nama_pasar)}
+                                          {(() => {
+                                            const kats = Array.isArray(m.kategori) ? m.kategori : [m.kategori].filter(Boolean);
+                                            if (kats.length === 0) return null;
+                                            const firstKat = kats[0];
+                                            const katId = typeof firstKat === "object" ? firstKat.kode || firstKat.id : firstKat;
+                                            
+                                            let label = "";
+                                            if (katId === "PASAR_UMUM") label = "Umum";
+                                            else if (katId === "PASAR_SUBUH") label = "Pagi";
+                                            else if (katId === "PASARAN_JAWA") label = "Pasaran";
+                                            else {
+                                              const found = KATEGORI_TYPES.find(t => t.id === katId);
+                                              label = found ? found.label.replace("Pasar ", "") : String(katId).replace("Pasar ", "");
+                                            }
+                                            
+                                            return label ? (
+                                              <span className="text-primary font-bold ml-1.5">
+                                                • {label}
+                                              </span>
+                                            ) : null;
+                                          })()}
                                         </h4>
                                         <div className="text-[10px] font-black text-muted-foreground/60 tracking-wider mt-0.5 uppercase">
                                           {toTitleCase(m.wilayah)}
@@ -777,208 +823,38 @@ export default function MarketPlans({
              </h2>
           </div>
 
-          {/* Ultra-Compact Market Temperature Indicator */}
-          <div className="flex justify-center md:justify-start">
-            <div className="w-full max-w-[340px] md:max-w-full grid grid-cols-2 gap-x-3 card-base p-2 md:p-4 shadow-soft divide-x divide-border/20 relative overflow-hidden group">
-              {marketTemperature.isLowData ? (
-                <div className="col-span-2 py-4 md:py-8 flex flex-col items-center justify-center">
-                  <p className="text-[8px] md:text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-1">
-                    Waiting for more activity
-                  </p>
-                  <p className="text-[7px] md:text-[9px] font-bold text-muted-foreground/20 uppercase tracking-widest">
-                    Not enough visit data to rank
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* HOT COLUMN */}
-                  <div className="text-left pr-3 md:pr-4 group cursor-default">
-                    <div className="flex items-center gap-1.5 mb-1.5 md:mb-3">
-                      <span className="text-[8px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] text-red-500 uppercase leading-none px-1.5 py-0.5 md:py-1 bg-red-500/5 rounded-sm shadow-[0_0_10px_-2px_rgba(239,68,68,0.2)]">
-                        HOT
-                      </span>
-                      <div className="h-[1px] flex-1 bg-red-500/10" />
-                    </div>
-                    <div className="space-y-1 md:space-y-2">
-                      {marketTemperature.hot.map((m: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between gap-1.5 h-4 md:h-5">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <div className="w-1 h-1 rounded-full bg-red-500/40 shrink-0" />
-                            <p className="text-[9px] md:text-xs font-bold text-foreground/80 truncate leading-none md:mt-0.5">
-                              {toTitleCase(m.name)}
-                            </p>
-                          </div>
-                          <div className="flex justify-end w-4">
-                            <span className={cn(
-                              "text-[9px] md:text-sm font-black shrink-0 leading-none",
-                              m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-muted-foreground/30"
-                            )}>
-                              {m.trend === 'up' ? "↑" : m.trend === 'down' ? "↓" : "→"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* COLD COLUMN */}
-                  <div className="text-left pl-3 md:pl-4 group cursor-default">
-                    <div className="flex items-center gap-1.5 mb-1.5 md:mb-3">
-                      <span className="text-[8px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] text-blue-500 uppercase leading-none px-1.5 py-0.5 md:py-1 bg-blue-500/5 rounded-sm shadow-[0_0_10px_-2px_rgba(59,130,246,0.2)]">
-                        COLD
-                      </span>
-                      <div className="h-[1px] flex-1 bg-blue-500/10" />
-                    </div>
-                    <div className="space-y-1 md:space-y-2">
-                      {marketTemperature.cold.map((m: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between gap-1.5 h-4 md:h-5">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <div className="w-1 h-1 rounded-full bg-blue-500/40 shrink-0" />
-                            <p className="text-[9px] md:text-xs font-bold text-foreground/80 truncate leading-none md:mt-0.5">
-                              {toTitleCase(m.name)}
-                            </p>
-                          </div>
-                          <div className="flex justify-end w-4">
-                            <span className={cn(
-                              "text-[9px] md:text-sm font-black shrink-0 leading-none",
-                              m.status === 'LOW ACTIVITY' ? "text-muted-foreground/40" : "text-muted-foreground/20"
-                            )}>
-                              {m.status === 'LOW ACTIVITY' ? '•' : '—'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Live List & Footer */}
-        <div className="md:col-span-7 lg:col-span-8 flex flex-col">
-          <section className="mb-4 md:mb-6">
-            <div className="flex items-center justify-between mb-2 px-1">
-              <div className="flex items-center gap-2">
-                <div className="w-4 md:w-5 h-4 md:h-5 bg-primary rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(198,255,46,0.2)]">
-                   <Users className="w-2.5 md:w-3 h-2.5 md:h-3 text-black" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-xs md:text-sm font-bold tracking-tight text-zinc-800 dark:text-white/90 flex items-center">
-                    Rencana Kunjungan
-                    {pendingSpvCount > 0 && (
-                      <span className="inline-flex items-center">
-                        <span className="opacity-10 mx-1.5 font-normal md:text-base">•</span>
-                        <span 
-                          className="relative group inline-flex items-center cursor-help"
-                          onMouseEnter={() => setShowPendingTooltip(true)}
-                          onMouseLeave={() => setShowPendingTooltip(false)}
-                        >
-                          <span 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowPendingTooltip(prev => !prev);
-                            }}
-                            className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-wider bg-primary/10 hover:bg-primary/20 px-2.5 py-0.5 rounded-full transition-colors"
-                          >
-                            {pendingSpvCount} PENDING
-                          </span>
-                          
-                          {/* Rich Polished Custom Tooltip */}
-                          <span 
-                            className={`absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-48 bg-zinc-950 bg-card text-white rounded-[1.25rem] p-2.5 shadow-xl text-[10px] font-bold leading-normal transition-all duration-200 z-[120] text-left ring-1 ring-white/10 ${
-                              showPendingTooltip 
-                                ? 'opacity-100 visible pointer-events-auto' 
-                                : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none'
-                            }`}
-                          >
-                            <span className="block text-zinc-400 font-extrabold uppercase tracking-wider mb-1.5 border-b border-white/5 pb-1">
-                              Belum Mengisi ({pendingSpvCount})
-                            </span>
-                            <span className="block space-y-1 max-h-32 overflow-y-auto no-scrollbar">
-                              {pendingSpvUsers.map((u) => (
-                                <span key={u.id} className="flex items-center gap-1.5 py-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                                  <span className="text-[10px] text-zinc-200 font-bold truncate">
-                                    {u.displayName || u.name || "User"}
-                                  </span>
-                                </span>
-                              ))}
-                            </span>
-                            {/* Subtle Pointer Arrow */}
-                            <span className="absolute top-full left-1/2 -translate-x-1/2 -not-sr-only border-x-4 border-x-transparent border-t-4 border-t-zinc-950 dark:border-t-zinc-900" />
-                          </span>
-                        </span>
-                      </span>
-                    )}
-                  </h2>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
-                <span className="text-[9px] md:text-[10px] font-bold text-zinc-400 dark:text-white/30 uppercase tracking-widest leading-none">LIVE</span>
-              </div>
-            </div>
-
-            <div className="card-base p-1.5 md:p-2 shadow-soft">
-              {!myPlan && !loading && (
-                <div data-html2canvas-ignore="true" className="flex justify-center pt-3 pb-4">
-                  <ActionButton
-                    onClick={() => setShowModal(true)}
-                    icon={Plus}
-                  >
-                    TAMBAH RENCANA
-                  </ActionButton>
-                </div>
-              )}
-
-              <AnimatePresence mode="popLayout" initial={false}>
-                {loading ? (
-                  [...Array(6)].map((_, i) => (
-                    <motion.div
-                      key={`skeleton-${i}`}
-                      exit={{ opacity: 0 }}
-                      className="h-14 md:h-16 skeleton my-1 md:my-2 flex items-center gap-3 px-3 md:px-4 mx-0.5 md:mx-1 rounded-[1.5rem]"
-                    >
-                      <div className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-foreground/5 shadow-inner" />
-                      <div className="flex-1 space-y-2.5">
-                         <div className="h-2 md:h-2.5 w-24 md:w-32 bg-foreground/5 rounded-full" />
-                         <div className="h-1.5 md:h-2 w-16 md:w-24 bg-foreground/5 rounded-full" />
-                      </div>
-                    </motion.div>
-                  ))
-                ) : plans.length === 0 ? (
-                  <motion.div
-                    key="no-plans"
-                    exit={{ opacity: 0 }}
-                    className="py-20 md:py-32 px-4 flex flex-col items-center justify-center text-center"
-                  >
-                    <div className="w-12 md:w-16 h-12 md:h-16 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-inner">
-                       <Users className="w-5 md:w-6 h-5 md:h-6 text-zinc-400 dark:text-white/40" />
-                    </div>
-                    <p className="text-[11px] md:text-xs text-zinc-400 dark:text-white/40 font-black uppercase tracking-[0.3em] md:tracking-[0.4em]">
-                      SISTEM BELUM MENERIMA DATA
-                    </p>
-                  </motion.div>
-                ) : (
-                  <div className="space-y-1 md:space-y-2">
-                    {plans.map((plan) => (
-                      <PlanItem
-                        key={plan.id}
-                        plan={plan}
-                        user={userMap[plan.userId]}
-                        activeDate={activeDate}
-                        isManager={actualIsAdmin}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
+          <MarketTemperature marketTemperature={marketTemperature} />
           </section>
+
+          {/* Live List & Footer */}
+          <div className="md:col-span-7 lg:col-span-8 flex flex-col">
+            <section className="mb-4 md:mb-6">
+              <SharedMarketPlanRenderer 
+                plans={plans}
+                userMap={userMap}
+                activeDate={activeDate}
+                actualIsAdmin={actualIsAdmin}
+                handleDelete={handleDelete}
+                loading={loading}
+                pendingUsersCount={pendingUsersCount}
+                pendingUsersList={pendingUsersList}
+                showPendingTooltip={showPendingTooltip}
+                setShowPendingTooltip={setShowPendingTooltip}
+                pendingTooltipRef={pendingTooltipRef}
+                topContent={
+                   !myPlan && !loading ? (
+                    <div data-html2canvas-ignore="true" className="flex justify-center pt-3 pb-4">
+                      <ActionButton
+                        onClick={() => setShowModal(true)}
+                        icon={Plus}
+                      >
+                        TAMBAH RENCANA
+                      </ActionButton>
+                    </div>
+                   ) : null
+                }
+              />
+            </section>
 
           {/* Tactical Footer */}
           <footer className="mt-8 px-2 md:px-4">
@@ -1004,9 +880,9 @@ export default function MarketPlans({
                 </div>
              </div>
           </footer>
+         </div>
         </div>
-      </div>
-    </>
+      </>
     ) : (
       <div className="w-full">
         {isMasterFormOpen ? (

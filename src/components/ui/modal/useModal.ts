@@ -23,7 +23,8 @@ export interface ConfirmOptions {
   description: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: 'primary' | 'danger';
+  confirmVariant?: 'primary' | 'danger' | 'success';
+  cancelVariant?: 'primary' | 'danger' | 'success';
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
   size?: ModalSize;
@@ -174,7 +175,13 @@ function ConfirmDialogContent({ options, onClose }: { options: ConfirmOptions; o
         {
           onClick: handleCancel,
           disabled: loading,
-          className: 'px-4 py-2 text-sm font-semibold text-foreground bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-805 rounded-[1.25rem] transition-all disabled:opacity-50 active:scale-95'
+          className: `px-4 py-2 text-sm font-semibold rounded-full transition-all disabled:opacity-50 active:scale-95 ${
+            options.cancelVariant === 'success'
+              ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+              : options.cancelVariant === 'danger'
+              ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+              : 'text-foreground bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-805'
+          }`
         },
         options.cancelText || 'Batal'
       ),
@@ -183,9 +190,11 @@ function ConfirmDialogContent({ options, onClose }: { options: ConfirmOptions; o
         {
           onClick: handleConfirm,
           disabled: loading,
-          className: `flex items-center justify-center min-w-[90px] px-4 py-2 text-sm font-semibold rounded-[1.25rem] transition-all disabled:opacity-50 active:scale-95 ${
+          className: `flex items-center justify-center min-w-[90px] px-4 py-2 text-sm font-semibold rounded-full transition-all disabled:opacity-50 active:scale-95 ${
             options.confirmVariant === 'danger'
               ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+              : options.confirmVariant === 'success'
+              ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
               : 'bg-primary text-primary-foreground hover:bg-primary/90'
           }`
         },

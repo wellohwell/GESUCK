@@ -213,22 +213,22 @@ export default function ExplorePage() {
   if (renderedFallback) return renderedFallback;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-300">
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-1 sm:pt-3">
-        <div className="flex flex-col gap-1">
-            
-          {/* Sticky Brand Header - Only Logo stays pinned */}
-          <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md pt-1.5 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col items-center justify-center">
-              <div className="flex flex-col w-fit items-center">
-                <h1 className="text-lg font-black uppercase tracking-[0.25em] text-foreground transition-all flex items-center gap-1">
-                  VORK<span className="font-normal text-foreground">TEAM</span>
-                </h1>
-                <div className="h-0.5 w-full bg-primary rounded-full mt-0.5" />
-              </div>
-            </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-300 relative">
+      
+      {/* Sticky Brand Header - Separated */}
+      <div className="sticky top-0 z-50 pt-2 pb-3 bg-gradient-to-b from-background via-background/95 to-transparent w-full">
+        <div className="max-w-5xl mx-auto flex flex-col items-center justify-center">
+          <div className="flex flex-col w-fit items-center">
+            <h1 className="text-lg font-black uppercase tracking-[0.25em] text-foreground transition-all flex items-center gap-1">
+              VORK<span className="font-normal text-foreground">TEAM</span>
+            </h1>
+            <div className="h-0.5 w-full bg-primary rounded-full mt-0.5" />
           </div>
+        </div>
+      </div>
 
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6">
+        <div className="flex flex-col gap-1">
           {/* Scrollable Interactive Content */}
           <div className="flex flex-col gap-2.5">
             {/* Search Bar & Filter */}

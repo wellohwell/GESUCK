@@ -8,6 +8,7 @@ import {
   subscribeUsers
 } from "../lib/services";
 import { auth } from "../firebase/config";
+import { useAuth } from "../providers/AuthProvider";
 import {
   Plus,
   X,
@@ -50,8 +51,11 @@ const PlanItem = React.memo(({
   isManager: boolean; 
   onDelete: (e: React.MouseEvent, id: string) => void;
 }) => {
+  const { profile } = useAuth();
   const iscurrentUser = plan.userId === auth.currentUser?.uid;
   const isVisited = plan.status === 'visited';
+  
+  const resolvedUser = iscurrentUser ? (profile || user) : user;
   
   return (
     <motion.div
@@ -71,9 +75,9 @@ const PlanItem = React.memo(({
           "w-7 h-7 rounded-full bg-muted overflow-hidden p-[1px] border border-border transition-all duration-300 ring-2 ring-transparent",
           iscurrentUser ? "ring-primary/30 border-primary/20 scale-105" : "group-hover:border-primary/20"
         )}>
-          {user?.photoURL || plan.userPhoto ? (
+          {resolvedUser?.photoURL || plan.userPhoto ? (
             <img
-              src={user?.photoURL || plan.userPhoto}
+              src={resolvedUser?.photoURL || plan.userPhoto}
               className="w-full h-full rounded-full object-cover"
               alt=""
               crossOrigin="anonymous"
@@ -82,7 +86,7 @@ const PlanItem = React.memo(({
             />
           ) : (
             <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-[9px] font-black text-muted-foreground uppercase">
-              {toTitleCase((user?.name || plan.userName || "U")).charAt(0)}
+              {toTitleCase((resolvedUser?.name || plan.userName || "U")).charAt(0)}
             </div>
           )}
         </div>
@@ -112,12 +116,12 @@ const PlanItem = React.memo(({
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[8px] font-black text-primary tracking-widest truncate uppercase leading-none">
-            {toTitleCase((user?.name || plan.userName || "User").split(" ")[0])}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[8px] font-black text-primary tracking-widest uppercase leading-none whitespace-normal break-words">
+            {toTitleCase(resolvedUser?.name || plan.userName || "User")}
           </span>
           <div className="w-[1.5px] h-[1.5px] rounded-full bg-muted-foreground/30 shrink-0" />
-          <span className="text-[8px] font-semibold text-muted-foreground tracking-tight truncate uppercase">
+          <span className="text-[8px] font-semibold text-muted-foreground tracking-tight uppercase whitespace-normal break-words">
             {toTitleCase(plan.city)}
           </span>
           {plan.marketJam && (
@@ -804,6 +808,27 @@ export default function Dashboard({
                               selectedMarketName === m.nama_pasar ? "text-primary" : "text-foreground"
                             )}>
                               {toTitleCase(m.nama_pasar)}
+                              {(() => {
+                                const kats = Array.isArray(m.kategori) ? m.kategori : [m.kategori].filter(Boolean);
+                                if (kats.length === 0) return null;
+                                const firstKat = kats[0];
+                                const katId = typeof firstKat === "object" ? firstKat.kode || firstKat.id : firstKat;
+                                
+                                let label = "";
+                                if (katId === "PASAR_UMUM") label = "Umum";
+                                else if (katId === "PASAR_SUBUH") label = "Pagi";
+                                else if (katId === "PASARAN_JAWA") label = "Pasaran";
+                                else {
+                                  const found = KATEGORI_TYPES.find(t => t.id === katId);
+                                  label = found ? found.label.replace("Pasar ", "") : String(katId).replace("Pasar ", "");
+                                }
+                                
+                                return label ? (
+                                  <span className="text-primary font-bold ml-1.5">
+                                    • {label}
+                                  </span>
+                                ) : null;
+                              })()}
                             </h4>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                               <span>{toTitleCase(m.wilayah)}</span>

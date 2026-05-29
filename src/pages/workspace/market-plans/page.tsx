@@ -19,10 +19,10 @@ import { getActiveSystemDate } from "../../../utils/javaneseDate";
 import { toTitleCase } from "../../../utils/format";
 import dayjs from "dayjs";
 import { useRole, useBranch } from "../../../hooks/authHooks";
+import { useModal } from "../../../hooks/use-modal";
 import { ROLES } from "../../../config/roles";
 import { ActionButton } from "../../../components/ui/buttons";
 import { MasterDataView } from "../../admin/Master";
-import Report from "../../Report";
 import { PlanItem } from "../../../features/market-plans/components/PlanItem";
 import { motion } from "motion/react";
 
@@ -41,8 +41,8 @@ export default function MarketPlansPage() {
   const [showPendingTooltip, setShowPendingTooltip] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'plans' | 'master' | 'laporan') || 'plans';
-  const setActiveTab = (tab: 'plans' | 'master' | 'laporan') => {
+  const activeTab = (searchParams.get('tab') as 'plans' | 'master') || 'plans';
+  const setActiveTab = (tab: 'plans' | 'master') => {
     setSearchParams({ tab });
   };
 
@@ -130,15 +130,25 @@ export default function MarketPlansPage() {
     return { hot, cold, isLowData: false };
   }, [allPlans]);
 
+  const { openConfirm } = useModal();
+
   const handleDeletePlan = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!window.confirm("Hapus rencana kunjungan ini?")) return;
-    try {
-      await deleteMarketPlan(id);
-      toast.success("Rencana berhasil dihapus");
-    } catch (error) {
-      toast.error("Gagal menghapus rencana");
-    }
+    openConfirm({
+      title: "Hapus Rencana",
+      description: "Apakah Anda yakin ingin menghapus rencana kunjungan ini?",
+      confirmText: "Ya, Hapus",
+      confirmVariant: "danger",
+      cancelVariant: "success",
+      onConfirm: async () => {
+        try {
+          await deleteMarketPlan(id);
+          toast.success("Rencana berhasil dihapus");
+        } catch (error) {
+          toast.error("Gagal menghapus rencana");
+        }
+      }
+    });
   };
 
   return (
@@ -150,9 +160,7 @@ export default function MarketPlansPage() {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 md:px-8 relative z-10 w-full pt-2">
-        {activeTab === 'laporan' ? (
-          <Report onBack={() => setActiveTab('plans')} />
-        ) : activeTab === 'plans' ? (
+        {activeTab === 'plans' ? (
           <div className="md:grid md:grid-cols-12 md:gap-8 md:items-start w-full relative">
             {/* Left Section: Stats & Info */}
             <section className="mb-4 md:mb-0 md:col-span-5 lg:col-span-4 md:sticky md:top-24">
@@ -177,7 +185,7 @@ export default function MarketPlansPage() {
                   <div className="h-[1px] flex-1 bg-white/[0.05]" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 py-3 px-1 divide-x divide-white/[0.05]">
+                <div className="grid grid-cols-2 gap-2 py-3 px-1">
                   {marketTemperature.isLowData ? (
                     <div className="col-span-2 py-6 text-center opacity-30 text-[8px] font-black uppercase tracking-widest">
                       CALLECTING DATA...
@@ -224,32 +232,16 @@ export default function MarketPlansPage() {
 
             {/* Right Section: Plans List */}
             <section className="md:col-span-7 lg:col-span-8">
-              <div className="flex items-center justify-between mb-2 px-1">
+              <div className="flex items-center justify-between mb-4 px-1" data-html2canvas-ignore="true">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center shadow-md shadow-primary/10">
                     <Users className="w-2.5 h-2.5 text-black" />
                   </div>
                   <h2 className="text-[10px] font-bold tracking-tight text-foreground/90 uppercase tracking-wider">Rencana Kunjungan</h2>
-                  {pendingSpvCount > 0 && (
-                    <span className="text-[7px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-widest ml-1 shadow-[0_2px_8px_rgba(198,255,46,0.1)]">
-                      {pendingSpvCount} PENDING
-                    </span>
-                  )}
                 </div>
               </div>
 
-              {/* Tambah Rencana Button positioned above the plans listing, below Rencana Kunjungan header */}
-              {activeTab === 'plans' && plans.length > 0 && (
-                <div className="flex justify-center mb-4" data-html2canvas-ignore="true">
-                  <ActionButton
-                    onClick={() => navigate("/workspace/market-plans/create")}
-                    icon={Plus}
-                    className="shadow-md"
-                  >
-                    TAMBAH RENCANA
-                  </ActionButton>
-                </div>
-              )}
+
 
               {loading ? (
                 <div className="space-y-4">
@@ -278,21 +270,23 @@ export default function MarketPlansPage() {
                 </div>
               ) : (
                 <div className="py-12 text-center flex flex-col items-center justify-center">
-                  <div data-html2canvas-ignore="true" className="flex justify-center mb-4">
-                    <ActionButton
-                      onClick={() => navigate("/workspace/market-plans/create")}
-                      icon={Plus}
-                    >
-                      TAMBAH RENCANA
-                    </ActionButton>
-                  </div>
-
                   <div className="w-7 h-7 rounded-full bg-muted/10 flex items-center justify-center mb-2">
                     <Search className="w-3 h-3 text-muted-foreground/20" />
                   </div>
                   
-                  <p className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] mb-0.5">Belum Ada Rencana</p>
-                  <p className="text-[6px] font-medium text-muted-foreground/15 uppercase tracking-[0.1em] max-w-[140px] leading-relaxed mx-auto">Mulai buat rencana kunjungan pertamamu melalui tombol di atas</p>
+                  <p className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] mb-3">Belum Ada Rencana</p>
+                  
+                  <div data-html2canvas-ignore="true" className="flex justify-center mb-4">
+                    <ActionButton
+                      onClick={() => navigate("/workspace/market-plans/create")}
+                      icon={Plus}
+                      className="text-[8.5px] font-black px-4 py-1.5"
+                    >
+                      TAMBAH RENCANA
+                    </ActionButton>
+                  </div>
+                  
+                  <p className="text-[6px] font-medium text-muted-foreground/15 uppercase tracking-[0.1em] max-w-[140px] leading-relaxed mx-auto">Mulai buat rencana kunjungan pertamamu</p>
                 </div>
               )}
             </section>

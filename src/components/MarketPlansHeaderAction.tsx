@@ -1,25 +1,31 @@
 import React from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { BarChart3 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function MarketPlansHeaderAction() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Show ONLY when pathname starts with /workspace/market-plans or is /market-plans
-  const isMarketPlans = location.pathname.toLowerCase() === '/workspace/market-plans' || 
-                       location.pathname.toLowerCase() === '/market-plans';
+  const pathnameStr = location.pathname.toLowerCase();
+  const isMarketPlans = pathnameStr.startsWith('/workspace/market-plans') || 
+                       pathnameStr.startsWith('/workspace/market-plans');
+  const isMarketPlansBase = pathnameStr === '/workspace/market-plans';
+  const isMarketPlansLaporan = pathnameStr === '/workspace/market-plans/laporan';
 
-  if (!isMarketPlans) {
+  if (!isMarketPlansBase && !isMarketPlansLaporan) {
     return null;
   }
 
-  const currentTab = searchParams.get('tab') || 'plans';
-  const isActive = currentTab === 'laporan';
+  const isActive = isMarketPlansLaporan;
 
   const handleToggle = () => {
-    setSearchParams({ tab: isActive ? 'plans' : 'laporan' });
+    if (isActive) {
+      navigate('/workspace/market-plans');
+    } else {
+      navigate('/workspace/market-plans/laporan');
+    }
   };
 
   return (

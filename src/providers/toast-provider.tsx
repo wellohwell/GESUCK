@@ -16,15 +16,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <div 
-        className="fixed z-[9999] p-4 pointer-events-none flex flex-col gap-3 items-center inset-x-0 top-0 sm:top-auto sm:bottom-0 sm:right-0 sm:left-auto sm:items-end w-full sm:w-auto"
+        className="fixed z-[9999] px-4 pointer-events-none flex flex-col gap-2.5 items-center left-1/2 -translate-x-1/2 w-full max-w-[420px] top-0"
         style={{
-          paddingTop: 'calc(env(safe-area-inset-top, 16px) + 16px)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 16px)',
+          paddingTop: 'calc(env(safe-area-inset-top, 16px) + 12px)',
         }}
       >
         <AnimatePresence mode="popLayout">
           {toasts.map((t) => (
-            <div key={t.id}>
+            <div key={t.id} className="w-full flex justify-center pointer-events-auto">
               <Toast toast={t} onDismiss={dismiss} />
             </div>
           ))}

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import MarketPlansPage from "./pages/workspace/market-plans/page";
 import CreateMarketPlanPage from "./pages/workspace/market-plans/create/page";
+import MarketPlansReportPage from "./pages/workspace/market-plans/laporan/page";
 import HomePage from "./pages/HomePage";
 import AdminLayoutPage from "./pages/admin/AdminLayout";
 import AdminHubPage from "./pages/admin/AdminHub";
@@ -17,6 +18,7 @@ import { AdminUserApprovalPage } from "./features/users/pages/AdminUserApprovalP
 import { WorkspaceExplore, WorkspaceClients, WorkspaceVisit, WorkspaceTasks, WorkspaceProfile } from "./pages/workspace/WorkspacePages";
 import { RequireAuth, RequireRole, RequireAdminAccess, RequirePermission } from "./components/auth/guards";
 import { AuthRedirectGate } from "./components/auth/AuthRedirectGate";
+import { AppBootstrap } from "./components/auth/AppBootstrap";
 import { useAuth } from "./providers/AuthProvider";
 import { ROLES } from "./config/roles";
 import { PERMISSIONS } from "./config/permissions";
@@ -47,26 +49,8 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { WorkspaceLayout } from "./domains/workspace/WorkspaceLayout";
 
 function AppContent() {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none">
-        <div className="relative flex justify-center items-center">
-          {/* Outer glowing pulsing ring */}
-          <div className="absolute w-16 h-16 rounded-full border border-primary/10 animate-pulse scale-125"></div>
-          {/* Inner spin card */}
-          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        </div>
-        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 animate-pulse">
-          Memulihkan Sesi Pengguna...
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <>
+    <AppBootstrap>
       <UserLifecycleGuard>
         <Routes>
           {/* Public / Landing & Auth Routes with Redirect Gate */}
@@ -91,7 +75,9 @@ function AppContent() {
             <Route path="/workspace/home" element={<ModuleGuard moduleId="home"><HomePage /></ModuleGuard>} />
             <Route path="/workspace/market-plans" element={<ModuleGuard moduleId="marketPlans"><MarketPlansPage /></ModuleGuard>} />
             <Route path="/workspace/market-plans/create" element={<ModuleGuard moduleId="marketPlans"><CreateMarketPlanPage /></ModuleGuard>} />
+            <Route path="/workspace/market-plans/laporan" element={<ModuleGuard moduleId="marketPlans"><MarketPlansReportPage /></ModuleGuard>} />
             <Route path="/workspace/Market-Plans" element={<Navigate to="/workspace/market-plans" replace />} />
+            <Route path="/workspace/Market-Plans/Laporan" element={<Navigate to="/workspace/market-plans/laporan" replace />} />
             <Route path="/workspace/report" element={<ModuleGuard moduleId="report"><OperationalReportPage /></ModuleGuard>} />
             <Route path="/workspace/tools" element={<ModuleGuard moduleId="tools"><ToolsPage /></ModuleGuard>} />
             <Route path="/workspace/tools/calculator" element={<ModuleGuard moduleId="tools"><CalculatorPage /></ModuleGuard>} />
@@ -161,7 +147,7 @@ function AppContent() {
         </Routes>
         <PWAInstallPrompt />
       </UserLifecycleGuard>
-    </>
+    </AppBootstrap>
   );
 }
 

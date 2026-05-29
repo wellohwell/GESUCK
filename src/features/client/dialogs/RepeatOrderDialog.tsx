@@ -1,52 +1,55 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, Search, ShoppingBag, Clock } from 'lucide-react';
-import { IconButton } from '../../../components/ui/buttons';
-import { ClientForm } from '../components/ClientForm';
-import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import React, { useState, useMemo } from 'react';
+import { CollectionReference, addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../../firebase/config';
 import { handleFirestoreError, OperationType } from '../../../lib/services';
 import { toast } from 'react-toastify';
-import { cn, formatRelativeTime } from '../../../lib/utils';
+import { Search, UserCheck, ArrowRight, Package } from 'lucide-react';
 import { useClientData } from '../hooks/useClientData';
 
-interface RepeatOrderDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const formatIDR = (val: string | number) => {
+  const num = typeof val === 'string' ? Number(val.replace(/\D/g, '')) : val;
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(num || 0);
+};
 
-export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
+export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
-  const [showRepeatOrderForm, setShowRepeatOrderForm] = useState(false);
   const { allClients } = useClientData();
 
-  const [repeatOrderForm, setRepeatOrderForm] = useState({
+  const [form, setForm] = useState({
     barang: '',
     angsuran: '',
     tenor: '30',
     tenorType: 'hari'
   });
 
-  const filteredClients = allClients.filter(c => 
-    c.nama?.toLowerCase().includes(clientSearchQuery.toLowerCase()) || 
-    c.nomor?.includes(clientSearchQuery) ||
-    c.alamat?.toLowerCase().includes(clientSearchQuery.toLowerCase())
-  ).slice(0, 5);
+  const filteredClients = useMemo(() => {
+    if (!clientSearchQuery) return [];
+    return allClients.filter(c => 
+      c.nama?.toLowerCase().includes(clientSearchQuery.toLowerCase()) || 
+      c.nomor?.includes(clientSearchQuery) ||
+      c.alamat?.toLowerCase().includes(clientSearchQuery.toLowerCase())
+    ).slice(0, 8);
+  }, [allClients, clientSearchQuery]);
 
-  const handleCreateRepeatOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Repeat order process started...", repeatOrderForm);
+  const omset = useMemo(() => {
+    const a = Number(form.angsuran.replace(/\D/g, '')) || 0;
+    const t = Number(form.tenor) || 0;
+    return a * t;
+  }, [form.angsuran, form.tenor]);
 
+  const handleSubmit = async () => {
     if (!selectedClient) {
       toast.error("Konsumen belum dipilih");
       return;
     }
-
-    // 1. Validation
-    if (!repeatOrderForm.barang || !repeatOrderForm.angsuran || !repeatOrderForm.tenor) {
-      toast.error("Mohon lengkapi detail order (Barang, Angsuran, Tenor)");
+    if (!form.barang || !form.angsuran || !form.tenor) {
+      toast.error("Mohon lengkapi Detail Order");
       return;
     }
 
@@ -55,158 +58,213 @@ export function RepeatOrderDialog({ isOpen, onClose }: RepeatOrderDialogProps) {
       const uid = auth.currentUser?.uid;
       if (!uid) throw new Error("Unauthorized");
 
-      // Fetch user branch context for security rules
       const userDoc = await getDoc(doc(db, "users", uid));
       const branchId = userDoc.exists() ? userDoc.data().branchId : null;
 
-      const angsuranNum = Number(repeatOrderForm.angsuran.replace(/\D/g, ''));
-      const tenorNum = Number(repeatOrderForm.tenor);
-      const omset = angsuranNum * tenorNum;
+      const angsuranNum = Number(form.angsuran.replace(/\D/g, ''));
+      const tenorNum = Number(form.tenor);
 
-      // 2. Data Structure as requested
       const payload = {
         nama: selectedClient.nama,
         nomor: selectedClient.nomor,
         alamat: selectedClient.alamat || "",
         usaha: selectedClient.usaha || "",
-
-        produk: repeatOrderForm.barang,
+        produk: form.barang,
         angsuran: angsuranNum,
         tenor: tenorNum,
-        tenorType: repeatOrderForm.tenorType,
-        omset: omset,
-
+        tenorType: form.tenorType,
+        omset: angsuranNum * tenorNum,
         kategori: "repeat",
-
         orderStatus: "submitted",
         currentStep: "survey",
-        stage: "pipeline", // for back-compat
-
-        survey: {
-          status: "submitted",
-          note: "",
-          updatedAt: serverTimestamp(),
-          updatedBy: auth.currentUser?.email || uid
-        },
-
-        warehouse: {
-          status: "pending",
-          updatedAt: serverTimestamp(),
-          updatedBy: ""
-        },
-
+        stage: "pipeline",
+        survey: { status: "submitted", note: "", updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.email || uid },
+        warehouse: { status: "pending", updatedAt: serverTimestamp(), updatedBy: "" },
         archiveReason: "",
-
         ownerId: uid,
         branchId: branchId,
-
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-
-        // Keep legacy status field to make sure no breakages happen in rest of app
         status: "survey"
       };
 
-      console.log("Saving repeat order payload to Firestore 'clients' collection:", payload);
-
-      // 3. Save to Firestore
-      const docRef = await addDoc(collection(db, "clients"), payload);
-      console.log("Successfully saved repeat order with ID:", docRef.id);
-
+      await addDoc(collection(db, "clients") as CollectionReference, payload);
       toast.success("Repeat Order Berhasil Disimpan");
-      
-      // 4. Reset & Close
-      setSelectedClient(null);
-      setShowRepeatOrderForm(false);
-      setRepeatOrderForm({
-        barang: '', 
-        angsuran: '', 
-        tenor: '30', 
-        tenorType: 'hari'
-      });
       onClose();
     } catch (err) {
-      console.error("Firestore submission error (RO):", err);
+      console.error("Firestore error (RO):", err);
       handleFirestoreError(err, OperationType.CREATE, "clients");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
+  const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
+
+  if (!selectedClient) {
+    return (
+      <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-950">
+        <div className="sticky top-0 z-20 px-6 py-6 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-border/40 shrink-0 space-y-4">
+          <div>
+            <h2 className="text-xl font-black text-text-primary tracking-tight mb-1">Cari Konsumen</h2>
+            <p className="text-xs text-text-muted">Pilih konsumen yang sudah ada dari database.</p>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+            <input 
+              type="text" 
+              autoFocus
+              placeholder="Cari nama, nomor WhatsApp, alamat..."
+              value={clientSearchQuery}
+              onChange={e => setClientSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-zinc-100 dark:bg-zinc-900 border-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
+            />
+          </div>
+        </div>
+
+        <div className="p-6">
+          {clientSearchQuery ? (
+            filteredClients.length > 0 ? (
+              <div className="space-y-3">
+                {filteredClients.map(client => (
+                  <button 
+                    key={client.id}
+                    onClick={() => setSelectedClient(client)}
+                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-border/50 rounded-2xl hover:border-primary/50 hover:shadow-md transition-all group text-left"
+                  >
+                    <div>
+                      <h4 className="font-bold text-sm text-text-primary group-hover:text-primary transition-colors">{client.nama}</h4>
+                      <p className="text-[11px] text-text-muted font-medium mt-1 pr-4">{client.alamat}</p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-secondary/50 group-hover:bg-primary group-hover:text-primary-foreground flex items-center justify-center shrink-0 transition-colors">
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-sm font-bold text-text-primary mb-1">Tidak ditemukan</p>
+                <p className="text-xs text-text-muted">Konsumen dengan kata kunci tersebut tidak ada.</p>
+              </div>
+            )
+          ) : (
+            <div className="text-center py-12 opacity-50 flex flex-col items-center">
+              <Search className="w-12 h-12 text-text-muted mb-4" />
+              <p className="text-sm font-bold text-text-primary mb-1">Ketik untuk mencari</p>
+              <p className="text-xs text-text-muted">Sistem akan mencari di seluruh riwayat konsumen.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9999] bg-black/40 flex justify-center items-center md:items-center p-0 md:p-6"
-        >
-          <motion.div
-            initial={{ scale: 0.95, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.95, y: 20 }}
-            className="w-full h-full md:h-auto md:w-[800px] md:max-h-[90vh] bg-background md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-          >
-            <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center justify-between">
-              <h2 className="text-base font-semibold tracking-wide">
-                {showRepeatOrderForm ? 'Repeat Order' : 'Cari Konsumen (RO)'}
-              </h2>
-              <IconButton onClick={onClose} icon={ChevronRight} className="rotate-90" />
+    <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-950">
+      <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-border/40 shrink-0">
+        <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
+            <UserCheck className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-primary tracking-widest mb-0.5">TERPILIH</p>
+            <h3 className="text-sm font-black text-text-primary truncate">{selectedClient.nama}</h3>
+          </div>
+          <button onClick={() => setSelectedClient(null)} className="text-[10px] font-bold text-text-muted hover:text-text-primary underline px-2 py-1">Ubah</button>
+        </div>
+      </div>
+
+      <div className="p-6 pb-28">
+        <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="mb-4">
+             <h2 className="text-xl font-black text-text-primary tracking-tight">Detail Order Baru</h2>
+             <p className="text-xs text-text-muted mt-1">Order tambahan (RO) untuk {selectedClient.nama}.</p>
+          </div>
+          
+          <div>
+            <label className={labelClass}>Nama Produk *</label>
+            <input 
+              type="text" 
+              autoFocus
+              placeholder="Misal: Kulkas 2 Pintu..." 
+              value={form.barang} 
+              onChange={e => setForm({...form, barang: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
+              className={inputClass} 
+            />
+          </div>
+          
+          <div className="p-4 rounded-3xl border border-primary/20 bg-primary/5 space-y-4">
+            <div>
+              <label className={labelClass}>Angsuran (Rp) *</label>
+              <input 
+                type="text" 
+                placeholder="Rp 0" 
+                value={form.angsuran ? formatIDR(Number(form.angsuran)) : ''} 
+                onChange={e => setForm({...form, angsuran: e.target.value.replace(/\D/g, '')})} 
+                className={inputClass} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Tipe Tenor</label>
+                <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-2xl border border-border/50">
+                  {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, tenorType: type.id, tenor: type.id === 'hari' ? '30' : '1' })}
+                      className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        form.tenorType === type.id
+                          ? 'bg-white dark:bg-zinc-800 text-text-primary shadow-sm'
+                          : 'text-text-muted'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Lama Tenor</label>
+                <select 
+                  value={form.tenor} 
+                  onChange={e => setForm({...form, tenor: e.target.value})} 
+                  className={inputClass} 
+                >
+                  <option value="" disabled>Pilih</option>
+                  {form.tenorType === 'hari' ? (
+                    ['30', '60', '90', '120', '150', '180'].map(v => <option key={v} value={v}>{v} Hari</option>)
+                  ) : (
+                    ['1', '2', '3', '4', '5', '6', '7', '12'].map(v => <option key={v} value={v}>{v} Bulan</option>)
+                  )}
+                </select>
+              </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
-              {!showRepeatOrderForm ? (
-                <>
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                    <input 
-                      type="text" 
-                      autoFocus
-                      placeholder="Masukkan nama, nomor, atau alamat..."
-                      value={clientSearchQuery}
-                      onChange={e => setClientSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 h-11 bg-zinc-100 bg-card border-none rounded-[1.5rem] text-sm font-medium"
-                    />
-                  </div>
+            {omset > 0 && (
+              <div className="flex items-center justify-between pt-4 border-t border-primary/20">
+                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Estimasi Omset</p>
+                 <p className="text-lg font-black text-primary">{formatIDR(omset)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest ml-1">Hasil Pencarian ({filteredClients.length})</p>
-                    {filteredClients.map(client => (
-                      <div 
-                        key={client.id}
-                        onClick={() => { setSelectedClient(client); setShowRepeatOrderForm(true); }}
-                        className="p-4 bg-zinc-50 bg-card border border-zinc-100 border-border/50 rounded-[1.5rem] hover:border-brand-primary/30 transition-all cursor-pointer"
-                      >
-                        <h4 className="font-semibold text-sm">{client.nama}</h4>
-                        <p className="text-xs text-zinc-500">{client.alamat}</p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-5">
-                  <div className="p-4 bg-brand-primary/5 rounded-[1.5rem] border border-brand-primary/10">
-                    <p className="text-[10px] font-bold text-brand-primary tracking-widest mb-1">Pilih Konsumen:</p>
-                    <h3 className="text-base font-semibold">{selectedClient.nama}</h3>
-                    <p className="text-xs text-zinc-500">{selectedClient.nomor}</p>
-                  </div>
-
-                  <ClientForm 
-                    form={repeatOrderForm}
-                    setForm={setRepeatOrderForm}
-                    onSubmit={handleCreateRepeatOrder}
-                    isSubmitting={isSubmitting}
-                    title="Repeat Order"
-                    submitLabel="Simpan"
-                    isRepeat
-                  />
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
+         <button 
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleSubmit}
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
+          >
+            <Package className="w-4 h-4" />
+            {isSubmitting ? 'Menyimpan...' : 'Submit Repeat Order'}
+          </button>
+      </div>
+    </div>
   );
 }
+

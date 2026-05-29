@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useModules, AccessReason } from '../../providers/ModuleProvider';
 import { useAuth } from '../../providers/AuthProvider';
+import { AuthProfileSkeleton } from './guards';
 import { 
   Lock, 
   Wrench, 
@@ -26,12 +27,7 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
   const location = useLocation();
 
   if (!isLoaded) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 space-y-4">
-        <div className="w-10 h-10 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Memeriksa Hak Tata Kelola...</span>
-      </div>
-    );
+    return <AuthProfileSkeleton />;
   }
 
   const { allowed, reason } = checkAccess(moduleId);

@@ -28,8 +28,8 @@ export function Card({
   return (
     <div 
       className={cn(
-        "rounded-3xl border transition-all duration-300 relative overflow-hidden",
-        glass ? "bg-card/40 backdrop-blur-md border-border/50" : "bg-card border-border",
+        "rounded-3xl transition-all duration-300 relative overflow-hidden",
+        glass ? "bg-card/40 backdrop-blur-md" : "bg-card",
         depth === 'soft' && "shadow-sm",
         depth === 'medium' && "shadow-soft",
         depth === 'deep' && "shadow-depth",

@@ -62,7 +62,7 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
         exit={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
-          "relative flex flex-col bg-card dark:bg-black border border-border/50/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
+          "relative flex flex-col bg-white dark:bg-zinc-950 border border-border/50/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
           !isBelowTopBar ? "max-md:rounded-t-[28px] max-md:rounded-b-none" : "max-md:rounded-[20px]",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
@@ -93,13 +93,13 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
         )}
 
         {/* Scrollable Modal Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 bg-white dark:bg-zinc-950">
           {modal.content}
         </div>
 
         {/* Footer actions if specified */}
         {modal.footer && (
-          <div className="px-6 py-4 border-t border-border/50/50 dark:border-white/[0.05] bg-zinc-50/50 dark:bg-[#151515]/20 backdrop-blur-md shrink-0 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 border-t border-border/50/50 dark:border-white/[0.05] bg-white dark:bg-zinc-950 shrink-0 flex items-center justify-end gap-3">
             {modal.footer}
           </div>
         )}

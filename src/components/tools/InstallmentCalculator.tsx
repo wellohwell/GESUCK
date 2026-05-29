@@ -157,9 +157,12 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
     const nawarNum = nawar || 0;
     const dpNum = dp || 0;
 
-    const angsuranUntukClipboard = nawarNum > 0 ? nawarNum : angsuranHarian;
+    let angsuranText = formatRupiah(angsuranHarian);
+    if (nawarNum > 0) {
+      angsuranText = `~${formatRupiah(angsuranHarian)}~ *${formatRupiah(nawarNum)}*`;
+    }
 
-    if (angsuranUntukClipboard < 5000) {
+    if ((nawarNum > 0 ? nawarNum : angsuranHarian) < 5000) {
       toast.error('Minimal angsuran per hari adalah Rp 5.000');
       return;
     }
@@ -175,7 +178,7 @@ ${productDetails.model || ''} ${productDetails.merk || ''} ${productDetails.type
 -----------------
 DP: ${formatRupiah(dpNum)}
 Tenor: ${tenor} hari
-Angsuran/Hari: ${formatRupiah(angsuranUntukClipboard)}
+Angsuran/Hari: ${angsuranText}
 ${potonganText ? `${potonganText}\n` : ''}-----------------
     `.trim();
 
@@ -243,9 +246,14 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             </div>
         </div>
         
-        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 py-3 rounded-full shadow-sm mt-2">
-            <span className="font-black text-[9px] uppercase tracking-wider opacity-80">Angsuran / Hari</span>
-            <span className="font-black text-lg">{formatRupiah(angsuranHarian)}</span>
+        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 h-12 rounded-full shadow-sm mt-2">
+            <span className="font-black text-[9px] uppercase tracking-wider opacity-80 mt-[1px]">Angsuran / Hari</span>
+            <span className={cn(
+              "angsuran-value font-black text-lg leading-none mt-[1px]",
+              isNawarFilled ? "has-nawar" : ""
+            )}>
+              {formatRupiah(angsuranHarian)}
+            </span>
         </div>
         {angsuranHarian > 0 && angsuranHarian < 5000 && (
           <p className="text-[9px] text-red-500 font-bold ml-1 text-center -mt-1 uppercase animate-pulse">
@@ -264,17 +272,34 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             />
         </div>
 
-        <div className={cn(
-            "flex justify-between items-center px-4 py-3 rounded-full transition-colors",
-            isNawarFilled 
-                ? "bg-red-500 text-white shadow-sm" 
-                : "bg-white text-black shadow-sm"
-        )}>
-            <span className={cn(
-                "font-black text-[9px] uppercase tracking-wider opacity-60",
-                isNawarFilled ? "text-white" : "text-black"
-            )}>Est. Potongan / DP</span>
-            <span className="font-black text-lg">{formatRupiah(estimasiPotongan)}</span>
+        <div className="relative flex flex-col">
+          <div className={cn(
+              "flex justify-between items-center px-4 h-12 rounded-full z-20 relative transition-all duration-300",
+              isNawarFilled 
+                  ? "bg-red-500 text-white shadow-sm" 
+                  : "bg-white text-black shadow-sm"
+          )}>
+              <span className={cn(
+                  "font-black text-[9px] uppercase tracking-wider opacity-60 mt-[1px]",
+                  isNawarFilled ? "text-white" : "text-black"
+              )}>Est. Potongan / DP</span>
+              
+              <div className="flex flex-col items-end text-right justify-center mt-[1px]">
+                  <span className="font-black text-lg leading-none">{formatRupiah(estimasiPotongan)}</span>
+              </div>
+          </div>
+          
+          <div 
+              style={{ backgroundColor: '#FACC15', color: '#000000' }}
+              className={cn(
+              "flex justify-between items-center px-4 shadow-sm transition-all duration-300 ease-in-out transform origin-top z-10",
+              (dp || 0) > 0 ? "opacity-100 h-12 mt-2 rounded-full translate-y-0" : "opacity-0 h-0 mt-0 rounded-full -translate-y-4 overflow-hidden"
+          )}>
+              <span className="font-black text-[9px] uppercase tracking-wider opacity-80 mt-[1px]">Est. Total</span>
+              <span className="inline-block font-black text-lg leading-none transition-all duration-250 ease-in-out mt-[1px]">
+                  {formatRupiah((estimasiPotongan || 0) + (dp || 0))}
+              </span>
+          </div>
         </div>
 
         <button 

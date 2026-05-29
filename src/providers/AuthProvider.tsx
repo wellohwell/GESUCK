@@ -12,6 +12,7 @@ interface AuthContextType {
   firebaseUser: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
   isAuthenticated: boolean;
   isApproved: boolean;
   role: string | null;
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
   firebaseUser: null,
   profile: null,
   loading: true,
+  profileLoading: true,
   isAuthenticated: false,
   isApproved: false,
   role: null,
@@ -45,43 +47,65 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(auth.currentUser);
+  const [isAuthChecking, setIsAuthChecking] = useState(() => !auth.currentUser);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [branchesList, setBranchesList] = useState<any[]>([]);
   const [branchesLoading, setBranchesLoading] = useState(true);
 
   useEffect(() => {
     let profileUnsub: () => void = () => {};
 
+    // 1.5 seconds safety timeout fallback for slow auth resolution
+    const timeoutId = setTimeout(() => {
+      setIsAuthChecking(false);
+      setProfileLoading(false);
+    }, 1500);
+
     const authUnsub = onAuthStateChanged(auth, async (u) => {
+      clearTimeout(timeoutId);
       setFirebaseUser(u);
-      setLoading(true);
+      setIsAuthChecking(false);
       
       if (u) {
-        // First get the initial profile to ensure it exists
-        const rawProfile = await getUserProfile(u.uid);
-        if (!rawProfile) {
-          await createUserProfile(u.uid, { email: u.email || "", name: u.displayName || "", photoURL: u.photoURL || "" });
+        setProfileLoading(true);
+        
+        try {
+          // Verify profile exists in background (non-blocking)
+          const rawProfile = await getUserProfile(u.uid);
+          if (!rawProfile) {
+            await createUserProfile(u.uid, { 
+              email: u.email || "", 
+              name: u.displayName || "", 
+              photoURL: u.photoURL || "" 
+            });
+          }
+        } catch (e) {
+          console.debug("Optional profile existence check failed/bypassed:", e);
         }
 
-        // Setup real-time listener for profile
+        // Setup real-time listener for profile (deep reactive, non-blocking)
         const profileDocRef = doc(db, 'users', u.uid);
         profileUnsub = onSnapshot(profileDocRef, (snapshot) => {
           if (snapshot.exists()) {
             const p = normalizeUserProfile(u.uid, snapshot.data());
             setProfile(p);
           }
-          setLoading(false);
+          setProfileLoading(false);
+        }, (error) => {
+          console.error("Profile real-time subscription error:", error);
+          setProfileLoading(false);
         });
       } else {
         setProfile(null);
-        setLoading(false);
+        setProfileLoading(false);
         profileUnsub();
       }
     });
 
     return () => {
+      clearTimeout(timeoutId);
       authUnsub();
       profileUnsub();
     };
@@ -152,7 +176,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return {
       firebaseUser,
       profile,
-      loading: loading || branchesLoading,
+      loading: isAuthChecking,
+      profileLoading,
       isAuthenticated: !!firebaseUser,
       isApproved: profile?.status === 'approved',
       role: normalizedRole,
@@ -166,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       allBranchesList: branchesList,
       spreadsheetId: resolvedBranch?.spreadsheets?.pricing || null,
     };
-  }, [firebaseUser, profile, loading, branchesLoading, branchesList]);
+  }, [firebaseUser, profile, isAuthChecking, profileLoading, branchesLoading, branchesList]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
