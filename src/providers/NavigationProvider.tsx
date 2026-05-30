@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider';
 import { useModules } from './ModuleProvider';
 import { DEFAULT_DYNAMIC_NAV_ITEMS, DynamicNavItem } from '../config/appShell';
 import { toast } from '../hooks/use-toast';
+import { hasRole } from '../lib/permissions';
 
 interface NavigationContextType {
   navItems: DynamicNavItem[];
@@ -125,8 +126,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     // C. Check Custom Allowed Roles for this navigation link specifically
     if (item.allowedRoles && item.allowedRoles.length > 0) {
-      const userRole = profile?.role || 'sales';
-      if (!item.allowedRoles.includes(userRole)) return false;
+      const hasAnyAllowedRole = item.allowedRoles.some(role => hasRole(profile, role));
+      if (!hasAnyAllowedRole) return false;
     }
 
     // D. Check Custom Allowed Branches for this navigation link specifically

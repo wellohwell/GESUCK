@@ -107,7 +107,7 @@ function AppContent() {
           >
             <Route index element={<RequireAdminAccess><AdminHubPage /></RequireAdminAccess>} />
             <Route path="insight" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.VIEW_INSIGHT}><AdminInsightPage /></RequirePermission></RequireAdminAccess>} />
-            <Route path="master" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.MARKET_EDIT}><AdminMasterPage /></RequirePermission></RequireAdminAccess>} />
+            <Route path="master" element={<RequireAdminAccess><AdminMasterPage /></RequireAdminAccess>} />
             <Route path="approvals" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.USER_APPROVAL}><AdminUserApprovalPage /></RequirePermission></RequireAdminAccess>} />
             <Route 
               path="users" 

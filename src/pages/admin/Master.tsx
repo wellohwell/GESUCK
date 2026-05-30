@@ -229,23 +229,23 @@ export default function AdminMasterPage() {
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col pt-2 pb-24">
+    <div className="w-full flex-1 flex flex-col pt-0 pb-24">
       {/* Sticky Action Bar */}
-      <div className="sticky top-4 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-card/95 dark:bg-black/95 backdrop-blur-md border border-border/50 dark:border-white/10 rounded-[1.5rem] md:rounded-3xl shadow-sm md:items-center justify-between mb-6">
+      <div className="sticky top-6 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-card/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-full shadow-sm md:items-center justify-between mb-6">
         <div className="flex-1 flex items-center gap-2 relative">
-          <Search className="absolute left-3 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-4 w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cari master pasar..."
-            className="w-full h-10 md:h-11 bg-zinc-50 dark:bg-card/5 border-transparent focus:border-zinc-300 dark:focus:border-white/20 rounded-[1.25rem] pl-9 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all"
+            className="w-full h-10 md:h-11 bg-zinc-100 dark:bg-black/40 focus:bg-zinc-200 dark:focus:bg-black/60 rounded-full pl-10 pr-4 text-sm font-medium outline-none text-zinc-900 dark:text-white transition-all placeholder:text-zinc-500"
           />
         </div>
          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
           <button 
             onClick={handleExport}
-            className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 bg-card hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border/50 rounded-[1.25rem] text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors flex-shrink-0"
+            className="h-10 md:h-11 flex items-center gap-2 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-200 transition-colors flex-shrink-0"
           >
             <Download className="w-4 h-4" />
             <span className="hidden md:inline">Eksport</span>
@@ -253,7 +253,7 @@ export default function AdminMasterPage() {
           
           <div className="relative flex-shrink-0">
              <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-             <button className="h-10 md:h-11 flex items-center gap-2 px-4 bg-zinc-50 bg-card hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-border/50 rounded-[1.25rem] text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-colors pointer-events-none">
+             <button className="h-10 md:h-11 flex items-center gap-2 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-200 transition-colors pointer-events-none">
               <Upload className="w-4 h-4" />
               <span className="hidden md:inline">Import</span>
              </button>
@@ -261,7 +261,7 @@ export default function AdminMasterPage() {
 
           <button 
             onClick={() => openEditor()}
-            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-4 bg-[#d2f34c] hover:bg-[#b8d63b] active:scale-95 text-black rounded-[1.25rem] text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-[#d2f34c]/20 flex-shrink-0"
+            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-6 bg-primary hover:bg-primary/90 active:scale-95 text-black rounded-full text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-primary/20 flex-shrink-0"
           >
             <Plus className="w-5 h-5 text-black font-black" strokeWidth={3.5} />
             <span className="hidden md:inline">Baru</span>
@@ -304,7 +304,7 @@ export default function AdminMasterPage() {
                   <div
                     key={item.id}
                     className={cn(
-                      "flex flex-col justify-between p-4.5 transition-all bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] hover:bg-zinc-50 dark:hover:bg-card/[0.01] shadow-sm hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 group min-h-[180px]",
+                      "flex flex-col justify-between p-4.5 transition-all bg-card rounded-[1.5rem] hover:bg-zinc-50 dark:hover:bg-card/[0.01] shadow-sm hover:shadow-md group min-h-[180px]",
                       isInactive && "opacity-60 bg-zinc-50/50 dark:bg-zinc-950/40"
                     )}
                   >
@@ -388,21 +388,21 @@ export default function AdminMasterPage() {
                     </div>
 
                     {/* Action footer */}
-                    <div className="flex items-center justify-between pt-2.5 mt-3 border-t border-zinc-100 dark:border-white/5">
+                    <div className="flex items-center justify-between pt-2.5 mt-3">
                       <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-mono">
                         ID: {item.id.slice(0, 6)}...
                       </span>
                       <div className="flex gap-1.5">
                         <button 
                           onClick={() => openEditor(item)} 
-                          className="p-1 px-2 text-zinc-650 hover:text-black dark:text-zinc-450 dark:hover:text-primary bg-zinc-50 hover:bg-primary/10 dark:bg-card/5 dark:hover:bg-primary/10 rounded-lg transition-colors border border-border/50/50 dark:border-white/5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                          className="p-1 px-2 text-zinc-650 hover:text-black dark:text-zinc-450 dark:hover:text-primary bg-zinc-50 hover:bg-primary/10 dark:bg-card/5 dark:hover:bg-primary/10 rounded-lg transition-colors text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                         >
                           <Pencil className="w-3 h-3" />
                           Edit
                         </button>
                         <button 
                           onClick={() => handleDelete(item)} 
-                          className="p-1 px-2 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-card/5 dark:hover:bg-red-500/10 rounded-lg transition-colors border border-border/50/50 dark:border-white/5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                          className="p-1 px-2 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 bg-zinc-50 hover:bg-red-50 dark:bg-card/5 dark:hover:bg-red-500/10 rounded-lg transition-colors text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           Hapus

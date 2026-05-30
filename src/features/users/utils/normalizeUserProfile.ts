@@ -20,6 +20,7 @@ const roleMap: Record<string, Role> = {
     'survey': ROLES.SURVEY,
     'gudang': ROLES.GUDANG,
     'spv': ROLES.SPV,
+    'supervisor': ROLES.SPV,
 };
 
 const statusMap: Record<string, UserStatus> = {

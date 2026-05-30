@@ -458,8 +458,13 @@ export function subscribeMarketPlans(date: string, callback: (plans: any[]) => v
   });
 }
 
-export function subscribeAllMarketPlans(callback: (plans: any[]) => void) {
-  const q = query(collection(db, "market_plans"));
+export function subscribeAllMarketPlans(callback: (plans: any[]) => void, branchId?: string | null) {
+  let q;
+  if (branchId) {
+    q = query(collection(db, "market_plans"), where("branchId", "==", branchId));
+  } else {
+    q = query(collection(db, "market_plans"));
+  }
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {

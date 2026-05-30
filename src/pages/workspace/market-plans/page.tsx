@@ -59,7 +59,7 @@ export default function MarketPlansPage() {
     });
 
     const unsubMarkets = subscribeMarkets(setMarkets, branchId);
-    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans); 
+    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans, branchId); 
     const unsubUsers = subscribeUsers(setUsers, branchId);
 
     return () => {

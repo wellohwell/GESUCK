@@ -43,6 +43,7 @@ export const canAccessModule = (profile: UserProfile | null, module: ModuleConfi
 export const canAccessAdmin = (profile: UserProfile | null) => {
     if (isOwner(profile)) return true;
     if (hasRole(profile, ROLES.MANAGER)) return true;
+    if (hasRole(profile, ROLES.STAFF)) return true;
     
     const adminPermissions: Permission[] = [
         PERMISSIONS.USER_MANAGEMENT,

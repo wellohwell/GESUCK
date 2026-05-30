@@ -167,7 +167,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
       <Sidebar />
       
       {/* Sticky top app bar for mobile */}
-      <div className="md:hidden sticky top-12 z-[50] flex items-center justify-between border-b border-border/50/60 border-border/50/60 bg-card/95 dark:bg-[#050505]/95 backdrop-blur-md px-4 py-3">
+      <div className="md:hidden sticky top-0 z-[50] flex items-center justify-between border-b border-border/50/60 border-border/50/60 bg-card/95 dark:bg-[#050505]/95 backdrop-blur-md px-4 py-3">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
@@ -185,7 +185,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
         {/* Back navigation button */}
         <button
           onClick={handleBack}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-[1.25rem] border border-border/50/60 border-border/50/60 bg-zinc-50 bg-card/40 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all active:scale-95 uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/50/60 border-border/50/60 bg-zinc-50 bg-card/40 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all active:scale-95 uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           <ArrowLeft className="w-3 h-3" />
           <span>Kembali</span>
