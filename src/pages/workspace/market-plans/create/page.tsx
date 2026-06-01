@@ -251,9 +251,18 @@ export default function CreateMarketPlanPage() {
         />
 
         <SavePlanFAB 
-          onClick={handleAddPlan}
-          disabled={!selectedMarketName}
+          isOpen={!!selectedMarketName}
+          onClose={() => {
+            setSelectedMarketName("");
+            setSelectedMarketCity("");
+          }}
+          onConfirm={handleAddPlan}
           selectedMarketName={selectedMarketName}
+          selectedMarketCity={selectedMarketCity}
+          selectedMarket={selectedMarket}
+          selectedSubCategory={selectedSubCategory}
+          onSubCategorySelect={setSelectedSubCategory}
+          pasaranWarning={pasaranWarning}
         />
       </div>
     </motion.div>
