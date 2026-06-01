@@ -252,7 +252,7 @@ export default function MarketPlansPage() {
                   <ActionButton
                     onClick={() => navigate("/workspace/market-plans/create")}
                     icon={Plus}
-                    className="text-[10px] font-black px-6 py-2.5 tracking-wider uppercase bg-primary hover:bg-primary/95 text-black shadow-lg shadow-primary/20 rounded-full transition-all duration-300 transform active:scale-95"
+                    className="text-[10px] font-black px-6 py-2.5 tracking-wider uppercase bg-white hover:bg-zinc-100 text-black shadow-lg shadow-white/5 rounded-full transition-all duration-300 transform active:scale-[0.95]"
                   >
                     TAMBAH RENCANA
                   </ActionButton>
