@@ -89,6 +89,12 @@ export default function MarketPlansPage() {
     return spvUsers.filter(u => !spvWithPlansIds.has(u.id)).length;
   }, [users, plans]);
 
+  const userHasPlan = useMemo(() => {
+    const currentUserId = auth.currentUser?.uid;
+    if (!currentUserId) return false;
+    return plans.some(p => p.userId === currentUserId);
+  }, [plans]);
+
   const marketTemperature = useMemo(() => {
     if (allPlans.length < 5) return { hot: [], cold: [], isLowData: true };
     const now = dayjs();
@@ -241,7 +247,17 @@ export default function MarketPlansPage() {
                 </div>
               </div>
 
-
+              {!userHasPlan && (
+                <div data-html2canvas-ignore="true" className="flex justify-center mb-5 mt-2">
+                  <ActionButton
+                    onClick={() => navigate("/workspace/market-plans/create")}
+                    icon={Plus}
+                    className="text-[10px] font-black px-6 py-2.5 tracking-wider uppercase bg-primary hover:bg-primary/95 text-black shadow-lg shadow-primary/20 rounded-full transition-all duration-300 transform active:scale-95"
+                  >
+                    TAMBAH RENCANA
+                  </ActionButton>
+                </div>
+              )}
 
               {loading ? (
                 <div className="space-y-4">
@@ -275,16 +291,6 @@ export default function MarketPlansPage() {
                   </div>
                   
                   <p className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.3em] mb-3">Belum Ada Rencana</p>
-                  
-                  <div data-html2canvas-ignore="true" className="flex justify-center mb-4">
-                    <ActionButton
-                      onClick={() => navigate("/workspace/market-plans/create")}
-                      icon={Plus}
-                      className="text-[8.5px] font-black px-4 py-1.5"
-                    >
-                      TAMBAH RENCANA
-                    </ActionButton>
-                  </div>
                   
                   <p className="text-[6px] font-medium text-muted-foreground/15 uppercase tracking-[0.1em] max-w-[140px] leading-relaxed mx-auto">Mulai buat rencana kunjungan pertamamu</p>
                 </div>
