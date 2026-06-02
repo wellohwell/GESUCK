@@ -278,7 +278,20 @@ export default function MarketPlans({
   );
 
   const pasaranWarning = useMemo(() => {
-    if (!selectedMarket || !selectedSubCategory) return null;
+    if (!selectedMarket) return null;
+
+    const resolvedCategory =
+      selectedSubCategory ||
+      (Array.isArray(selectedMarket?.kategori)
+        ? typeof selectedMarket.kategori[0] === "object"
+          ? selectedMarket.kategori[0].kode || selectedMarket.kategori[0].id
+          : selectedMarket.kategori[0]
+        : typeof selectedMarket?.kategori === "object"
+          ? selectedMarket.kategori.kode || selectedMarket.kategori.id
+          : selectedMarket?.kategori) ||
+      selectedType;
+
+    if (!resolvedCategory) return null;
 
     const todayPasaran = activeDate.pasaran.toUpperCase();
     const marketPasarans = Array.isArray(selectedMarket.pasaran)
@@ -287,7 +300,7 @@ export default function MarketPlans({
 
     // Validation for markets with specific pasaran days
     // Only check pasaran days if the selected category is PASARAN_JAWA
-    if (selectedSubCategory === "PASARAN_JAWA") {
+    if (resolvedCategory === "PASARAN_JAWA") {
       if (
         marketPasarans.length > 0 &&
         !marketPasarans.some((p: string) => p.toUpperCase() === todayPasaran)
@@ -297,7 +310,7 @@ export default function MarketPlans({
     }
 
     return null;
-  }, [selectedMarket, selectedSubCategory, activeDate.pasaran]);
+  }, [selectedMarket, selectedSubCategory, selectedType, activeDate.pasaran]);
 
   const resetForm = () => {
     setSelectedMarketName("");

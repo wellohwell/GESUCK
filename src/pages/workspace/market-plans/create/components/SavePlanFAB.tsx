@@ -131,7 +131,13 @@ export const SavePlanFAB: React.FC<SavePlanFABProps> = ({
               <div className="flex flex-col gap-2 w-full">
                 <button
                   onClick={onConfirm}
-                  className="w-full h-12 flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-xl active:scale-[0.97]"
+                  disabled={!!pasaranWarning}
+                  className={cn(
+                    "w-full h-12 flex items-center justify-center gap-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300 shadow-xl",
+                    pasaranWarning
+                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50 opacity-50"
+                      : "bg-white hover:bg-zinc-100 text-black active:scale-[0.97]"
+                  )}
                 >
                   <span>SIMPAN</span>
                 </button>

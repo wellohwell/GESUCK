@@ -41,7 +41,7 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 max-md:items-end max-md:p-0",
+        "fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 max-md:items-center max-md:p-4",
         isBelowTopBar && "items-start pt-16 md:pt-20 max-md:items-start max-md:p-3 max-md:pt-[102px]"
       )}
       style={{ zIndex: 999 + index }}
@@ -63,25 +63,15 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
           "relative flex flex-col bg-white dark:bg-zinc-950 border border-border/50/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
-          !isBelowTopBar ? "max-md:rounded-t-[28px] max-md:rounded-b-none" : "max-md:rounded-[20px]",
+          !isBelowTopBar ? "max-md:rounded-[24px]" : "max-md:rounded-[20px]",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
           "md:w-[85vw]", sizeClasses[modal.size || 'md'],
-          // Mobile responsive bottom-sheet structure and safe-area adjustments
-          !isBelowTopBar ? "max-md:max-h-[92vh] max-md:border-b-0 max-md:pb-[calc(env(safe-area-inset-bottom,20px)+8px)]" : "max-md:max-h-[85vh]",
+          // Mobile responsive centered structure
+          "max-md:max-h-[85vh]",
           modal.className
         )}
       >
-        {/* Mobile touch-swipe handle simulator */}
-        {!isBelowTopBar && (
-          <div 
-            className="hidden max-md:flex justify-center py-3 shrink-0 cursor-pointer" 
-            onClick={handleClose}
-          >
-            <div className="w-12 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
-          </div>
-        )}
-
         {/* Dynamic header if specified in the call */}
         {(modal.title || !modal.hideCloseButton) && (
           <ModalHeader
