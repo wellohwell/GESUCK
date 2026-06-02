@@ -94,7 +94,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
+  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
   const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   return (
@@ -181,7 +181,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               />
             </div>
             
-            <div className="p-4 rounded-3xl border border-primary/20 bg-primary/5 space-y-4">
+            <div className="p-4 rounded-[14px] border border-primary/20 bg-primary/5 space-y-4">
               <div>
                 <label className={labelClass}>Angsuran (Rp) *</label>
                 <input 
@@ -195,7 +195,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Tipe Tenor</label>
-                  <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-2xl border border-border/50">
+                  <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-xl border border-border/50">
                     {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
                       <button
                         key={type.id}
@@ -246,7 +246,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
           <button 
             type="button"
             onClick={handleNext}
-            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all"
           >
             Lanjut Detail Order
             <ArrowRight className="w-4 h-4" />
@@ -256,7 +256,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
             <button 
               type="button"
               onClick={() => setStep(1)}
-              className="h-14 px-6 bg-secondary/50 hover:bg-secondary text-text-primary rounded-full font-bold transition-colors"
+              className="h-14 px-6 bg-secondary/50 hover:bg-secondary text-text-primary rounded-xl font-bold transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -264,7 +264,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="flex-1 flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
             >
               {isSubmitting ? 'Menyimpan...' : 'Submit Order Baru'}
             </button>

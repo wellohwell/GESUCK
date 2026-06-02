@@ -70,10 +70,23 @@ interface MarketPlansProps {
 export default function MarketPlans({
   isManager,
 }: MarketPlansProps) {
-  const [plans, setPlans] = useState<any[]>([]);
+  const { branchId } = useBranch();
+  const [rawPlans, setRawPlans] = useState<any[]>([]);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [markets, setMarkets] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+
+  const plans = useMemo(() => {
+    return rawPlans
+      .filter((p) => {
+        if (p.branchId) {
+          return p.branchId === branchId;
+        }
+        return users.some((u) => u.id === p.userId);
+      })
+      .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  }, [rawPlans, branchId, users]);
+
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
@@ -95,8 +108,6 @@ export default function MarketPlans({
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showPendingTooltip]);
-
-  const { branchId } = useBranch();
   
   // Form State
   const [selectedCity, setSelectedCity] = useState("");
@@ -173,14 +184,7 @@ export default function MarketPlans({
     if (!branchId) return;
 
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
-      // Filter plans by branch if necessary (if market_plans collection doesn't have tenant isolation yet)
-      setPlans(
-        data
-          .filter(p => !p.branchId || p.branchId === branchId)
-          .sort(
-            (a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0),
-          ),
-      );
+      setRawPlans(data);
       setLoading(false);
     });
 

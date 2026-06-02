@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Plus, Filter, Download, Upload, MoreVertical, Pencil, Trash2, CheckCircle2, XCircle, FileJson, X, AlignLeft, Building2, MapPin, Loader2, SearchX, ChevronDown, Layers, Clock } from "lucide-react";
+import { Search, Plus, Filter, Download, Upload, MoreVertical, Pencil, Trash2, CheckCircle2, XCircle, FileJson, X, AlignLeft, Building2, MapPin, Loader2, SearchX, ChevronDown, Layers, Clock, AlertCircle } from "lucide-react";
 import { db } from "../../firebase/config";
 import { collection, doc, writeBatch, query, onSnapshot, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
 import { useRuntime } from "../../providers/RuntimeProvider";
@@ -51,8 +51,45 @@ export default function AdminMasterPage() {
   const [search, setSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMarket, setEditingMarket] = useState<MarketMaster | null>(null);
+  const [marketToDelete, setMarketToDelete] = useState<MarketMaster | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [branchWilayah, setBranchWilayah] = useState<string[]>([]);
+  const [branchLoading, setBranchLoading] = useState(true);
+  const [isWilayahManagerOpen, setIsWilayahManagerOpen] = useState(false);
+  const [newWilayahInput, setNewWilayahInput] = useState("");
+
+  const handleSaveWilayahList = async (newList: string[]) => {
+    if (!activeBranchContext) return;
+    try {
+      const docRef = doc(db, "branches", activeBranchContext);
+      await setDoc(docRef, { wilayah: newList }, { merge: true });
+      toast.success("Wilayah operasional cabang berhasil diperbarui.");
+    } catch (err: any) {
+      toast.error("Gagal memperbarui wilayah: " + err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (!activeBranchContext) {
+      setBranchWilayah([]);
+      setBranchLoading(false);
+      return;
+    }
+    setBranchLoading(true);
+    const docRef = doc(db, "branches", activeBranchContext);
+    const unsub = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const docData = docSnap.data();
+        setBranchWilayah(docData.wilayah || []);
+      } else {
+        setBranchWilayah([]);
+      }
+      setBranchLoading(false);
+    });
+    return () => unsub();
+  }, [activeBranchContext]);
 
   useEffect(() => {
     if (!activeBranchContext) {
@@ -131,14 +168,19 @@ export default function AdminMasterPage() {
     }
   };
 
-  const handleDelete = async (item: MarketMaster) => {
-    if (!activeBranchContext) return;
-    if (!window.confirm(`PERHATIAN!\nHapus permanen master data pasar:\n${item.name}?\nTindakan ini tidak dapat dibatalkan.`)) return;
+  const handleDelete = (item: MarketMaster) => {
+    setMarketToDelete(item);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!marketToDelete || !activeBranchContext) return;
     try {
-      await deleteDoc(doc(db, `branches/${activeBranchContext}/master_markets`, item.id));
+      await deleteDoc(doc(db, `branches/${activeBranchContext}/master_markets`, marketToDelete.id));
       toast.success("Data berhasil dihapus");
     } catch {
       toast.error("Gagal menghapus data");
+    } finally {
+      setMarketToDelete(null);
     }
   };
 
@@ -231,7 +273,7 @@ export default function AdminMasterPage() {
   return (
     <div className="w-full flex-1 flex flex-col pt-0 pb-24">
       {/* Sticky Action Bar */}
-      <div className="sticky top-6 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-2 md:gap-4 p-3 md:p-4 bg-card/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-full shadow-sm md:items-center justify-between mb-6">
+      <div className="sticky top-6 z-30 mx-4 md:mx-0 flex flex-col md:flex-row gap-3 md:gap-4 md:items-center justify-between mb-6">
         <div className="flex-1 flex items-center gap-2 relative">
           <Search className="absolute left-4 w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <input
@@ -243,25 +285,22 @@ export default function AdminMasterPage() {
           />
         </div>
          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
-          <button 
-            onClick={handleExport}
-            className="h-10 md:h-11 flex items-center gap-2 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-200 transition-colors flex-shrink-0"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden md:inline">Eksport</span>
-          </button>
-          
-          <div className="relative flex-shrink-0">
-             <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-             <button className="h-10 md:h-11 flex items-center gap-2 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-200 transition-colors pointer-events-none">
-              <Upload className="w-4 h-4" />
-              <span className="hidden md:inline">Import</span>
-             </button>
-          </div>
+          {activeBranchContext && (
+            <button 
+              onClick={() => setIsWilayahManagerOpen(true)}
+              className="h-10 md:h-11 flex items-center gap-2 px-5 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full text-xs md:text-sm font-bold text-zinc-700 dark:text-zinc-200 transition-colors flex-shrink-0 cursor-pointer"
+              title="Kelola Wilayah"
+            >
+              <MapPin className="w-4 h-4 text-emerald-500" />
+              <span className="hidden md:inline">Wilayah</span>
+            </button>
+          )}
 
           <button 
             onClick={() => openEditor()}
-            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-6 bg-primary hover:bg-primary/90 active:scale-95 text-black rounded-full text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-primary/20 flex-shrink-0"
+            disabled={branchWilayah.length === 0}
+            className="h-10 md:h-11 flex items-center justify-center gap-1.5 px-6 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:bg-zinc-350 dark:disabled:bg-zinc-800 disabled:text-zinc-500 disabled:pointer-events-none active:scale-95 text-black rounded-full text-xs md:text-sm font-black uppercase tracking-wider transition-all shadow-md shadow-primary/20 flex-shrink-0 cursor-pointer"
+            title={branchWilayah.length === 0 ? "Tambahkan wilayah terlebih dahulu" : "Tambah Master Pasar"}
           >
             <Plus className="w-5 h-5 text-black font-black" strokeWidth={3.5} />
             <span className="hidden md:inline">Baru</span>
@@ -271,6 +310,23 @@ export default function AdminMasterPage() {
 
       {/* Main Content Area */}
       <div className="px-4 md:px-0">
+        {branchWilayah.length === 0 && !branchLoading && (
+          <div className="mb-6 p-4.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs shadow-sm">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              <div>
+                <p className="font-extrabold uppercase tracking-widest text-[10px] text-amber-500 font-mono">Peringatan Konfigurasi</p>
+                <p className="font-medium text-zinc-700 dark:text-zinc-300 mt-0.5">Tambahkan minimal satu wilayah operasional cabang terlebih dahulu.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsWilayahManagerOpen(true)}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all self-start sm:self-center flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer font-bold"
+            >
+              <MapPin className="w-3.5 h-3.5 animate-bounce" /> Kelola Wilayah
+            </button>
+          </div>
+        )}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
@@ -325,19 +381,6 @@ export default function AdminMasterPage() {
                             )}
                           </div>
                         </div>
-
-                        {/* Status Toggle Button */}
-                        <button
-                          onClick={() => handleToggleActive(item)}
-                          className={cn(
-                            "flex-shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider transition-all scale-95 hover:scale-100 cursor-pointer",
-                            item.active
-                              ? "bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/20"
-                              : "bg-zinc-100 dark:bg-card/5 text-zinc-500 dark:text-zinc-400 border border-border/50 dark:border-white/10"
-                          )}
-                        >
-                          {item.active ? "Aktif" : "Muted"}
-                        </button>
                       </div>
 
                       {/* Display Multi-Schedule Operations */}
@@ -345,6 +388,7 @@ export default function AdminMasterPage() {
                         {ops.map((op, oIdx) => {
                           const isJava = op.jenis === "PASAR_JAWA";
                           const isPagi = op.jenis === "PASAR_PAGI";
+                          const isEveryday = op.hariOperasi && ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"].every(d => op.hariOperasi.includes(d));
                           return (
                             <div 
                               key={op.id || oIdx} 
@@ -367,19 +411,32 @@ export default function AdminMasterPage() {
                                 </div>
                               </div>
                               <div className="flex flex-wrap gap-0.5 mt-0.5">
-                                {op.hariOperasi?.map((day, dIdx) => (
+                                {isEveryday ? (
                                   <span 
-                                    key={dIdx} 
                                     className={cn(
-                                      "text-[7px] font-bold px-1 py-0.2 rounded uppercase font-mono border",
+                                      "text-[7px] font-black px-1.5 py-0.3 rounded-md uppercase tracking-wider border",
                                       isJava 
-                                        ? "bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400" 
-                                        : "bg-zinc-100/50 dark:bg-zinc-800 border-transparent text-zinc-500 dark:text-zinc-400"
+                                        ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400 font-sans" 
+                                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-sans"
                                     )}
                                   >
-                                    {day}
+                                    Buka Setiap Hari
                                   </span>
-                                ))}
+                                ) : (
+                                  op.hariOperasi?.map((day, dIdx) => (
+                                    <span 
+                                      key={dIdx} 
+                                      className={cn(
+                                        "text-[7px] font-bold px-1 py-0.2 rounded uppercase font-mono border",
+                                        isJava 
+                                          ? "bg-amber-500/5 border-amber-500/10 text-amber-600 dark:text-amber-400" 
+                                          : "bg-zinc-100/50 dark:bg-zinc-800 border-transparent text-zinc-500 dark:text-zinc-400"
+                                      )}
+                                    >
+                                      {day}
+                                    </span>
+                                  ))
+                                )}
                               </div>
                             </div>
                           );
@@ -427,7 +484,182 @@ export default function AdminMasterPage() {
             }}
             branchId={activeBranchContext!}
             profile={profile}
+            branchWilayah={branchWilayah}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Inline Wilayah Manager Modal */}
+      <AnimatePresence>
+        {isWilayahManagerOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsWilayahManagerOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md bg-card border border-border/60 rounded-[18px] overflow-hidden shadow-2xl z-20 flex flex-col max-h-[85vh]"
+            >
+              <header className="px-8 pt-9 pb-7 border-b border-border/40 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2 font-sans">
+                    <MapPin className="w-4 h-4 text-emerald-400 animate-pulse" />
+                    Kelola Wilayah
+                  </h3>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono mt-0.5">
+                    Cabang ID: {activeBranchContext}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsWilayahManagerOpen(false)}
+                  className="p-1.5 hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </header>
+
+              <div className="p-6 space-y-4 overflow-y-auto">
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-semibold">
+                  Tambahkan daftar wilayah/kabupaten operasional yang dilayani oleh cabang ini. Wilayah yang terdaftar akan muncul sebagai opsi dropdown saat membuat data Master Pasar.
+                </p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Contoh: Bantul, Sleman, Kulon Progo"
+                    value={newWilayahInput}
+                    onChange={(e) => setNewWilayahInput(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const val = newWilayahInput.trim();
+                        if (!val) return;
+                        if (branchWilayah.includes(val)) {
+                          toast.error("Wilayah sudah terdaftar.");
+                          return;
+                        }
+                        const updated = [...branchWilayah, val];
+                        await handleSaveWilayahList(updated);
+                        setNewWilayahInput("");
+                      }
+                    }}
+                    className="flex-1 h-10 px-4 rounded-xl border border-border/50 bg-[#06080A] text-xs font-bold text-white outline-none focus:border-primary transition-all"
+                  />
+                  <button
+                    onClick={async () => {
+                      const val = newWilayahInput.trim();
+                      if (!val) return;
+                      if (branchWilayah.includes(val)) {
+                        toast.error("Wilayah sudah terdaftar.");
+                        return;
+                      }
+                      const updated = [...branchWilayah, val];
+                      await handleSaveWilayahList(updated);
+                      setNewWilayahInput("");
+                    }}
+                    className="px-4 h-10 bg-primary hover:opacity-90 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Tambah
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 p-3.5 rounded-2xl bg-[#06080A] border border-border/40 min-h-[100px]">
+                  {branchWilayah.map((name) => (
+                    <span
+                      key={name}
+                      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5 border border-border/40 text-[10px] font-extrabold uppercase text-zinc-300 tracking-wider"
+                    >
+                      {name}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const updated = branchWilayah.filter((w) => w !== name);
+                          await handleSaveWilayahList(updated);
+                        }}
+                        className="hover:text-red-400 flex items-center justify-center text-zinc-500 transition-colors cursor-pointer"
+                        title="Hapus"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                  {branchWilayah.length === 0 && (
+                    <p className="text-[10px] italic text-zinc-500 self-center mx-auto">Belum ada wilayah operasional cabang.</p>
+                  )}
+                </div>
+              </div>
+
+              <footer className="px-6 py-4.5 border-t border-border/40 flex items-center justify-end bg-[#06080A]/40">
+                <button
+                  onClick={() => setIsWilayahManagerOpen(false)}
+                  className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-border/40 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
+                >
+                  Selesai
+                </button>
+              </footer>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {marketToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMarketToDelete(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fade-in"
+            />
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-sm bg-card border border-border/60 rounded-2xl overflow-hidden shadow-2xl z-20 flex flex-col p-6 text-center space-y-4"
+            >
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-550/10 flex items-center justify-center text-red-500">
+                <Trash2 className="w-6 h-6 animate-pulse" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-black uppercase tracking-wider text-white font-sans">
+                  Hapus Master Pasar?
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
+                  Apakah Anda yakin ingin menghapus permanen master data pasar <span className="font-extrabold text-white">"{marketToDelete.name}"</span>? Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMarketToDelete(null)}
+                  className="flex-1 h-10 bg-white/5 hover:bg-white/10 text-white border border-border/40 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="flex-1 h-10 bg-red-550 hover:opacity-90 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md shadow-red-550/10"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
@@ -435,7 +667,7 @@ export default function AdminMasterPage() {
 }
 
 // --- NEW MOBILE-FIRST SHEET WRAPPER WITH MOTION ANIMATIONS ---
-function MarketEditorSheet({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
+function MarketEditorSheet({ initialData, onClose, branchId, profile, branchWilayah }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any, branchWilayah: string[] }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
@@ -454,150 +686,190 @@ function MarketEditorSheet({ initialData, onClose, branchId, profile }: { initia
         transition={{ type: "spring", damping: 28, stiffness: 220 }}
         className="relative w-full max-w-xl h-[92vh] md:h-[88vh] bg-zinc-50 dark:bg-zinc-950 border-t border-border/50 dark:border-white/10 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden pb-safe"
       >
-        <MarketEditorForm initialData={initialData} onClose={onClose} branchId={branchId} profile={profile} />
+        <MarketEditorForm initialData={initialData} onClose={onClose} branchId={branchId} profile={profile} branchWilayah={branchWilayah} />
       </motion.div>
     </div>
   );
 }
 
-export const BRANCH_WILAYAH_MAP: Record<string, string[]> = {
-  GJY: ["Kota Yogyakarta", "Bantul", "Gunungkidul", "Kulon Progo", "Sleman"], // DIY
-  SLA: ["Sleman", "Depok", "Ngaglik", "Mlati", "Kalasan", "Gamping", "Tempel", "Prambanan"], // Sleman
-  MGL: ["Kota Magelang", "Kabupaten Magelang", "Muntilan", "Secang", "Borobudur", "Salaman", "Grabag"], // Magelang
-  PWR: ["Purworejo", "Kutoarjo", "Bagelen", "Kemiri", "Butuh", "Loano"], // Purworejo
-  TMG: ["Temanggung", "Parakan", "Kranggan", "Ngadirejo", "Kedu"] // Temanggung
-};
-
 // Inner Component for Editor Form
-function MarketEditorForm({ initialData, onClose, branchId, profile }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any }) {
+function MarketEditorForm({ initialData, onClose, branchId, profile, branchWilayah }: { initialData: MarketMaster | null, onClose: () => void, branchId: string, profile: any, branchWilayah: string[] }) {
   const [name, setName] = useState(initialData?.name || "");
   const [city, setCity] = useState(initialData?.city || "");
   const [district, setDistrict] = useState(initialData?.district || "");
   const [active, setActive] = useState(initialData?.active ?? true);
   const [saving, setSaving] = useState(false);
-  const [customDaysOps, setCustomDaysOps] = useState<Record<string, boolean>>({});
 
   const [isKustomCity, setIsKustomCity] = useState(() => {
     if (!initialData?.city) return false;
-    const currentOptions = BRANCH_WILAYAH_MAP[branchId?.toUpperCase()] || BRANCH_WILAYAH_MAP["GJY"] || [];
+    const currentOptions = branchWilayah || [];
     return !currentOptions.includes(initialData.city);
-  });
-
-  const [operations, setOperations] = useState<MarketOperation[]>(() => {
-    if (initialData?.operations && initialData.operations.length > 0) {
-      return initialData.operations;
-    }
-    // Safe initialization with fallback mapping of legacy records
-    return [
-      {
-        id: "op-" + Math.random().toString(36).substr(2, 9),
-        jenis: (initialData?.kategori?.[0] || "PASAR_UMUM") as any,
-        hariOperasi: initialData?.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
-        jamBuka: initialData?.jam_operasional?.buka || "06:00",
-        jamTutup: initialData?.jam_operasional?.tutup || "17:00",
-        metadata: {}
-      }
-    ];
   });
 
   const WEEKDAYS = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
   const JAWA_DAYS = ["LEGI", "PAHING", "PON", "WAGE", "KLIWON"];
 
-  const handleAddOperation = () => {
-    setOperations(prev => [
-      ...prev,
-      {
-        id: "op-" + Math.random().toString(36).substr(2, 9),
-        jenis: "PASAR_UMUM",
-        hariOperasi: ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
-        jamBuka: "06:00",
-        jamTutup: "17:00",
-        metadata: {}
-      }
-    ]);
-    toast.success("Operasional baru ditambahkan ke daftar");
+  const WEEKDAY_LABELS: Record<string, string> = {
+    SENIN: "Senin",
+    SELASA: "Selasa",
+    RABU: "Rabu",
+    KAMIS: "Kamis",
+    JUMAT: "Jumat",
+    SABTU: "Sabtu",
+    MINGGU: "Minggu"
   };
 
-  const handleRemoveOperation = (id: string) => {
-    if (operations.length === 1) {
-      toast.error("Wajib menyisakan minimal 1 jadwal operasional utama!");
+  const JAWA_LABELS: Record<string, string> = {
+    LEGI: "Legi",
+    PAHING: "Pahing",
+    PON: "Pon",
+    WAGE: "Wage",
+    KLIWON: "Kliwon"
+  };
+
+  const [operations, setOperations] = useState<MarketOperation[]>(() => {
+    if (initialData?.operations && initialData.operations.length > 0) {
+      return initialData.operations;
+    }
+    if (initialData) {
+      const cats = initialData.kategori || [];
+      if (cats.length > 0) {
+        return cats.map((cat, idx) => ({
+          id: `op-legacy-${cat}-${idx}`,
+          jenis: cat as any,
+          hariOperasi: initialData.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+          jamBuka: initialData.jam_operasional?.buka || "06:00",
+          jamTutup: initialData.jam_operasional?.tutup || "17:00",
+          metadata: {}
+        }));
+      }
+      return [
+        {
+          id: "op-legacy-" + Math.random().toString(36).substr(2, 9),
+          jenis: "PASAR_UMUM",
+          hariOperasi: initialData.hari_operasi || ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"],
+          jamBuka: initialData.jam_operasional?.buka || "06:00",
+          jamTutup: initialData.jam_operasional?.tutup || "17:00",
+          metadata: {}
+        }
+      ];
+    }
+    return [];
+  });
+
+  // Category editing state within the configuration workflow
+  const [currentEditingJenis, setCurrentEditingJenis] = useState<"PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA" | null>(null);
+  const [editHariOperasi, setEditHariOperasi] = useState<string[]>([]);
+  const [editJamBuka, setEditJamBuka] = useState<string>("06:00");
+  const [editJamTutup, setEditJamTutup] = useState<string>("17:00");
+  const [editCustomDaysActive, setEditCustomDaysActive] = useState<boolean | null>(null);
+
+  const handleStartAdd = (jenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA") => {
+    let defaultBuka = "06:00";
+    let defaultTutup = "17:00";
+    let defaultHari = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+
+    if (jenis === "PASAR_PAGI") {
+      defaultBuka = "04:00";
+      defaultTutup = "11:00";
+    } else if (jenis === "PASAR_JAWA") {
+      defaultBuka = "05:00";
+      defaultTutup = "12:00";
+      defaultHari = ["LEGI"];
+    }
+
+    setCurrentEditingJenis(jenis);
+    setEditHariOperasi(defaultHari);
+    setEditJamBuka(defaultBuka);
+    setEditJamTutup(defaultTutup);
+    setEditCustomDaysActive(jenis === "PASAR_JAWA" ? true : false);
+  };
+
+  const handleStartEdit = (op: MarketOperation) => {
+    setCurrentEditingJenis(op.jenis);
+    setEditHariOperasi([...op.hariOperasi]);
+    setEditJamBuka(op.jamBuka);
+    setEditJamTutup(op.jamTutup);
+    
+    const isEvery = !(op.jenis === "PASAR_JAWA") && WEEKDAYS.every(d => op.hariOperasi.includes(d));
+    setEditCustomDaysActive(!isEvery);
+  };
+
+  const handleCancelEdit = () => {
+    setCurrentEditingJenis(null);
+    setEditHariOperasi([]);
+    setEditJamBuka("06:00");
+    setEditJamTutup("17:00");
+    setEditCustomDaysActive(null);
+  };
+
+  const handleToggleEditDay = (day: string) => {
+    setEditHariOperasi(prev => {
+      const isExist = prev.includes(day);
+      if (isExist) {
+        return prev.filter(d => d !== day);
+      } else {
+        return [...prev, day];
+      }
+    });
+  };
+
+  const handleRemoveCategory = (jenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA") => {
+    setOperations(prev => prev.filter(op => op.jenis !== jenis));
+    toast.success(`Operasional ${jenis === "PASAR_UMUM" ? "UMUM" : jenis === "PASAR_PAGI" ? "PAGI" : "JAWA"} berhasil dihapus`);
+    if (currentEditingJenis === jenis) {
+      handleCancelEdit();
+    }
+  };
+
+  const handleSaveCategoryConfig = () => {
+    if (!currentEditingJenis) return;
+    if (editHariOperasi.length === 0) {
+      toast.error("Wajib memilih minimal 1 hari operasi!");
       return;
     }
-    setOperations(prev => prev.filter(op => op.id !== id));
-  };
+    if (!editJamBuka || !editJamTutup) {
+      toast.error("Jam buka dan jam tutup wajib diisi!");
+      return;
+    }
 
-  const handleChangeJenis = (id: string, newJenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA") => {
-    setOperations(prev => prev.map(op => {
-      if (op.id !== id) return op;
-      
-      let defaultBuka = op.jamBuka;
-      let defaultTutup = op.jamTutup;
-      let defaultHari = op.hariOperasi;
-
-      if (newJenis === "PASAR_PAGI") {
-        defaultBuka = "04:00";
-        defaultTutup = "11:00";
-        defaultHari = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
-      } else if (newJenis === "PASAR_JAWA") {
-        defaultBuka = "05:00";
-        defaultTutup = "12:00";
-        defaultHari = ["LEGI"];
+    setOperations(prev => {
+      const existingIndex = prev.findIndex(op => op.jenis === currentEditingJenis);
+      if (existingIndex !== -1) {
+        return prev.map((op, idx) => {
+          if (idx !== existingIndex) return op;
+          return {
+            ...op,
+            hariOperasi: [...editHariOperasi],
+            jamBuka: editJamBuka,
+            jamTutup: editJamTutup
+          };
+        });
       } else {
-        defaultBuka = "06:00";
-        defaultTutup = "17:00";
-        defaultHari = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU"];
+        return [
+          ...prev,
+          {
+            id: "op-" + Math.random().toString(36).substr(2, 9),
+            jenis: currentEditingJenis,
+            hariOperasi: [...editHariOperasi],
+            jamBuka: editJamBuka,
+            jamTutup: editJamTutup,
+            metadata: {}
+          }
+        ];
       }
+    });
 
-      return {
-        ...op,
-        jenis: newJenis,
-        hariOperasi: defaultHari,
-        jamBuka: defaultBuka,
-        jamTutup: defaultTutup
-      };
-    }));
-  };
-
-  const handleToggleEveryday = (id: string) => {
-    setOperations(prev => prev.map(op => {
-      if (op.id !== id) return op;
-      const isEvery = WEEKDAYS.every(d => op.hariOperasi.includes(d));
-      return {
-        ...op,
-        hariOperasi: isEvery ? [] : [...WEEKDAYS]
-      };
-    }));
-  };
-
-  const handleToggleDay = (id: string, day: string) => {
-    setOperations(prev => prev.map(op => {
-      if (op.id !== id) return op;
-      const isExist = op.hariOperasi.includes(day);
-      const newHari = isExist 
-        ? op.hariOperasi.filter(d => d !== day)
-        : [...op.hariOperasi, day];
-      return {
-        ...op,
-        hariOperasi: newHari
-      };
-    }));
-  };
-
-  const handleChangeTime = (id: string, field: "jamBuka" | "jamTutup", val: string) => {
-    setOperations(prev => prev.map(op => {
-      if (op.id !== id) return op;
-      return {
-        ...op,
-        [field]: val
-      };
-    }));
+    const displayLabel = currentEditingJenis === "PASAR_UMUM" ? "UMUM" : currentEditingJenis === "PASAR_PAGI" ? "PAGI" : "JAWA";
+    toast.success(`Jadwal ${displayLabel} disimpan ke rancangan`);
+    handleCancelEdit();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Nama Pasar wajib diisi");
     if (!city.trim()) return toast.error("Wilayah/Kota wajib diisi");
-    if (operations.length === 0) return toast.error("Minimal harus memiliki 1 jadwal operasional");
+    if (operations.length === 0) return toast.error("Minimal harus menambahkan 1 kategori operasional aktif!");
 
     setSaving(true);
     try {
@@ -605,7 +877,6 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
       const citySanitized = toTitleCase(city);
       const districtSanitized = district ? toTitleCase(district) : "";
 
-      // Re-map category, days, work hours to top-level fields for existing legacy query filters
       const kategori = Array.from(new Set(operations.map(o => o.jenis)));
       const hari_operasi = Array.from(new Set(operations.flatMap(o => o.hariOperasi)));
       const firstOp = operations[0];
@@ -616,9 +887,9 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
 
       const finalPayload = {
         name: nameSanitized,
-        nama_pasar: nameSanitized, // Legacy
+        nama_pasar: nameSanitized,
         city: citySanitized,
-        wilayah: citySanitized, // Legacy
+        wilayah: citySanitized,
         district: districtSanitized,
         active,
         kategori,
@@ -633,13 +904,11 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
       
       const batch = writeBatch(db);
 
-      // Save primary master market details
       batch.set(marketRef, {
         ...finalPayload,
         ...(initialData?.id ? {} : { createdAt: new Date().toISOString(), createdBy: profile?.email || "System/Admin User" })
       }, { merge: true });
 
-      // Reconcile and prune obsolete operations from Firestore subcollection
       const oldOps = initialData?.operations || [];
       const newIds = new Set(operations.map(o => o.id));
       const deletedOps = oldOps.filter(o => !newIds.has(o.id));
@@ -649,7 +918,6 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
         batch.delete(opRef);
       }
 
-      // Write active operation models into the subcollection
       for (const op of operations) {
         const opRef = doc(db, `branches/${branchId}/master_markets/${marketId}/operations`, op.id);
         batch.set(opRef, {
@@ -671,12 +939,166 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
     }
   };
 
+  const renderCategoryEditor = (jenis: "PASAR_UMUM" | "PASAR_PAGI" | "PASAR_JAWA") => {
+    const isJava = jenis === "PASAR_JAWA";
+    const displayLabel = jenis === "PASAR_UMUM" ? "UMUM" : jenis === "PASAR_PAGI" ? "PAGI" : "JAWA";
+
+    return (
+      <div className="bg-zinc-100/65 dark:bg-zinc-900/35 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 shadow-sm space-y-4 animate-in fade-in duration-200">
+        <div className="flex items-center justify-between border-b border-zinc-200/50 dark:border-white/5 pb-2">
+          <h4 className="text-[10px] font-black uppercase tracking-wider text-primary dark:text-[#10B981] font-mono flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" /> Konfigurasi {displayLabel}
+          </h4>
+          <button
+            type="button"
+            onClick={handleCancelEdit}
+            className="text-[9px] font-bold text-zinc-400 hover:text-zinc-655 dark:hover:text-zinc-200 uppercase tracking-wider cursor-pointer"
+          >
+            Batal
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+            Hari Operasi
+          </label>
+
+          {isJava ? (
+            <div className="flex flex-wrap gap-1">
+              {JAWA_DAYS.map((day) => {
+                const isActive = editHariOperasi.includes(day);
+                const label = JAWA_LABELS[day] || day;
+                return (
+                  <button
+                    type="button"
+                    key={day}
+                    onClick={() => handleToggleEditDay(day)}
+                    className={cn(
+                      "flex-1 min-w-[55px] h-9 rounded-lg text-[9px] font-bold tracking-wider border transition-all cursor-pointer",
+                      isActive
+                        ? "bg-primary/10 border-primary text-primary shadow-sm"
+                        : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-350"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            (() => {
+              const isEveryday = WEEKDAYS.every(d => editHariOperasi.includes(d));
+              const showCustom = editCustomDaysActive ?? !isEveryday;
+
+              if (!showCustom) {
+                return (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">
+                        Buka Setiap Hari (Senin - Minggu)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditCustomDaysActive(true)}
+                      className="text-[9px] font-bold text-zinc-500 hover:text-primary dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider underline cursor-pointer"
+                    >
+                      Ubah
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between pl-1">
+                    <span className="text-[8.5px] font-black text-amber-500 uppercase tracking-wider">
+                      Kustom ({editHariOperasi.length} Hari Aktif)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditCustomDaysActive(false);
+                        setEditHariOperasi([...WEEKDAYS]);
+                      }}
+                      className="text-[9px] font-bold text-emerald-600 dark:text-primary hover:underline uppercase tracking-wider cursor-pointer"
+                    >
+                      Setiap Hari
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {WEEKDAYS.map((day) => {
+                      const isActive = editHariOperasi.includes(day);
+                      const shortLabel = WEEKDAY_LABELS[day]?.slice(0, 3) || day.slice(0, 3);
+                      return (
+                        <button
+                          type="button"
+                          key={day}
+                          onClick={() => handleToggleEditDay(day)}
+                          className={cn(
+                            "h-9 rounded-lg text-[9px] font-bold border transition-all cursor-pointer uppercase font-mono",
+                            isActive
+                              ? "bg-primary/10 border-primary text-primary shadow-sm"
+                              : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                          )}
+                        >
+                          {shortLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3.5 pt-1">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+              Jam Buka
+            </label>
+            <input
+              type="time"
+              required
+              value={editJamBuka}
+              onChange={(e) => setEditJamBuka(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors cursor-pointer"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
+              Jam Tutup
+            </label>
+            <input
+              type="time"
+              required
+              value={editJamTutup}
+              onChange={(e) => setEditJamTutup(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSaveCategoryConfig}
+          className="w-full h-10 bg-primary hover:bg-primary/95 text-primary-foreground font-black text-[9.5px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm mt-2 cursor-pointer"
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          Simpan Jadwal {displayLabel}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-card/95 bg-card/95 backdrop-blur-md border-b border-border/50/80 dark:border-white/5">
+      <div className="sticky top-0 z-10 flex flex-shrink-0 items-center justify-between px-6 py-4 bg-white dark:bg-zinc-950 border-b border-zinc-200/50 dark:border-white/10">
         <div>
-          <h3 className="text-base font-black uppercase tracking-wider text-zinc-900 dark:text-white">
+          <h3 className="text-sm md:text-base font-black uppercase tracking-wider text-zinc-900 dark:text-white">
             {initialData ? "Edit Master Pasar" : "Tambah Master Pasar"}
           </h3>
           <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-0.5">
@@ -694,12 +1116,12 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
 
       {/* Scrollable Content Pane */}
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 scrollbar-thin">
-        {/* SECTION 1: Master Market Information */}
+        {/* SECTION 1: Informasi Pasar */}
         <div className="bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] p-4 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-white/5 pb-2">
             <Building2 className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
-              Informasi Utama Pasar
+              Informasi Pasar
             </h3>
           </div>
           
@@ -719,7 +1141,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
-              Wilayah / Kota <span className="text-red-500">*</span>
+              Wilayah <span className="text-red-500">*</span>
             </label>
             <div className="flex flex-col gap-2">
               <select
@@ -738,7 +1160,7 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
                 className="w-full h-11 px-4 rounded-[1.25rem] border border-border/50 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-white outline-none focus:border-primary transition-all cursor-pointer"
               >
                 <option value="">Pilih Wilayah...</option>
-                {(BRANCH_WILAYAH_MAP[branchId?.toUpperCase()] || BRANCH_WILAYAH_MAP["GJY"] || []).map(opt => (
+                {branchWilayah.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
                 <option value="KUSTOM">+ Tulis Wilayah Kustom...</option>
@@ -758,216 +1180,117 @@ function MarketEditorForm({ initialData, onClose, branchId, profile }: { initial
           </div>
         </div>
 
-        {/* SECTION 2: Operational Schedule List */}
+        {/* SECTION 2: Operasional Pasar */}
         <div className="space-y-3.5 pb-10">
           <div className="flex items-center gap-2 pl-1 mb-1">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
-              Daftar Jadwal Operasional
+              Operasional Pasar
             </h3>
           </div>
 
-          {operations.map((op, opIdx) => {
-            const isJava = op.jenis === "PASAR_JAWA";
-            return (
-              <div 
-                key={op.id} 
-                className="bg-card border border-border/50 dark:border-white/5 rounded-[1.5rem] p-4 shadow-sm relative space-y-4"
-              >
-                {/* Micro Header with Prune Option */}
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/5 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center border border-primary/25 font-mono">
-                      {opIdx + 1}
-                    </span>
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200 font-mono">
-                      Jadwal #{opIdx + 1}
-                    </h4>
+          <div className="space-y-3">
+            {/* 1. Show already active operational categories as cards */}
+            {operations.map((op) => {
+              const isJava = op.jenis === "PASAR_JAWA";
+              const isEveryday = !isJava && WEEKDAYS.every(d => op.hariOperasi.includes(d));
+              
+              const formattedDays = isEveryday 
+                ? "Setiap Hari" 
+                : op.hariOperasi.map(d => {
+                    const label = isJava ? JAWA_LABELS[d] : WEEKDAY_LABELS[d];
+                    return label || d;
+                  }).join(", ");
+
+              const displayLabel = op.jenis === "PASAR_UMUM" ? "UMUM" : op.jenis === "PASAR_PAGI" ? "PAGI" : "JAWA";
+              const isEditing = currentEditingJenis === op.jenis;
+
+              if (isEditing) {
+                return renderCategoryEditor(op.jenis);
+              }
+
+              return (
+                <div 
+                  key={op.id} 
+                  className="bg-card dark:bg-zinc-900/40 border border-border/50 dark:border-white/5 rounded-2xl p-4 shadow-sm flex items-center justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs font-black text-zinc-800 dark:text-zinc-250 tracking-wider">
+                        {displayLabel}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-zinc-550 dark:text-zinc-450 font-mono">
+                      {formattedDays}
+                    </p>
+                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+                      {op.jamBuka} - {op.jamTutup}
+                    </p>
                   </div>
-                  {operations.length > 1 && (
+
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => handleRemoveOperation(op.id)}
-                      className="p-1 px-2 text-[10px] font-black rounded-lg hover:bg-red-50 text-red-500 dark:hover:bg-red-500/10 transition-colors uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleStartEdit(op)}
+                      className="p-2 rounded-lg bg-zinc-100/50 hover:bg-zinc-100 dark:bg-zinc-950/45 dark:hover:bg-zinc-950 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-[#10B981] transition-all cursor-pointer"
+                      title="Edit"
                     >
-                      Batal
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
-                    Jenis Pasar
-                  </label>
-                  <div className="grid grid-cols-3 gap-1 p-1 bg-zinc-100 dark:bg-zinc-950 rounded-[1.25rem] border border-transparent dark:border-white/5">
-                    {[
-                      { id: "PASAR_UMUM", label: "Pasar Umum" },
-                      { id: "PASAR_PAGI", label: "Pasar Pagi" },
-                      { id: "PASAR_JAWA", label: "Pasar Jawa" }
-                    ].map((typeItem) => {
-                      const isSelected = op.jenis === typeItem.id;
-                      return (
-                        <button
-                          type="button"
-                          key={typeItem.id}
-                          onClick={() => handleChangeJenis(op.id, typeItem.id as any)}
-                          className={cn(
-                            "h-9 rounded-lg text-[10px] font-bold tracking-wider transition-all cursor-pointer uppercase",
-                            isSelected
-                              ? "bg-primary text-primary-foreground font-bold shadow"
-                              : "text-zinc-550 dark:text-zinc-450 hover:text-zinc-900 dark:hover:text-zinc-100"
-                          )}
-                        >
-                          {typeItem.label.replace("Pasar ", "")}
-                        </button>
-                      );
-                    })}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategory(op.jenis)}
+                      className="p-2 rounded-lg bg-zinc-100/50 hover:bg-red-500/10 dark:bg-zinc-950/45 dark:hover:bg-red-500/10 text-zinc-400 hover:text-red-500 transition-all cursor-pointer"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
+              );
+            })}
 
-                {/* Hari Operasi Selector */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
-                      Hari Operasi
-                    </label>
-                  </div>
+            {/* 2. Show "+ Tambah Operasional" buttons for categories that are NOT active */}
+            {["PASAR_UMUM", "PASAR_PAGI", "PASAR_JAWA"].map((cat) => {
+              const isAlreadyActive = operations.some(op => op.jenis === cat);
+              const isCurrentlyEditing = currentEditingJenis === cat;
+              
+              if (isAlreadyActive || isCurrentlyEditing) return null;
 
-                  {/* Dynamic Chips Row */}
-                  {isJava ? (
-                    <div className="flex flex-wrap gap-1">
-                      {JAWA_DAYS.map((day) => {
-                        const isActive = op.hariOperasi.includes(day);
-                        return (
-                          <button
-                            type="button"
-                            key={day}
-                            onClick={() => handleToggleDay(op.id, day)}
-                            className={cn(
-                              "flex-1 min-w-[55px] h-9 rounded-lg text-[9px] font-bold tracking-wider border transition-all cursor-pointer",
-                              isActive
-                                ? "bg-primary/10 border-primary text-primary shadow-sm"
-                                : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-300"
-                            )}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (() => {
-                    const isEveryday = WEEKDAYS.every(d => op.hariOperasi.includes(d));
-                    const showCustom = customDaysOps[op.id] ?? !isEveryday;
+              const displayLabel = cat === "PASAR_UMUM" ? "UMUM" : cat === "PASAR_PAGI" ? "PAGI" : "JAWA";
 
-                    if (!showCustom) {
-                      return (
-                        <div className="flex items-center justify-between p-3 rounded-[1.25rem] bg-primary/5 dark:bg-primary/5 border border-primary/15">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-[#10B981]" />
-                            <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
-                              Buka Setiap Hari (Senin - Minggu)
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setCustomDaysOps(prev => ({ ...prev, [op.id]: true }))}
-                            className="text-[9px] font-bold text-zinc-500 hover:text-primary dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider underline cursor-pointer"
-                          >
-                            Ubah
-                          </button>
-                        </div>
-                      );
-                    }
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => handleStartAdd(cat as any)}
+                  className="w-full py-3 px-4 rounded-xl border border-dashed border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-455 hover:text-primary dark:hover:text-[#10B981] hover:border-primary/50 dark:hover:border-[#10B981]/50 hover:bg-zinc-50 dark:hover:bg-zinc-950/30 flex items-center justify-center gap-2 text-xs font-extrabold uppercase tracking-widest transition-all duration-200 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-zinc-400 dark:text-zinc-500" strokeWidth={3} />
+                  Tambah Operasional {displayLabel}
+                </button>
+              );
+            })}
 
-                    return (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between pl-1">
-                          <span className="text-[8.5px] font-black text-amber-500 uppercase tracking-wider">
-                            Kustom ({op.hariOperasi.length} Hari Aktif)
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCustomDaysOps(prev => ({ ...prev, [op.id]: false }));
-                              setOperations(prevOps => prevOps.map(item => item.id === op.id ? { ...item, hariOperasi: [...WEEKDAYS] } : item));
-                            }}
-                            className="text-[9px] font-bold text-emerald-600 dark:text-primary hover:underline uppercase tracking-wider cursor-pointer"
-                          >
-                            Setiap Hari
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-7 gap-1">
-                          {WEEKDAYS.map((day) => {
-                            const isActive = op.hariOperasi.includes(day);
-                            const shortLabel = day.slice(0, 3);
-                            return (
-                              <button
-                                type="button"
-                                key={day}
-                                onClick={() => handleToggleDay(op.id, day)}
-                                className={cn(
-                                  "h-9 rounded-lg text-[9px] font-bold border transition-all cursor-pointer uppercase font-mono",
-                                  isActive
-                                    ? "bg-primary/10 border-primary text-primary shadow-sm"
-                                    : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950/40 border-border/50 dark:border-white/5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                                )}
-                              >
-                                {shortLabel}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Time Settings */}
-                <div className="grid grid-cols-2 gap-3.5 pt-1">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
-                      Jam Buka
-                    </label>
-                    <input
-                      type="time"
-                      required
-                      value={op.jamBuka}
-                      onChange={(e) => handleChangeTime(op.id, "jamBuka", e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">
-                      Jam Tutup
-                    </label>
-                    <input
-                      type="time"
-                      required
-                      value={op.jamTutup}
-                      onChange={(e) => handleChangeTime(op.id, "jamTutup", e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-border/50 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-center text-zinc-900 dark:text-white outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+            {/* 3. If editing a new category that is NOT yet active in operations, render its configuration panel */}
+            {currentEditingJenis && !operations.some(op => op.jenis === currentEditingJenis) && renderCategoryEditor(currentEditingJenis)}
+          </div>
         </div>
       </div>
 
       {/* Sticky Bottom Actions Action Panel (SafeArea optimized) */}
-      <div className="sticky bottom-0 z-10 p-4 bg-card/95 bg-card/95 backdrop-blur-md border-t border-border/50 dark:border-white/5 flex gap-3">
+      <div className="sticky bottom-0 z-10 p-4 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-t border-zinc-250/50 dark:border-white/10 flex gap-3">
         <button
           type="button"
-          onClick={handleAddOperation}
-          className="flex-1 h-12 flex items-center justify-center gap-1.5 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-card/5 dark:hover:bg-card/10 text-zinc-800 dark:text-zinc-200 border border-border/50 dark:border-white/10 rounded-[1.25rem] text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+          onClick={onClose}
+          className="flex-1 h-12 flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 dark:bg-card/5 dark:hover:bg-card/10 text-zinc-800 dark:text-zinc-200 border border-border/50 dark:border-white/10 rounded-[1.25rem] text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-zinc-550 dark:text-zinc-400" strokeWidth={3} />
-          Jadwal
+          Tutup
         </button>
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || !!currentEditingJenis}
           className="flex-[2.5] h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-[1.25rem] text-xs font-bold uppercase tracking-widest disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm cursor-pointer"
         >
           {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> MENYIMPAN...</> : "SIMPAN PASAR"}
@@ -1002,6 +1325,18 @@ export function MasterDataView({ markets, onAdd, onEdit, onDelete, search, setSe
 export function MarketFormContent({ market, onClose }: any) {
   const { activeBranchContext } = useRuntime();
   const { profile } = useAuth();
+  const [branchWilayah, setBranchWilayah] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!activeBranchContext) return;
+    const docRef = doc(db, "branches", activeBranchContext);
+    const unsub = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setBranchWilayah(docSnap.data().wilayah || []);
+      }
+    });
+    return () => unsub();
+  }, [activeBranchContext]);
   
   if (!activeBranchContext) return <div className="p-10 text-center">Konteks cabang tidak tersedia</div>;
 
@@ -1030,6 +1365,7 @@ export function MarketFormContent({ market, onClose }: any) {
              onClose={handleClose} 
              branchId={activeBranchContext} 
              profile={profile} 
+             branchWilayah={branchWilayah}
            />
         </div>
      </div>

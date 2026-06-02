@@ -13,10 +13,10 @@ function CustomModal({ isOpen, onClose, title, children }: { isOpen: boolean, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-card rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg bg-card rounded-[18px] shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="px-6 py-4 border-b border-zinc-100 border-border/50 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/50">
           <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h2>
-          <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-[1.25rem] hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+          <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
             <XCircle className="w-5 h-5" />
           </button>
         </div>

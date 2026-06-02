@@ -82,7 +82,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
     }
   };
 
-  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
+  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
   const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   return (
@@ -152,7 +152,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               />
             </div>
             
-            <div className="p-4 rounded-3xl border border-border/40 bg-card space-y-4">
+            <div className="p-4 rounded-[14px] border border-border/40 bg-card space-y-4">
               <div>
                 <label className={labelClass}>Angsuran (Rp) *</label>
                 <input 
@@ -166,7 +166,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Tipe Tenor</label>
-                  <div className="flex p-1 bg-background rounded-2xl border border-border/50">
+                  <div className="flex p-1 bg-background rounded-xl border border-border/50">
                     {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
                       <button
                         key={type.id}
@@ -217,7 +217,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
             type="button"
             disabled={isSubmitting}
             onClick={handleUpdate}
-            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
             {isSubmitting ? 'Menyimpan Perubahan...' : 'Simpan Perubahan'}
           </button>

@@ -659,7 +659,7 @@ export default function ClientPage() {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: '100%', opacity: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="w-full h-full md:max-w-2xl md:max-h-[90vh] bg-background border border-border/20 md:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative"
+                className="w-full h-full md:max-w-2xl md:max-h-[90vh] bg-background border border-border/20 md:rounded-[20px] flex flex-col overflow-hidden shadow-2xl relative"
               >
                 {(() => {
                   const completedOrdersCount = normalizedHistory.filter(h => 
@@ -977,10 +977,10 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-3xl p-6 shadow-2xl"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl"
               >
                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                       <Edit className="w-5 h-5" />
                     </div>
                     <div>
@@ -993,11 +993,11 @@ export default function ClientPage() {
                     placeholder="Tulis alasan atau catatan operasional di sini..."
                     value={noteContent}
                     onChange={e => setNoteContent(e.target.value)}
-                    className="w-full h-32 bg-card border border-border/50 rounded-2xl p-4 text-sm text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-4"
+                    className="w-full h-32 bg-card border border-border/50 rounded-[10px] p-4 text-sm text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-4"
                  />
                  <div className="flex gap-2">
-                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 py-3 bg-secondary/50 rounded-full text-xs font-bold text-text-primary hover:bg-secondary transition-colors active:scale-95">Batal</button>
-                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 py-3 bg-primary rounded-full text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-sm transition-all active:scale-95">Simpan</button>
+                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 py-3 bg-secondary/50 rounded-xl text-xs font-bold text-text-primary hover:bg-secondary transition-colors active:scale-95">Batal</button>
+                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 py-3 bg-primary rounded-xl text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-sm transition-all active:scale-95">Simpan</button>
                  </div>
               </motion.div>
             </div>
@@ -1012,13 +1012,13 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
               >
                 {/* Background glow for delete warning */}
                 <div className="absolute -top-12 -left-12 w-24 h-24 bg-destructive/10 blur-3xl rounded-full pointer-events-none" />
                 
                 <div className="flex items-center gap-3 mb-6 relative z-10">
-                  <div className="w-10 h-10 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive">
+                  <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive">
                     <Trash2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -1031,7 +1031,7 @@ export default function ClientPage() {
                   <p className="text-xs text-text-secondary leading-relaxed text-left">
                     Apakah Anda yakin ingin menghapus data konsumen <strong className="text-text-primary uppercase">{clientToDelete.nama}</strong>? Tindakan ini permanen dan tidak dapat dibatalkan.
                   </p>
-                  <div className="p-3 bg-secondary/30 rounded-2xl border border-border/30 text-left">
+                  <div className="p-3 bg-secondary/30 rounded-xl border border-border/30 text-left">
                     <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Detail Dokumen:</p>
                     <p className="text-xs font-semibold text-text-primary truncate">{clientToDelete.nama} • {clientToDelete.usaha || 'Personal'}</p>
                     <p className="text-[10px] font-medium text-text-muted truncate mt-0.5">{clientToDelete.alamat}</p>
@@ -1041,7 +1041,7 @@ export default function ClientPage() {
                 <div className="flex gap-2 relative z-10">
                   <button 
                     onClick={() => setClientToDelete(null)} 
-                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-full text-xs font-bold text-text-primary transition-colors active:scale-95"
+                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-xl text-xs font-bold text-text-primary transition-colors active:scale-95"
                   >
                     Batal
                   </button>
@@ -1059,7 +1059,7 @@ export default function ClientPage() {
                         toast.error("Gagal menghapus data");
                       }
                     }} 
-                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full text-xs font-bold transition-all shadow-sm active:scale-95"
+                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                   >
                     Hapus
                   </button>

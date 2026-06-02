@@ -32,10 +32,22 @@ export default function MarketPlansPage() {
   const role = useRole();
   const canAccessMaster = [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SPV].includes(role as any);
   
-  const [plans, setPlans] = useState<any[]>([]);
+  const [rawPlans, setRawPlans] = useState<any[]>([]);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [markets, setMarkets] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+
+  const plans = useMemo(() => {
+    return rawPlans
+      .filter((p) => {
+        if (p.branchId) {
+          return p.branchId === branchId;
+        }
+        return users.some((u) => u.id === p.userId);
+      })
+      .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  }, [rawPlans, branchId, users]);
+
   const [loading, setLoading] = useState(true);
   const [activeDate] = useState(getActiveSystemDate());
   const [showPendingTooltip, setShowPendingTooltip] = useState(false);
@@ -50,11 +62,7 @@ export default function MarketPlansPage() {
     if (!branchId) return;
 
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
-      setPlans(
-        data
-          .filter(p => !p.branchId || p.branchId === branchId)
-          .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)),
-      );
+      setRawPlans(data);
       setLoading(false);
     });
 

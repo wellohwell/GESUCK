@@ -97,10 +97,10 @@ export const ModuleGuard: React.FC<ModuleGuardProps> = ({ moduleId, children }) 
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="max-w-md w-full bg-card border border-border/50 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl"
+        className="max-w-md w-full bg-card border border-border/50 rounded-[18px] p-6 sm:p-8 space-y-6 shadow-xl"
       >
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className={`w-14 h-14 rounded-[1.5rem] flex items-center justify-center ${info.iconColor}`}>
+          <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${info.iconColor}`}>
             <IconComponent className="w-7 h-7" />
           </div>
           

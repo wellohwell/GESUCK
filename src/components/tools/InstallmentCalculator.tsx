@@ -211,7 +211,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 <select 
                   value={tipe} 
                   onChange={(e) => setTipe(e.target.value as TipeProduk)}
-                  className="w-full bg-secondary border border-border rounded-full px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tipe Produk</option>
                   {Object.keys(aturanMargin).map((key) => (
@@ -234,7 +234,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 <select 
                   value={tenor} 
                   onChange={(e) => setTenor(Number(e.target.value) as Tenor)}
-                  className="w-full bg-secondary border border-border rounded-full px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                  className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
                 >
                   <option value="">Pilih Tenor</option>
                   {[30, 60, 90, 120, 150, 180]
@@ -246,7 +246,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
             </div>
         </div>
         
-        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 h-12 rounded-full shadow-sm mt-2">
+        <div className="flex justify-between items-center bg-primary text-primary-foreground px-4 h-12 rounded-xl shadow-sm mt-2">
             <span className="font-black text-[9px] uppercase tracking-wider opacity-80 mt-[1px]">Angsuran / Hari</span>
             <span className={cn(
               "angsuran-value font-black text-lg leading-none mt-[1px]",
@@ -274,7 +274,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
 
         <div className="relative flex flex-col">
           <div className={cn(
-              "flex justify-between items-center px-4 h-12 rounded-full z-20 relative transition-all duration-300",
+              "flex justify-between items-center px-4 h-12 rounded-xl z-20 relative transition-all duration-300",
               isNawarFilled 
                   ? "bg-red-500 text-white shadow-sm" 
                   : "bg-white text-black shadow-sm"
@@ -293,9 +293,9 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
               style={{ backgroundColor: '#FACC15', color: '#000000' }}
               className={cn(
               "flex justify-between items-center px-4 shadow-sm transition-all duration-300 ease-in-out transform origin-top z-10",
-              (dp || 0) > 0 ? "opacity-100 h-12 mt-2 rounded-full translate-y-0" : "opacity-0 h-0 mt-0 rounded-full -translate-y-4 overflow-hidden"
+              (dp || 0) > 0 ? "opacity-100 h-12 mt-2 rounded-xl translate-y-0" : "opacity-0 h-0 mt-0 rounded-xl -translate-y-4 overflow-hidden"
           )}>
-              <span className="font-black text-[9px] uppercase tracking-wider opacity-80 mt-[1px]">Est. Total</span>
+              <span className="font-black text-[9px] uppercase tracking-wider opacity-80 mt-[1px]">Est. Total DP</span>
               <span className="inline-block font-black text-lg leading-none transition-all duration-250 ease-in-out mt-[1px]">
                   {formatRupiah((estimasiPotongan || 0) + (dp || 0))}
               </span>
@@ -305,7 +305,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
         <button 
           onClick={copyToClipboard} 
           disabled={!modal || !tipe || !tenor || (angsuranHarian > 0 && angsuranHarian < 5000 && !isNawarFilled)}
-          className="w-full bg-white text-zinc-900 font-bold py-3.5 rounded-full flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="w-full bg-white text-zinc-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
         >
             <Copy className="w-4 h-4 text-zinc-900" />
             <span className="text-sm">Salin Hasil</span>

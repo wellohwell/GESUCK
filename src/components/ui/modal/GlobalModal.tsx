@@ -62,8 +62,8 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
         exit={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
         className={cn(
-          "relative flex flex-col bg-white dark:bg-zinc-950 border border-border/50/50 dark:border-white/[0.05] shadow-2xl overflow-hidden rounded-[24px]",
-          !isBelowTopBar ? "max-md:rounded-[24px]" : "max-md:rounded-[20px]",
+          "relative flex flex-col bg-white dark:bg-zinc-950 border border-border/50/50 dark:border-white/[0.05] shadow-2xl overflow-hidden",
+          modal.size === 'sm' ? "rounded-2xl" : modal.size === 'lg' || modal.size === 'xl' || modal.size === 'full' ? "rounded-[20px]" : "rounded-[18px]",
           "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
           // Desktop centered size configs
           "md:w-[85vw]", sizeClasses[modal.size || 'md'],

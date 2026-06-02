@@ -31,7 +31,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
       {showCloseButton && onClose && (
         <button
           onClick={onClose}
-          className="p-2 -mr-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-[1.25rem] transition-all active:scale-90"
+          className="p-2 -mr-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all active:scale-90"
           aria-label="Tutup"
         >
           <X className="w-4 h-4" />

@@ -17,7 +17,8 @@ import {
   PlusCircle,
   Settings2,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  MapPin
 } from "lucide-react";
 import { 
   subscribeBranches, 
@@ -52,6 +53,8 @@ export default function OrgManagement() {
   const [formAdmins, setFormAdmins] = useState<string[]>([]);
   const [adminSearch, setAdminSearch] = useState("");
   const [formError, setFormError] = useState("");
+  const [formWilayah, setFormWilayah] = useState<string[]>([]);
+  const [newWilayah, setNewWilayah] = useState("");
 
   useEffect(() => {
     // Check if user has admin/owner/branch admin permissions
@@ -89,6 +92,8 @@ export default function OrgManagement() {
     setFormAdmins([]);
     setAdminSearch("");
     setFormError("");
+    setFormWilayah([]);
+    setNewWilayah("");
     setShowForm(false);
   };
 
@@ -101,6 +106,8 @@ export default function OrgManagement() {
     setFormPricing(b.spreadsheets?.pricing || "");
     setFormCatalog(b.spreadsheets?.catalog || "");
     setFormAdmins(b.admins || []);
+    setFormWilayah(b.wilayah || []);
+    setNewWilayah("");
     setShowForm(true);
   };
 
@@ -132,6 +139,7 @@ export default function OrgManagement() {
       branchName: formName.trim(),
       active: formActive,
       admins: formAdmins,
+      wilayah: formWilayah,
       spreadsheets: {
         explore: cleanExplore,
         pricing: cleanPricing,
@@ -431,7 +439,7 @@ export default function OrgManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-lg bg-card border border-border/50 shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-lg bg-card border border-border/50 shadow-2xl rounded-[18px] overflow-hidden z-20 flex flex-col max-h-[90vh]"
             >
               <header className="px-6 py-4 border-b border-zinc-100 border-border/50 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/50">
                 <div>
@@ -453,7 +461,7 @@ export default function OrgManagement() {
 
               <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
                 {formError && (
-                  <div className="p-4 bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-[1.5rem] text-xs flex items-center gap-3">
+                  <div className="p-4 bg-red-100 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-xl text-xs flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <span className="font-bold">{formError}</span>
                   </div>
@@ -469,7 +477,7 @@ export default function OrgManagement() {
                       value={formId}
                       onChange={(e) => setFormId(e.target.value.toUpperCase())}
                       placeholder="e.g. YK01, SL02, KLT03"
-                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border disabled:opacity-50 text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono font-bold"
+                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border disabled:opacity-50 text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono font-bold"
                       required
                     />
                   </div>
@@ -482,7 +490,7 @@ export default function OrgManagement() {
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Jogja, Solo, Klaten"
-                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-bold"
+                      className="w-full px-4 py-2.5 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-bold"
                       required
                     />
                   </div>
@@ -506,7 +514,7 @@ export default function OrgManagement() {
                         value={formExplore}
                         onChange={(e) => setFormExplore(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk navigasi eksplorasi"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                     <div>
@@ -516,7 +524,7 @@ export default function OrgManagement() {
                         value={formPricing}
                         onChange={(e) => setFormPricing(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk default kalkulator harga"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                     <div>
@@ -526,7 +534,7 @@ export default function OrgManagement() {
                         value={formCatalog}
                         onChange={(e) => setFormCatalog(e.target.value)}
                         placeholder="Google Sheet ID / URL untuk katalog visual sales"
-                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-[1.25rem] placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-2 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -551,11 +559,11 @@ export default function OrgManagement() {
                       placeholder="Cari user (nama / email / status / peran)..."
                       value={adminSearch}
                       onChange={(e) => setAdminSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 text-[11px] bg-secondary border border-border rounded-[1.25rem] text-foreground focus:outline-none"
+                      className="w-full pl-9 pr-4 py-2 text-[11px] bg-secondary border border-border rounded-xl text-foreground focus:outline-none"
                     />
                   </div>
 
-                  <div className="max-h-40 overflow-y-auto border border-border rounded-[1.5rem] bg-secondary/35 divide-y divide-border">
+                  <div className="max-h-40 overflow-y-auto border border-border rounded-xl bg-secondary/35 divide-y divide-border">
                     {users
                       .filter(u => {
                         const s = adminSearch.toLowerCase();
@@ -592,8 +600,85 @@ export default function OrgManagement() {
                   </div>
                 </div>
 
+                {/* Wilayah Operasional Cabang */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-emerald-500" />
+                      Wilayah Operasional Cabang
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Tambahkan daftar kabupaten, kota, atau wilayah operasional yang dinaungi oleh cabang ini untuk digunakan di data Master Pasar.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. Bantul, Sleman, Purworejo"
+                      value={newWilayah}
+                      onChange={(e) => setNewWilayah(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const clean = newWilayah.trim();
+                          if (clean) {
+                            if (formWilayah.includes(clean)) {
+                              setFormError("Wilayah sudah terdaftar");
+                            } else {
+                              setFormWilayah([...formWilayah, clean]);
+                              setNewWilayah("");
+                              setFormError("");
+                            }
+                          }
+                        }
+                      }}
+                      className="flex-1 px-4 py-2.5 text-xs bg-secondary border border-border text-foreground rounded-xl placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-bold"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const clean = newWilayah.trim();
+                        if (clean) {
+                          if (formWilayah.includes(clean)) {
+                            setFormError("Wilayah sudah terdaftar");
+                          } else {
+                            setFormWilayah([...formWilayah, clean]);
+                            setNewWilayah("");
+                            setFormError("");
+                          }
+                        }
+                      }}
+                      className="px-4 bg-primary hover:opacity-90 text-primary-foreground font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Tambah
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 p-3 rounded-xl bg-secondary/35 border border-border min-h-12">
+                    {formWilayah.map((name) => (
+                      <span
+                        key={name}
+                        className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5 border border-border/40 text-[10px] font-extrabold uppercase text-zinc-300 tracking-wider"
+                      >
+                        {name}
+                        <button
+                          type="button"
+                          onClick={() => setFormWilayah(formWilayah.filter(w => w !== name))}
+                          className="hover:text-red-400 flex items-center justify-center text-zinc-500 transition-colors cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                    {formWilayah.length === 0 && (
+                      <p className="text-[10px] italic text-muted-foreground self-center mx-auto">None configured. Add at least one region.</p>
+                    )}
+                  </div>
+                </div>
+
                 {/* Active Toggle Option */}
-                <div className="flex items-center justify-between p-4 bg-secondary/40 border border-border rounded-[1.5rem]">
+                <div className="flex items-center justify-between p-4 bg-secondary/40 border border-border rounded-xl">
                   <div>
                     <span className="text-[11px] font-black uppercase tracking-wider block">Aktifkan Cabang</span>
                     <span className="text-[10px] text-muted-foreground">Cabang non-aktif tidak akan muncul saat onboarding user baru.</span>
@@ -616,14 +701,14 @@ export default function OrgManagement() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-[1.25rem] transition-colors"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-[1.25rem] transition-all shadow-md active:scale-95"
+                  className="px-5 py-2.5 bg-primary hover:opacity-90 text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
                 >
                   Simpan Konfigurasi
                 </button>

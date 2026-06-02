@@ -178,13 +178,25 @@ interface DashboardProps {
 export default function Dashboard({
   isManager,
 }: DashboardProps) {
-  const [plans, setPlans] = useState<any[]>([]);
+  const { branchId } = useAuth();
+  const [rawPlans, setRawPlans] = useState<any[]>([]);
   const [allPlans, setAllPlans] = useState<any[]>([]);
   const [markets, setMarkets] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeDate, setActiveDate] = useState(getActiveSystemDate());
+
+  const plans = useMemo(() => {
+    return rawPlans
+      .filter((p) => {
+        if (p.branchId) {
+          return p.branchId === branchId;
+        }
+        return users.some((u) => u.id === p.userId);
+      })
+      .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  }, [rawPlans, branchId, users]);
 
   // Form State
   const [selectedCity, setSelectedCity] = useState("");
@@ -196,17 +208,13 @@ export default function Dashboard({
 
   useEffect(() => {
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
-      setPlans(
-        data.sort(
-          (a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0),
-        ),
-      );
+      setRawPlans(data);
       setLoading(false);
     });
 
-    const unsubMarkets = subscribeMarkets(setMarkets);
-    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans);
-    const unsubUsers = subscribeUsers(setUsers);
+    const unsubMarkets = subscribeMarkets(setMarkets, branchId);
+    const unsubAllPlans = subscribeAllMarketPlans(setAllPlans, branchId);
+    const unsubUsers = subscribeUsers(setUsers, branchId);
 
     return () => {
       unsubPlans();
@@ -214,7 +222,7 @@ export default function Dashboard({
       unsubAllPlans();
       unsubUsers();
     };
-  }, [activeDate.isoDate]);
+  }, [activeDate.isoDate, branchId]);
 
   const userMap = useMemo(() => {
     const map: Record<string, { name: string; photoURL?: string }> = {};

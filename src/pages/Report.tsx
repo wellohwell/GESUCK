@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { subscribeMarketPlans, subscribeUsers } from "../lib/services";
+import { useBranch } from "../hooks/authHooks";
 import { getActiveSystemDate } from "../utils/javaneseDate";
 import { domToJpeg, domToBlob } from "modern-screenshot";
 import toast from "react-hot-toast";
@@ -27,11 +28,24 @@ export default function Report({
   pendingUsersCount = 0,
   pendingUsersList = []
 }: ReportProps) {
+  const { branchId } = useBranch();
   const [activeDate] = useState(getActiveSystemDate());
-  const [plans, setPlans] = useState<any[]>(computedPlans || []);
+  const [rawPlans, setRawPlans] = useState<any[]>(computedPlans || []);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(!computedPlans);
   const captureRef = useRef<HTMLDivElement>(null);
+
+  const plans = useMemo(() => {
+    if (computedPlans) return computedPlans;
+    return rawPlans
+      .filter((p) => {
+        if (p.branchId) {
+          return p.branchId === branchId;
+        }
+        return users.some((u) => u.id === p.userId);
+      })
+      .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  }, [rawPlans, computedPlans, branchId, users]);
   
   const userMap = computedUserMap || useMemo(() => {
     const map: Record<string, { name: string; photoURL?: string }> = {};
@@ -53,7 +67,7 @@ export default function Report({
     
     const unsubPlans = subscribeMarketPlans(activeDate.isoDate, (data) => {
       if(active) {
-        setPlans(data.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)));
+        setRawPlans(data);
         setLoading(false);
       }
     });
@@ -62,14 +76,14 @@ export default function Report({
       if(active) {
         setUsers(data);
       }
-    });
+    }, branchId);
 
     return () => {
       active = false;
       unsubPlans();
       unsubUsers();
     };
-  }, [activeDate.isoDate, computedPlans]);
+  }, [activeDate.isoDate, computedPlans, branchId]);
 
   const activeSalesCount = Array.from(new Set(plans.map(p => p.userId))).length;
   const targetMarketsCount = plans.length;

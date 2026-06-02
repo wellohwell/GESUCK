@@ -389,12 +389,12 @@ export default function NavigationPage() {
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
-              className="bg-zinc-950 border-t sm:border border-zinc-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl relative max-h-[95vh] overflow-y-auto"
+              className="bg-zinc-950 border-t sm:border border-zinc-800 w-full max-w-lg rounded-t-[18px] sm:rounded-[18px] p-5 sm:p-6 shadow-2xl relative max-h-[95vh] overflow-y-auto"
             >
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-zinc-900 rounded-[1.25rem] text-zinc-500 hover:text-white transition-all cursor-pointer"
+                className="absolute top-4 right-4 p-1.5 hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-white transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -415,7 +415,7 @@ export default function NavigationPage() {
                       value={draftLabel}
                       onChange={(e) => setDraftLabel(e.target.value)}
                       required
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl sm:rounded-[1.25rem] px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all"
                     />
                   </div>
 
@@ -426,7 +426,7 @@ export default function NavigationPage() {
                       value={draftRoute}
                       onChange={(e) => setDraftRoute(e.target.value)}
                       required
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl sm:rounded-[1.25rem] px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all font-mono"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 transition-all font-mono"
                     />
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export default function NavigationPage() {
                     <select
                       value={draftIcon}
                       onChange={(e) => setDraftIcon(e.target.value)}
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl sm:rounded-[1.25rem] px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300"
                     >
                       {Object.keys(ICON_DICTIONARY).map(key => (
                         <option key={key} value={key} className="bg-zinc-950 font-bold">{key.toUpperCase()}</option>
@@ -451,7 +451,7 @@ export default function NavigationPage() {
                     <select
                       value={draftBadge}
                       onChange={(e) => setDraftBadge(e.target.value as any)}
-                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl sm:rounded-[1.25rem] px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 animate-none"
+                      className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 animate-none"
                     >
                       <option value="none" className="bg-zinc-950 text-zinc-400 font-bold">NONE</option>
                       <option value="beta" className="bg-zinc-950 text-amber-400 font-bold">BETA MODE</option>
@@ -468,7 +468,7 @@ export default function NavigationPage() {
                   <select
                     value={draftModuleId}
                     onChange={(e) => setDraftModuleId(e.target.value)}
-                    className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl sm:rounded-[1.25rem] px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 font-mono"
+                    className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2.5 text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-primary/40 cursor-pointer text-zinc-300 font-mono"
                   >
                     <option value="" className="bg-zinc-950 text-zinc-400">Tidak Terikat Modul (Selalu Terbuka)</option>
                     {Object.keys(modules).map(modKey => (
@@ -482,7 +482,7 @@ export default function NavigationPage() {
                   <button
                     type="button"
                     onClick={() => setDraftVisible(!draftVisible)}
-                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.5rem] border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                       draftVisible 
                         ? 'bg-primary/5 border-primary/20' 
                         : 'bg-zinc-900/40 border-zinc-850/80 opacity-60'
@@ -502,7 +502,7 @@ export default function NavigationPage() {
                   <button
                     type="button"
                     onClick={() => setDraftEnabled(!draftEnabled)}
-                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.5rem] border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                       draftEnabled 
                         ? 'bg-primary/5 border-primary/20' 
                         : 'bg-zinc-900/40 border-zinc-850/80 opacity-60'
@@ -528,7 +528,7 @@ export default function NavigationPage() {
                       setDraftMobileOnly(!draftMobileOnly);
                       if (!draftMobileOnly) setDraftDesktopOnly(false); // mutually exclusive
                     }}
-                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.5rem] border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                       draftMobileOnly 
                         ? 'bg-amber-500/5 border-amber-500/20 text-amber-400' 
                         : 'bg-zinc-900/40 border-zinc-805/80 opacity-60'
@@ -547,7 +547,7 @@ export default function NavigationPage() {
                       setDraftDesktopOnly(!draftDesktopOnly);
                       if (!draftDesktopOnly) setDraftMobileOnly(false); // mutually exclusive
                     }}
-                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.5rem] border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                       draftDesktopOnly 
                         ? 'bg-blue-500/5 border-blue-500/20 text-blue-400' 
                         : 'bg-zinc-900/40 border-zinc-805/80 opacity-60'
@@ -573,7 +573,7 @@ export default function NavigationPage() {
                           key={role}
                           type="button"
                           onClick={() => toggleRole(role)}
-                          className={`px-3 py-1.5 rounded-xl sm:rounded-[1.25rem] text-[8px] sm:text-[9px] font-black uppercase tracking-wider transition-all border ${
+                          className={`px-3 py-1.5 rounded-lg text-[8px] sm:text-[9px] font-black uppercase tracking-wider transition-all border ${
                             isSelected
                               ? 'bg-primary border-transparent text-primary-foreground'
                               : 'bg-zinc-900/50 hover:bg-zinc-800 border-zinc-800 text-zinc-400'
@@ -600,7 +600,7 @@ export default function NavigationPage() {
                           setDraftAllowedBranches([...draftAllowedBranches, val]);
                         }
                       }}
-                      className="w-full pl-4 pr-10 py-2 sm:py-2.5 bg-zinc-900/60 border border-zinc-850/80 rounded-xl sm:rounded-[1.25rem] text-[11px] sm:text-xs font-bold outline-none focus:outline-none focus:border-primary/40 transition-all text-white appearance-none"
+                      className="w-full pl-4 pr-10 py-2 sm:py-2.5 bg-zinc-900/60 border border-zinc-850/80 rounded-xl text-[11px] sm:text-xs font-bold outline-none focus:outline-none focus:border-primary/40 transition-all text-white appearance-none"
                     >
                       <option value="">+ Tambah Cabang yang Diizinkan...</option>
                       {availableBranches
@@ -624,7 +624,7 @@ export default function NavigationPage() {
                         return (
                           <span
                             key={branchId}
-                            className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono font-black text-purple-400 bg-purple-950/20 border border-purple-500/20 px-2.5 py-1.5 rounded-xl sm:rounded-[1.25rem] uppercase tracking-tight"
+                            className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-mono font-black text-purple-400 bg-purple-950/20 border border-purple-500/20 px-2.5 py-1.5 rounded-lg uppercase tracking-tight"
                           >
                             {label}
                             <button
@@ -646,7 +646,7 @@ export default function NavigationPage() {
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
-                    className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl sm:rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
+                    className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer"
                   >
                     Batal
                   </button>
@@ -654,7 +654,7 @@ export default function NavigationPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 sm:flex-none px-5 py-2.5 sm:py-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl sm:rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 sm:flex-none px-5 py-2.5 sm:py-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
                   >
                     {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
                   </button>

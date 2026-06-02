@@ -99,7 +99,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
+  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
   const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   if (!selectedClient) {
@@ -118,7 +118,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
               placeholder="Cari nama, nomor WhatsApp, alamat..."
               value={clientSearchQuery}
               onChange={e => setClientSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-zinc-100 dark:bg-zinc-900 border-none rounded-2xl text-sm font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
+              className="w-full pl-12 pr-4 py-4 bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
             />
           </div>
         </div>
@@ -131,7 +131,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
                   <button 
                     key={client.id}
                     onClick={() => setSelectedClient(client)}
-                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-border/50 rounded-2xl hover:border-primary/50 hover:shadow-md transition-all group text-left"
+                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-border/50 rounded-[14px] hover:border-primary/50 hover:shadow-md transition-all group text-left"
                   >
                     <div>
                       <h4 className="font-bold text-sm text-text-primary group-hover:text-primary transition-colors">{client.nama}</h4>
@@ -164,7 +164,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-950">
       <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-border/40 shrink-0">
-        <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-center gap-3">
+        <div className="p-4 rounded-[14px] border border-primary/20 bg-primary/5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
             <UserCheck className="w-5 h-5" />
           </div>
@@ -195,7 +195,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             />
           </div>
           
-          <div className="p-4 rounded-3xl border border-primary/20 bg-primary/5 space-y-4">
+          <div className="p-4 rounded-[14px] border border-primary/20 bg-primary/5 space-y-4">
             <div>
               <label className={labelClass}>Angsuran (Rp) *</label>
               <input 
@@ -209,7 +209,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Tipe Tenor</label>
-                <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-2xl border border-border/50">
+                <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-xl border border-border/50">
                   {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
                     <button
                       key={type.id}
@@ -258,7 +258,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmit}
-            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
             <Package className="w-4 h-4" />
             {isSubmitting ? 'Menyimpan...' : 'Submit Repeat Order'}
