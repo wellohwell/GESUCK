@@ -127,10 +127,6 @@ export const PlanItem = React.memo(({
             })()
           )}>
             {toTitleCase(plan.city)}
-            {(() => {
-              const identity = getRegionIdentity(plan.city);
-              return identity ? ` • ${identity.label}` : "";
-            })()}
           </span>
           {plan.marketJam && (
             <>

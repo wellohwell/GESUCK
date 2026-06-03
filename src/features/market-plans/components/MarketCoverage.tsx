@@ -103,34 +103,32 @@ export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[340px] md:max-w-full group relative overflow-hidden rounded-2xl bg-card border border-border/50 shadow-sm"
+        className="w-full max-w-[340px] md:max-w-full group relative"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
-        
-          <div className="relative p-2.5 flex flex-col gap-2">
+        <div className="relative p-2 flex flex-col gap-1">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <Target className="w-3.5 h-3.5 text-primary opacity-80" />
-              <h3 className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Cakupan Pasar</h3>
+              <Target className="w-3 h-3 text-primary opacity-80" />
+              <h3 className="font-bold text-[8px] uppercase tracking-wider text-muted-foreground">Cakupan Pasar</h3>
             </div>
             
-            <div className={cn("px-1.5 py-0 rounded-full border text-[8px] font-bold uppercase tracking-widest", 
+            <div className={cn("px-1 py-0 rounded-full border text-[7px] font-bold uppercase tracking-widest", 
               currentStatus.bg, currentStatus.color, currentStatus.border)}>
               {currentStatus.label}
             </div>
           </div>
           
           {/* Primary Metric */}
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black tracking-tighter text-foreground leading-none">
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl font-black tracking-tighter text-foreground leading-none">
               {coverageData.percentage.toFixed(1)}%
             </span>
           </div>
           
           {/* Progress Bar Container */}
-          <div className="space-y-1">
-            <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden flex">
+          <div className="space-y-0.5">
+            <div className="h-1 w-full bg-muted/50 rounded-full overflow-hidden flex">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${coverageData.percentage}%` }}
@@ -142,19 +140,19 @@ export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
                 )}
               />
             </div>
-            <div className="text-[9px] text-muted-foreground w-full text-center">
+            <div className="text-[8px] text-muted-foreground w-full text-center">
               {coverageData.visited} dari {coverageData.total} pasar telah dijangkau
             </div>
           </div>
           
           {/* Regional Snapshot Row */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 text-[9px] text-muted-foreground mt-0.5">
+          <div className="flex flex-wrap items-center justify-center gap-1 text-[8px] text-muted-foreground mt-0.5">
             {coverageData.regionalSummary.map((reg, index) => {
               const identity = REGION_IDENTITY[reg.name as keyof typeof REGION_IDENTITY];
               return (
                 <React.Fragment key={reg.name}>
-                   <div className="flex items-center gap-1">
-                      <div className={cn("w-1.5 h-1.5 rounded-full", identity.dot)} />
+                   <div className="flex items-center gap-0.5">
+                      <div className={cn("w-1 h-1 rounded-full", identity.dot)} />
                       <span className={cn("font-bold", identity.color)}>
                         {identity.label} <span className="font-medium opacity-80">{reg.percentage.toFixed(0)}%</span>
                       </span>
@@ -166,10 +164,10 @@ export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
           </div>
           
           {/* Action Button */}
-          <div className="mt-0.5 flex justify-end">
+          <div className="mt-0.5 flex justify-center">
             <button 
               onClick={() => setShowDetails(true)}
-              className="text-[9px] text-muted-foreground hover:text-primary transition-colors font-bold underline decoration-dotted underline-offset-4"
+              className="text-[8px] text-muted-foreground hover:text-primary transition-colors font-bold underline decoration-dotted underline-offset-4"
             >
               Detail
             </button>
