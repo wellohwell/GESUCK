@@ -19,10 +19,10 @@ import React from 'react';
 export const DEFAULT_WORKSPACES: Record<string, string> = {
   owner: "/owner",
   manager: "/admin",
-  staff: "/workspace/client",
+  staff: "/workspace/operations",
   sales: "/workspace/explore",
-  survey: "/workspace/tools",
-  gudang: "/workspace/tools",
+  survey: "/workspace/operations",
+  gudang: "/workspace/operations",
   spv: "/workspace/explore"
 };
 
@@ -115,6 +115,21 @@ export const DEFAULT_DYNAMIC_NAV_ITEMS: DynamicNavItem[] = [
     desktopOnly: false,
     badge: 'none',
     moduleId: 'client'
+  },
+  {
+    id: 'operations',
+    label: 'Operations',
+    icon: 'activity',
+    route: '/workspace/operations',
+    visible: true,
+    enabled: true,
+    order: 2.5,
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
+    allowedBranches: [],
+    mobileOnly: false,
+    desktopOnly: false,
+    badge: 'none',
+    moduleId: 'operations'
   },
   {
     id: 'explore',

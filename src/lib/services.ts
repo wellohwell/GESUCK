@@ -583,17 +583,20 @@ export function subscribeClients(role: string, uid: string, callback: (clients: 
     baseConstraints.push(where("branchId", "==", branchId));
   }
   
-  const q = tenantQuery(
-    "clients", 
-    null,
-    branchId,
+  const q = query(
+    collection(db, "clients"), 
     ...baseConstraints,
-    orderBy("lastOrderAt", "desc"), 
-    limit(100)
+    limit(200)
   );
   
   return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const clients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    clients.sort((a: any, b: any) => {
+      const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      return timeB - timeA;
+    });
+    callback(clients);
   }, (error) => {
     console.error("Error subscribing to clients:", error);
   });

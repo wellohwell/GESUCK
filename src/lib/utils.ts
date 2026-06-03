@@ -123,3 +123,54 @@ export function calculateEstimasiLunas(startDate: any, tenor: number, tenorType:
   
   return current;
 }
+
+export function getNormalizedClient(client: any) {
+  if (!client) return client;
+  
+  const orderStatus = client.orderStatus || (
+    client.status === 'survey' ? 'submitted' :
+    client.status === 'acc' ? 'approved' :
+    client.status === 'pending' ? 'pending' :
+    client.status === 'reject' ? 'rejected' :
+    client.status === 'pending_gudang' ? 'approved' :
+    client.status === 'terkirim' ? 'completed' :
+    'submitted'
+  );
+  
+  const currentStep = client.currentStep || (
+    ['survey', 'submitted'].includes(client.status) ? 'survey' :
+    ['pending_gudang', 'acc', 'approved'].includes(client.status) ? 'warehouse' :
+    'done'
+  );
+
+  const survey = client.survey || {
+    status: client.status === 'survey' ? 'submitted' : (['reject', 'rejected'].includes(client.status) ? 'rejected' : 'approved'),
+    note: client.note || client.pendingNote || '',
+    updatedAt: client.surveyUpdatedAt || null,
+    updatedBy: client.surveyUpdatedBy || ''
+  };
+
+  return { ...client, orderStatus, currentStep, survey };
+}
+
+export function getRelativeTime(timestamp: any) {
+  if (!timestamp) return '';
+  try {
+    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMins = Math.floor(diffInMs / 60000);
+    const diffInHours = Math.floor(diffInMins / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMins < 1) return 'Baru saja';
+    if (diffInMins < 60) return `${diffInMins}m lalu`;
+    if (diffInHours < 24) return `${diffInHours}j lalu`;
+    if (diffInDays === 1) return 'Kemarin';
+    if (diffInDays < 7) return `${diffInDays} hari lalu`;
+    
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  } catch (e) {
+    return '';
+  }
+}

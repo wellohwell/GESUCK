@@ -25,6 +25,7 @@ import { PERMISSIONS } from "./config/permissions";
 import ToolsPage from "./pages/Tools";
 import CalculatorPage from "./pages/CalculatorPage";
 import ClientPage from "./pages/ClientPage";
+import OperationsPage from "./pages/OperationsPage";
 import UsersPage from "./pages/UsersPage";
 import TimelinePage from "./pages/TimelinePage";
 import { ThemeProvider } from "./hooks/useTheme";
@@ -82,6 +83,7 @@ function AppContent() {
             <Route path="/workspace/tools" element={<ModuleGuard moduleId="tools"><ToolsPage /></ModuleGuard>} />
             <Route path="/workspace/tools/calculator" element={<ModuleGuard moduleId="tools"><CalculatorPage /></ModuleGuard>} />
             <Route path="/workspace/client" element={<ModuleGuard moduleId="client"><ClientPage /></ModuleGuard>} />
+            <Route path="/workspace/operations" element={<ModuleGuard moduleId="operations"><OperationsPage /></ModuleGuard>} />
             <Route path="/workspace/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
             
             {/* STAFF WORKSPACE V2 */}

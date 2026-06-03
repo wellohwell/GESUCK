@@ -29,6 +29,7 @@ export const WorkspaceResolver: React.FC = () => {
     const getModuleIdFromRoute = (route: string): string => {
       if (route.startsWith('/workspace/home')) return 'home';
       if (route.startsWith('/workspace/client')) return 'client';
+      if (route.startsWith('/workspace/operations')) return 'operations';
       if (route.startsWith('/workspace/explore')) return 'explore';
       if (route.startsWith('/workspace/market-plans')) return 'marketPlans';
       if (route.startsWith('/workspace/report')) return 'report';
@@ -61,6 +62,7 @@ export const WorkspaceResolver: React.FC = () => {
         const routeMap: Record<string, string> = {
           home: '/workspace/home',
           client: '/workspace/client',
+          operations: '/workspace/operations',
           explore: '/workspace/explore',
           marketPlans: '/workspace/market-plans',
           report: '/workspace/report',

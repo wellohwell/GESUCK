@@ -87,10 +87,52 @@
     --card-surface: rgba(14, 18, 24, 0.6); /* Translucent variation */
     --input-surface: rgba(255, 255, 255, 0.04);
     --border-default: rgba(255, 255, 255, 0.08);
+    --body-bg: radial-gradient(circle at 50% -20%, #171E28, #06080A 50%);
   }
 
   .dark {
     /* Inherit from root, everything is dark now */
+  }
+
+  .light {
+    --background: #F4F6F8; /* Clean, modern off-white */
+    --foreground: #09090B; /* Deep slate / charcoal */
+    
+    --card: #FFFFFF; /* Pure white card */
+    --card-foreground: #09090B;
+    
+    --popover: #FFFFFF;
+    --popover-foreground: #09090B;
+    
+    --primary: #CCFF00; /* Neon Lime brand color (dark foreground ensures readability) */
+    --primary-foreground: #000000;
+    
+    --secondary: rgba(0, 0, 0, 0.06); /* Frosted dark surface for secondary */
+    --secondary-foreground: #3F3F46; /* Zinc 700 */
+    
+    --tertiary: rgba(0, 0, 0, 0.03);
+    
+    --muted: rgba(0, 0, 0, 0.03);
+    --muted-foreground: #71717A; /* Zinc 500 */
+    
+    --accent: #CCFF00;
+    --accent-foreground: #000000;
+    
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    
+    --border: rgba(0, 0, 0, 0.08);
+    --input: rgba(0, 0, 0, 0.04);
+    --ring: rgba(204, 255, 0, 0.2);
+
+    --text-primary: #09090B; /* Zinc 950 */
+    --text-secondary: #3F3F46; /* Zinc 700 */
+    --text-muted: #71717A; /* Zinc 500 */
+    --card-surface: rgba(255, 255, 255, 0.9);
+    --input-surface: rgba(0, 0, 0, 0.04);
+    --border-default: rgba(0, 0, 0, 0.08);
+
+    --body-bg: radial-gradient(circle at 50% -20%, #E2E8F0, #F4F6F8 50%);
   }
 
   * {
@@ -99,7 +141,7 @@
 
   body {
     @apply text-foreground font-sans antialiased overflow-x-hidden;
-    background: radial-gradient(circle at 50% -20%, #171E28, #06080A 50%);
+    background: var(--body-bg);
     background-attachment: fixed;
     min-height: 100vh;
     text-rendering: optimizeLegibility;

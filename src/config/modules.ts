@@ -138,5 +138,20 @@ export const DEFAULT_MODULES: Record<string, ModuleConfig> = {
     allowedBranches: [],
     betaMode: false,
     maintenanceMode: false,
+  },
+  operations: {
+    id: "operations",
+    name: "Operations",
+    description: "Antrean antarmuka kerja harian terintegrasi untuk Surveyor dan Gudang.",
+    enabled: true,
+    visibleInNav: true,
+    visibleInBottomNav: true,
+    visibleInSidebar: true,
+    visibleInWorkspace: true,
+    defaultWorkspaceEligible: true,
+    allowedRoles: [ROLES.OWNER, ROLES.MANAGER, ROLES.STAFF, ROLES.SURVEY, ROLES.GUDANG, ROLES.SPV],
+    allowedBranches: [],
+    betaMode: false,
+    maintenanceMode: false,
   }
 };

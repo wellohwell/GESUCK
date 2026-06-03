@@ -1,0 +1,124 @@
+135-  const [clients, setClients] = useState<any[]>([]);
+136-  const [searchQuery, setSearchQuery] = useState('');
+137-  const [loading, setLoading] = useState(true);
+138-  
+139-  // Selection and Detail View
+140:  const [selectedClient, setSelectedClient] = useState<any>(null);
+141-  const [clientToDelete, setClientToDelete] = useState<any>(null);
+142-  const [clientHistory, setClientHistory] = useState<any[]>([]);
+143-  const [isUpdating, setIsUpdating] = useState(false);
+144-  const [showNoteDialog, setShowNoteDialog] = useState(false);
+145-  const [noteContent, setNoteContent] = useState('');
+--
+149-  const [isCustomerInfoExpanded, setIsCustomerInfoExpanded] = useState(false);
+150-  
+151-  const { openModal, closeModal } = useModal();
+152-  const [showAddMenu, setShowAddMenu] = useState(false);
+153-
+154:  const normalizedClient = useMemo(() => getNormalizedClient(selectedClient), [selectedClient]);
+155-  const normalizedHistory = useMemo(() => clientHistory.map(getNormalizedClient), [clientHistory]);
+156-
+157-  const timelineEvents = useMemo(() => {
+158-    if (!normalizedClient) return [];
+159-    const events = [];
+--
+254-    return () => unsub();
+255-  }, [profile?.role, user?.uid, activeTab, profile?.branchId]);
+256-
+257-  // Subscribe to history when client selected
+258-  useEffect(() => {
+259:    if (!selectedClient?.nomor || !profile?.role) {
+260-      setClientHistory([]);
+261-      return;
+262-    }
+263-    const unsub = subscribeClientHistory(
+264:      selectedClient.nomor, 
+265-      profile.role, 
+266-      user.uid,
+267-      setClientHistory, 
+268-      profile.branchId
+269-    );
+270-    return () => unsub();
+271:  }, [selectedClient?.nomor, profile?.role, profile?.branchId]);
+272-
+273:  // Keep selectedClient updated with live data
+274-  useEffect(() => {
+275:    if (selectedClient && clients.length > 0) {
+276:      const updated = clients.find(c => c.id === selectedClient.id);
+277-      if (updated) {
+278-        setSelectedClient(updated);
+279-      }
+280-    }
+281-  }, [clients]);
+--
+649-          </div>
+650-        </div>
+651-
+652-        {/* FULLSCREEN DETAIL VIEW */}
+653-        <AnimatePresence>
+654:          {selectedClient && (
+655-            <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center md:p-4">
+656-              <motion.div 
+657-                initial={{ x: '100%', opacity: 0 }}
+658-                animate={{ x: 0, opacity: 1 }}
+659-                exit={{ x: '100%', opacity: 0 }}
+--
+692-                        </div>
+693-                        <div className="flex items-center gap-1">
+694-                          <span className={cn("text-[9px] px-2 py-0.5 rounded-lg uppercase font-bold tracking-widest hidden sm:inline-block", getStatusBadgeProps(normalizedClient.orderStatus, normalizedClient.currentStep).color)}>
+695-                            {getStatusBadgeProps(normalizedClient.orderStatus, normalizedClient.currentStep).label}
+696-                          </span>
+697:                          {canDeleteClient(selectedClient, profile) && (
+698-                            <button 
+699:                              onClick={() => setClientToDelete(selectedClient)}
+700-                              className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors shrink-0"
+701-                              title="Hapus Data"
+702-                            >
+703-                              <Trash2 className="w-4 h-4" />
+704-                            </button>
+705-                          )}
+706-                          <button onClick={() => { 
+707-                            const id = openModal({ 
+708-                              title: 'Edit Data Konsumen', 
+709:                              content: <EditClientContent client={selectedClient} onClose={() => closeModal(id)} />, 
+710-                              size: 'xl' 
+711-                            }); 
+712-                          }} className="p-2 rounded-full hover:bg-primary/10 text-primary transition-colors">
+713-                            <Edit className="w-4 h-4" />
+714-                          </button>
+--
+952-                      </div>
+953-                    )}
+954-                    {normalizedClient.stage === 'arsip' && (
+955-                      <div className="max-w-2xl mx-auto">
+956-                         <button 
+957:                          onClick={() => setClientToDelete(selectedClient)}
+958-                          className="w-full h-12 bg-destructive/5 hover:bg-destructive/10 text-destructive rounded-full font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
+959-                        >
+960-                          Hapus Permanen
+961-                        </button>
+962-                      </div>
+--
+994-                    onChange={e => setNoteContent(e.target.value)}
+995-                    className="w-full h-32 bg-card border border-border/50 rounded-[10px] p-4 text-sm text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-4"
+996-                 />
+997-                 <div className="flex gap-2">
+998-                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 py-3 bg-secondary/50 rounded-xl text-xs font-bold text-text-primary hover:bg-secondary transition-colors active:scale-95">Batal</button>
+999:                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 py-3 bg-primary rounded-xl text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-sm transition-all active:scale-95">Simpan</button>
+1000-                 </div>
+1001-              </motion.div>
+1002-            </div>
+1003-          )}
+1004-        </AnimatePresence>
+--
+1048-                    onClick={async () => {
+1049-                      try {
+1050-                        await deleteDoc(doc(db, "clients", clientToDelete.id));
+1051-                        toast.success("Berhasil menghapus data");
+1052-                        setClientToDelete(null);
+1053:                        if (selectedClient?.id === clientToDelete.id) {
+1054-                          setSelectedClient(null);
+1055-                        }
+1056-                      } catch (err) {
+1057-                        console.error(err);
+1058-                        toast.error("Gagal menghapus data");

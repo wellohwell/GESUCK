@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AuthGuard } from '../components/AuthGuard';
 import { 
   useCurrentUser, 
   useUserProfile,
@@ -38,6 +37,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { NewClientContent } from '../features/client/dialogs/NewClientDialog';
 import { RepeatOrderContent } from '../features/client/dialogs/RepeatOrderDialog';
 import { EditClientContent } from '../features/client/dialogs/EditClientDialog';
+import { Timeline } from '../components/Timeline';
 import { useModal } from '../components/ui/modal/useModal';
 import { SkeletonFeed } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -414,8 +414,7 @@ export default function ClientPage() {
   }, [clients, searchQuery]);
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-background pb-32">
+      <div className="min-h-screen pb-32">
         {/* TOP BAR & SEARCH */}
         <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-4 pb-4 px-4">
           <div className="max-w-3xl mx-auto space-y-4">
@@ -465,31 +464,32 @@ export default function ClientPage() {
                 
                 {/* Floating Menu */}
                 {showAddMenu && (
-                  <div className="absolute top-12 right-0 flex flex-col gap-2 min-w-[200px] items-end z-[50]">
-                     <Card glass={false} depth="deep" interactive onClick={() => { 
+                  <div className="absolute top-12 right-0 flex flex-col p-1 min-w-[200px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-2xl animate-in zoom-in-95 duration-200">
+                     <button onClick={() => { 
                        setShowAddMenu(false); 
                        const id = openModal({ title: 'Konsumen Baru', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-4 py-3 flex items-center gap-3 w-full bg-white dark:bg-zinc-900 border-border/80 text-text-primary shadow-xl">
+                     }} className="px-3 py-3 flex items-center gap-3 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                          <Plus className="w-4 h-4" />
                        </div>
                        <div className="text-left">
                          <p className="text-xs font-bold leading-tight">Konsumen Baru</p>
-                         <p className="text-[10px] text-text-muted">Daftar & Request</p>
+                         <p className="text-[10px] text-text-muted mt-0.5">Daftar & Request</p>
                        </div>
-                     </Card>
-                     <Card glass={false} depth="deep" interactive onClick={() => { 
+                     </button>
+                     <div className="h-[1px] w-full bg-border/40 my-0.5" />
+                     <button onClick={() => { 
                        setShowAddMenu(false); 
                        const id = openModal({ title: 'Repeat Order', content: <RepeatOrderContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-4 py-3 flex items-center gap-3 w-full bg-white dark:bg-zinc-900 border-border/80 text-text-primary shadow-xl">
+                     }} className="px-3 py-3 flex items-center gap-3 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
                          <HistoryIcon className="w-4 h-4" />
                        </div>
                        <div className="text-left">
                          <p className="text-xs font-bold leading-tight">Repeat Order</p>
-                         <p className="text-[10px] text-text-muted">Order tambahan</p>
+                         <p className="text-[10px] text-text-muted mt-0.5">Order tambahan</p>
                        </div>
-                     </Card>
+                     </button>
                   </div>
                 )}
               </div>
@@ -519,39 +519,26 @@ export default function ClientPage() {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <OperationalCard
-                              key={client.id}
-                              title={norm.nama}
-                              subtitle={`${norm.usaha || 'Personal'} • ${norm.alamat || '-'}`}
-                              icon={UserCheck}
-                              onClick={() => setSelectedClient(client)}
-                              status={
-                                <div className="flex flex-col items-end gap-1 select-none text-right shrink-0">
-                                  <span className={cn("text-[9px] px-2 py-0.5 rounded-lg uppercase font-bold tracking-wider", badge.color)}>
-                                    {badge.label}
-                                  </span>
-                                  {(client.updatedAt || client.createdAt) && (
-                                    <span className="text-[10px] text-text-muted font-medium">
-                                      {getRelativeTime(client.updatedAt || client.createdAt)}
-                                    </span>
-                                  )}
+                            <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                   <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                                     {badge.label}
+                                   </span>
                                 </div>
-                              }
-                              rightContent={
-                                canDeleteClient(client, profile) ? (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setClientToDelete(client);
-                                    }}
-                                    className="p-2 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors shrink-0"
-                                    title="Hapus Dokumen"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
+                                <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 shrink-0">
+                                <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                                {canDeleteClient(client, profile) && (
+                                  <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                    <Trash2 className="w-3 h-3" />
                                   </button>
-                                ) : null
-                              }
-                            />
+                                )}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
@@ -564,39 +551,26 @@ export default function ClientPage() {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <OperationalCard
-                              key={client.id}
-                              title={norm.nama}
-                              subtitle={`${norm.usaha || 'Personal'} • ${norm.alamat || '-'}`}
-                              icon={UserCheck}
-                              onClick={() => setSelectedClient(client)}
-                              status={
-                                <div className="flex flex-col items-end gap-1 select-none text-right shrink-0">
-                                  <span className={cn("text-[9px] px-2 py-0.5 rounded-lg uppercase font-bold tracking-wider", badge.color)}>
-                                    {badge.label}
-                                  </span>
-                                  {(client.updatedAt || client.createdAt) && (
-                                    <span className="text-[10px] text-text-muted font-medium">
-                                      {getRelativeTime(client.updatedAt || client.createdAt)}
-                                    </span>
-                                  )}
+                            <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                   <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                                     {badge.label}
+                                   </span>
                                 </div>
-                              }
-                              rightContent={
-                                canDeleteClient(client, profile) ? (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setClientToDelete(client);
-                                    }}
-                                    className="p-2 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors shrink-0"
-                                    title="Hapus Dokumen"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
+                                <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 shrink-0">
+                                <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                                {canDeleteClient(client, profile) && (
+                                  <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                    <Trash2 className="w-3 h-3" />
                                   </button>
-                                ) : null
-                              }
-                            />
+                                )}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
@@ -608,39 +582,26 @@ export default function ClientPage() {
                       const norm = getNormalizedClient(client);
                       const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                       return (
-                        <OperationalCard
-                          key={client.id}
-                          title={norm.nama}
-                          subtitle={`${norm.usaha || 'Personal'} • ${norm.alamat || '-'}`}
-                          icon={UserCheck}
-                          onClick={() => setSelectedClient(client)}
-                          status={
-                            <div className="flex flex-col items-end gap-1 select-none text-right shrink-0">
-                              <span className={cn("text-[9px] px-2 py-0.5 rounded-lg uppercase font-bold tracking-wider", badge.color)}>
-                                {badge.label}
-                              </span>
-                              {(client.updatedAt || client.createdAt) && (
-                                <span className="text-[10px] text-text-muted font-medium">
-                                  {getRelativeTime(client.updatedAt || client.createdAt)}
-                                </span>
-                              )}
+                        <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                               <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                               <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                                 {badge.label}
+                               </span>
                             </div>
-                          }
-                          rightContent={
-                            canDeleteClient(client, profile) ? (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setClientToDelete(client);
-                                }}
-                                className="p-2 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors shrink-0"
-                                title="Hapus Dokumen"
-                              >
-                                <Trash2 className="w-4 h-4" />
+                            <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
+                            <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                            {canDeleteClient(client, profile) && (
+                              <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                <Trash2 className="w-3 h-3" />
                               </button>
-                            ) : null
-                          }
-                        />
+                            )}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -684,17 +645,11 @@ export default function ClientPage() {
                           <div className="flex flex-col text-left">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide truncate max-w-[120px] sm:max-w-xs">{normalizedClient.nama}</h2>
-                              <span className={cn("text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider", categoryColor)}>
-                                {category}
-                              </span>
                             </div>
                             <p className="text-[10px] text-text-muted mt-0.5 truncate">{normalizedClient.nomor || '-'}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className={cn("text-[9px] px-2 py-0.5 rounded-lg uppercase font-bold tracking-widest hidden sm:inline-block", getStatusBadgeProps(normalizedClient.orderStatus, normalizedClient.currentStep).color)}>
-                            {getStatusBadgeProps(normalizedClient.orderStatus, normalizedClient.currentStep).label}
-                          </span>
                           {canDeleteClient(selectedClient, profile) && (
                             <button 
                               onClick={() => setClientToDelete(selectedClient)}
@@ -717,254 +672,154 @@ export default function ClientPage() {
                       </div>
 
                       {/* Scrollable Content */}
-                      <div className="flex-1 overflow-y-auto overscroll-contain bg-background pb-32">
-                        <div className="max-w-2xl mx-auto p-4 space-y-5">
+                      <div className="flex-1 overflow-y-auto overscroll-contain bg-background">
+                        <div className="max-w-2xl mx-auto p-4 space-y-6">
                           
-                          {/* 1. CURRENT ACTIVE ORDER */}
-                          <DetailCard title="Current Order" icon={Activity}>
-                            <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-left font-sans">
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Produk</p>
-                                <p className="text-sm font-semibold text-text-primary">{normalizedClient.produk || '-'}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Omset</p>
-                                <p className="text-sm font-semibold text-text-primary">{formatCurrency(normalizedClient.omset)}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Angsuran</p>
-                                <p className="text-sm font-semibold text-text-primary">{formatCurrency(normalizedClient.angsuran)} / {normalizedClient.tenorType}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Masa Tenor</p>
-                                <p className="text-sm font-semibold text-text-primary">
-                                  {normalizedClient.tenor} {normalizedClient.tenorType}
-                                </p>
-                              </div>
-                            </div>
-                          </DetailCard>
-
-                          {/* 2. ONGOING ORDERS */}
-                          {normalizedHistory.filter(h => h.stage === 'pipeline' && h.id !== normalizedClient.id).length > 0 && (
-                            <div className="space-y-2 text-left font-sans">
-                              <h4 className="text-[11px] font-bold text-text-muted uppercase tracking-widest px-1">Ongoing Orders</h4>
-                              {normalizedHistory.filter(h => h.stage === 'pipeline' && h.id !== normalizedClient.id).map(order => (
-                                <Card key={order.id} className="p-3 flex justify-between items-center bg-card/50">
-                                   <div>
-                                     <p className="text-xs font-bold text-text-primary">{order.produk}</p>
-                                     <p className="text-[10px] text-text-muted mt-0.5">Omset: {formatCurrency(order.omset)}</p>
-                                   </div>
-                                   <span className={cn("text-[8px] px-2 py-0.5 rounded-lg uppercase font-bold text-right", getStatusBadgeProps(order.orderStatus, order.currentStep).color)}>
-                                     {getStatusBadgeProps(order.orderStatus, order.currentStep).label}
-                                   </span>
-                                </Card>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* 3. ORDER HISTORY */}
-                          {normalizedHistory.filter(h => h.stage !== 'pipeline' && h.id !== normalizedClient.id).length > 0 && (
-                            <details className="group font-sans">
-                              <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] font-bold text-text-muted uppercase tracking-widest px-1 mb-2">
-                                <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
-                                Order History
-                              </summary>
-                              <div className="space-y-2 pl-1 mt-2">
-                                {normalizedHistory.filter(h => h.stage !== 'pipeline' && h.id !== normalizedClient.id).map(order => (
-                                  <div key={order.id} className="flex items-start gap-3 relative before:absolute before:left-2 before:top-6 before:bottom-[-8px] before:w-px before:bg-border/50 last:before:hidden">
-                                     <div className="w-4 h-4 rounded-full border border-border bg-card mt-1 shrink-0 flex items-center justify-center">
-                                       <div className="w-1.5 h-1.5 rounded-full bg-text-muted" />
-                                     </div>
-                                     <div className="pb-3 text-left">
-                                        <p className="text-xs font-bold text-text-primary">{order.produk}</p>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                          <span className={cn("text-[9px] font-bold uppercase", order.orderStatus === 'rejected' || order.orderStatus === 'pending' ? 'text-destructive' : 'text-emerald-500')}>
-                                            {order.orderStatus === 'rejected' ? 'Rejected' : order.orderStatus === 'pending' ? 'Pending' : 'Completed'}
-                                          </span>
-                                          <span className="text-[10px] text-text-muted">
-                                             {order.updatedAt?.toDate ? order.updatedAt.toDate().toLocaleDateString('id-ID') : '-'}
-                                          </span>
-                                        </div>
-                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </details>
-                          )}
-
-                          {/* 4. CUSTOMER INFORMATION */}
-                          <details className="group font-sans">
-                            <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] font-bold text-text-muted uppercase tracking-widest px-1 mb-2">
-                              <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
-                              Customer Data
-                            </summary>
-                            <Card className="p-4 mt-2 text-left space-y-4">
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Nama & Usaha</p>
-                                <p className="text-sm font-semibold text-text-primary">{normalizedClient.nama}</p>
-                                <p className="text-xs text-text-muted font-medium mt-0.5">{normalizedClient.usaha || '-'}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Kontak</p>
-                                <div className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                                  <Phone className="w-3.5 h-3.5 inline-block text-text-muted" />
-                                  <span>{normalizedClient.nomor}</span>
-                                  <a href={`https://wa.me/${formatWhatsApp(normalizedClient.nomor)}`} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded ml-2 uppercase">Chat</a>
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Alamat</p>
-                                <p className="text-sm font-semibold text-text-primary leading-relaxed flex items-start gap-2">
-                                  <MapPin className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
-                                  <span>{normalizedClient.alamat}</span>
-                                </p>
-                              </div>
-                            </Card>
-                          </details>
-
-                          {/* 5. OPERATIONAL NOTES */}
-                          {normalizedClient.archiveReason && (
-                            <div className="space-y-2 text-left font-sans">
-                              <h4 className="text-[11px] font-bold text-text-muted uppercase tracking-widest px-1">Reject / Archive Note</h4>
-                              <Card className="p-3 bg-red-500/5 dark:bg-red-500/10 border-red-500/20 text-red-500 text-xs font-semibold leading-relaxed">
-                                {normalizedClient.archiveReason}
-                              </Card>
-                            </div>
-                          )}
-
-                          {/* 6. TIMELINE */}
-                          <div className="space-y-2 text-left pt-2 pb-8 font-sans">
-                             <h4 className="text-[11px] font-bold text-text-muted uppercase tracking-widest px-1 mb-3">Timeline</h4>
-                             <div className="pl-1">
-                                {[
-                                  { label: 'Submitted', status: 'completed', time: normalizedClient.createdAt },
-                                  { 
-                                     label: 'Survey', 
-                                     status: (normalizedClient.currentStep === 'warehouse' || normalizedClient.currentStep === 'done' || (normalizedClient.currentStep === 'survey' && normalizedClient.orderStatus === 'approved')) ? 'completed' : 
-                                             (normalizedClient.currentStep === 'survey' ? (normalizedClient.orderStatus === 'rejected' ? 'rejected' : 'active') : 'waiting') 
-                                  },
-                                  { 
-                                     label: 'Warehouse & Shipping', 
-                                     status: (normalizedClient.currentStep === 'done' && normalizedClient.stage === 'client') ? 'completed' : 
-                                             ((normalizedClient.currentStep === 'warehouse' && normalizedClient.orderStatus !== 'rejected') ? 'active' : 'waiting') 
-                                  }
-                                ].map((step, idx, arr) => (
-                                  <div key={step.label} className={cn("flex items-start gap-4 relative", idx < arr.length - 1 && "before:absolute before:left-2 before:top-6 before:bottom-[-12px] before:w-px before:bg-border/50")}>
-                                    <div className={cn("w-4 h-4 rounded-full mt-1 shrink-0 flex items-center justify-center border z-10", 
-                                       step.status === 'completed' ? "bg-emerald-500 border-emerald-500 text-white" : 
-                                       step.status === 'active' ? "bg-primary border-primary text-primary-foreground" : 
-                                       step.status === 'rejected' ? "bg-destructive border-destructive text-destructive-foreground" :
-                                       "bg-card border-border text-transparent"
-                                     )}>
-                                      {step.status === 'completed' ? <CheckCircle2 className="w-2.5 h-2.5" /> : 
-                                       step.status === 'active' ? <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> :
-                                       step.status === 'rejected' ? <XCircle className="w-2.5 h-2.5" /> : <div className="w-1 h-1 rounded-full bg-border" />}
-                                    </div>
-                                    <div className="pb-5">
-                                      <p className={cn("text-xs font-bold uppercase tracking-wider", 
-                                        step.status === 'waiting' ? "text-text-muted" : "text-text-primary"
-                                      )}>{step.label}</p>
-                                      {step.time && step.time.toDate && (
-                                        <p className="text-[10px] text-text-muted mt-0.5">{step.time.toDate().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
+                          {/* 1. CUSTOMER INFORMATION */}
+                          <div className="font-sans px-1 space-y-3">
+                             <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight text-left">{normalizedClient.nama}</h3>
+                             <div className="space-y-1">
+                               <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
+                                  <Building2 className="w-3 h-3 text-text-muted shrink-0" />
+                                  {normalizedClient.usaha || '-'}
+                               </div>
+                               <div className="flex items-center gap-2 text-xs text-text-muted leading-tight">
+                                  <MapPin className="w-3 h-3 text-text-muted shrink-0" />
+                                  {normalizedClient.alamat || '-'}
+                               </div>
+                             </div>
+                             <div className="flex items-center gap-2 pt-2">
+                                <a href={`https://wa.me/${formatWhatsApp(normalizedClient.nomor)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-xl font-bold text-[11px] transition-colors">
+                                   <MessageCircle className="w-3.5 h-3.5" />
+                                   WhatsApp
+                                </a>
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${normalizedClient.usaha || ''} ${normalizedClient.alamat || ''}`)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 rounded-xl font-bold text-[11px] transition-colors">
+                                   <MapPin className="w-3.5 h-3.5" />
+                                   Maps
+                                </a>
                              </div>
                           </div>
-                        </div>
+                          
+                          {/* 2. CURRENT ACTIVE ORDER */}
+                          <div className="space-y-2 text-left font-sans">
+                            <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Order Aktif</h4>
+                            <details className="group border border-border/10 rounded-xl bg-card/30">
+                              <summary className="p-3 flex items-center justify-between cursor-pointer list-none text-xs font-bold text-text-primary">
+                                <div className="flex items-center gap-2 truncate">
+                                  <span className="truncate">{normalizedClient.produk || '-'}</span>
+                                  <span>•</span>
+                                  <span>{formatCurrency(normalizedClient.omset)}</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-text-muted group-open:rotate-90 transition-transform" />
+                              </summary>
+                              <div className="px-4 pb-3 pt-1 border-t border-border/10 text-xs text-text-muted space-y-1">
+                                <p>Status: {getStatusBadgeProps(normalizedClient.orderStatus, normalizedClient.currentStep).label}</p>
+                                <p>Angsuran: {formatCurrency(normalizedClient.angsuran)} / {normalizedClient.tenorType || '-'}</p>
+                                <p>Tenor: {normalizedClient.tenor || 0} {normalizedClient.tenorType || '-'}</p>
+                                <p>Dibuat: {normalizedClient.createdAt?.toDate ? normalizedClient.createdAt.toDate().toLocaleDateString('id-ID') : '-'}</p>
+                              </div>
+                            </details>
+                          </div>
+
+                          {/* 3. ORDER HISTORY */}
+                          <div className="space-y-2 text-left font-sans">
+                             <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Order History</h4>
+                             {normalizedHistory.filter(h => h.id !== normalizedClient.id).sort((a,b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0)).map(order => (
+                                 <details key={order.id} className="group border border-border/10 rounded-xl bg-card/30">
+                                   <summary className="p-3 flex justify-between items-center cursor-pointer list-none">
+                                     <div>
+                                        <p className="text-xs font-bold text-text-primary">{order.produk}</p>
+                                        <p className="text-[10px] text-text-muted mt-0.5">{formatCurrency(order.omset)}</p>
+                                     </div>
+                                      <span className={cn("text-[8px] px-2 py-0.5 rounded-lg uppercase font-bold text-right bg-emerald-500/10 text-emerald-500")}>
+                                        {order.orderStatus === 'completed' ? 'Selesai' : 'Ongoing'}
+                                      </span>
+                                   </summary>
+                                   <div className="px-4 pb-3 pt-1 border-t border-border/10 text-xs text-text-muted space-y-1">
+                                       <p>Angsuran: {formatCurrency(order.angsuran)}</p>
+                                       <p>Tenor: {order.tenor} {order.tenorType}</p>
+                                       <p>Tanggal: {order.updatedAt?.toDate ? order.updatedAt.toDate().toLocaleDateString('id-ID') : '-'}</p>
+                                   </div>
+                                 </details>
+                               ))}
+                          </div>
+
+                          {/* 4. TIMELINE */}
+                          <div className="space-y-2 text-left font-sans">
+                             <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Timeline</h4>
+                             <div className="space-y-3 pl-1 pt-1">
+                               {timelineEvents.map((event, i) => (
+                                 <div key={i} className="flex gap-3">
+                                    <div className={cn("w-1.5 h-1.5 rounded-full mt-1.5 shrink-0", 
+                                       event.status === 'success' ? 'bg-emerald-500' :
+                                       event.status === 'warning' ? 'bg-orange-500' :
+                                       'bg-zinc-300'
+                                    )} />
+                                    <div>
+                                       <p className="text-xs font-bold text-text-primary leading-tight">{event.title}</p>
+                                       <p className="text-[10px] text-text-muted mt-0.5">{getRelativeTime(event.time)}</p>
+                                    </div>
+                                 </div>
+                               ))}
+                             </div>
+                          </div>
                       </div>
+                    </div>
+
+                    {/* ACTION BAR */}
+                    {canAction() && (
+                      <div className="sticky bottom-0 bg-background border-t border-border/10 p-4 z-40">
+                          {normalizedClient.stage === 'pipeline' && (
+                            <div className="w-full">
+                              {normalizedClient.currentStep === 'survey' ? (
+                                isSurveyor() ? (
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <button 
+                                      onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
+                                      disabled={isUpdating}
+                                      className="flex items-center justify-center gap-1 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                    >
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      ACC
+                                    </button>
+                                    <button 
+                                      onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
+                                      disabled={isUpdating}
+                                      className="flex items-center justify-center gap-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                    >
+                                      <Clock className="w-3 h-3" />
+                                      Pending
+                                    </button>
+                                    <button 
+                                      onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
+                                      disabled={isUpdating}
+                                      className="flex items-center justify-center gap-1 h-10 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                    >
+                                      <XCircle className="w-3 h-3" />
+                                      Tolak
+                                    </button>
+                                  </div>
+                                ) : <p className="text-xs text-text-muted text-center">Menunggu tindakan surveyor</p>
+                              ) : normalizedClient.currentStep === 'warehouse' ? (
+                                isGudang() ? (
+                                   <button 
+                                    onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
+                                    disabled={isUpdating}
+                                    className="flex items-center justify-center gap-1.5 w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                  >
+                                    <Truck className="w-4 h-4" />
+                                    Tandai Sudah Terkirim
+                                  </button>
+                                ) : <p className="text-xs text-text-muted text-center">Menunggu proses gudang</p>
+                              ) : null}
+                            </div>
+                          )}
+                      </div>
+                    )}
                     </>
                   );
                 })()}
-
-              {/* ACTION FOOTER */}
-              {canAction() && (
-                 <div className="absolute bottom-0 left-0 right-0 bg-background/90 backdrop-blur-xl border-t border-border/50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-30 shadow-2xl">
-                    {normalizedClient.stage === 'pipeline' && (
-                      <div className="max-w-2xl mx-auto">
-                        {normalizedClient.currentStep === 'survey' ? (
-                          isSurveyor() ? (
-                            <div className="grid grid-cols-3 gap-2">
-                              <button 
-                                onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
-                                disabled={isUpdating}
-                                className="flex items-center justify-center gap-1 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                ACC
-                              </button>
-                              <button 
-                                onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
-                                disabled={isUpdating}
-                                className="flex items-center justify-center gap-1 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                              >
-                                <Clock className="w-3.5 h-3.5" />
-                                Pending
-                              </button>
-                              <button 
-                                onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
-                                disabled={isUpdating}
-                                className="flex items-center justify-center gap-1 h-12 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-full font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                              >
-                                <XCircle className="w-3.5 h-3.5" />
-                                Tolak
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-full h-12 bg-secondary/50 rounded-full flex items-center justify-center gap-2 text-text-muted font-bold text-xs uppercase tracking-widest cursor-not-allowed">
-                              Menunggu Survey (Akses Terbatas)
-                            </div>
-                          )
-                        ) : normalizedClient.currentStep === 'warehouse' ? (
-                          isGudang() ? (
-                            <div className="grid grid-cols-2 gap-2">
-                              <button 
-                                onClick={() => { setPendingAction({ stage: 'pipeline', orderStatus: 'warehouse_pending', currentStep: 'warehouse' }); setShowNoteDialog(true); }}
-                                disabled={isUpdating}
-                                className="flex items-center justify-center gap-1 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                              >
-                                <Clock className="w-3.5 h-3.5" />
-                                Pending Gudang
-                              </button>
-                              <button 
-                                onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
-                                disabled={isUpdating}
-                                className="flex items-center justify-center gap-1 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                              >
-                                <Truck className="w-4 h-4" />
-                                Terkirim
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-full h-12 bg-secondary/50 rounded-full flex items-center justify-center gap-2 text-text-muted font-bold text-xs uppercase tracking-widest cursor-not-allowed">
-                              Menunggu Pengiriman (Akses Terbatas)
-                            </div>
-                          )
-                        ) : null}
-                      </div>
-                    )}
-                    {normalizedClient.stage === 'client' && (
-                      <div className="max-w-2xl mx-auto">
-                        <div className="w-full h-12 bg-secondary/50 rounded-full flex items-center justify-center gap-2 text-text-muted font-bold text-xs uppercase tracking-widest cursor-not-allowed">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Order Selesai
-                        </div>
-                      </div>
-                    )}
-                    {normalizedClient.stage === 'arsip' && (
-                      <div className="max-w-2xl mx-auto">
-                         <button 
-                          onClick={() => setClientToDelete(selectedClient)}
-                          className="w-full h-12 bg-destructive/5 hover:bg-destructive/10 text-destructive rounded-full font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
-                        >
-                          Hapus Permanen
-                        </button>
-                      </div>
-                    )}
-                 </div>
-              )}
-            </motion.div>
+              </motion.div>
             </div>
           )}
         </AnimatePresence>
@@ -1071,7 +926,6 @@ export default function ClientPage() {
 
         {/* Modal Dialogs are handled globally */}
       </div>
-    </AuthGuard>
   );
 }
 

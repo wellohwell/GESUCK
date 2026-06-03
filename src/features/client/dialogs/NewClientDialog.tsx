@@ -98,9 +98,9 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
   const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   return (
-    <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-950">
+    <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-900">
       {/* Step Indicator Header */}
-      <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-border/40 shrink-0">
+      <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-border/40 shrink-0">
         <div className="flex items-center gap-2">
           <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-text-muted'}`}>1</div>
           <span className={`text-[10px] font-bold uppercase tracking-widest ${step >= 1 ? 'text-text-primary' : 'text-text-muted'}`}>Konsumen</span>
@@ -116,14 +116,12 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="mb-2">
               <h2 className="text-xl font-black text-text-primary tracking-tight">Data Konsumen Baru</h2>
-              <p className="text-xs text-text-muted mt-1">Lengkapi data pribadi konsumen operasional.</p>
             </div>
             <div>
-              <label className={labelClass}>Nama Lengkap *</label>
               <input 
                 type="text" 
                 autoFocus
-                placeholder="Misal: Budi Santoso" 
+                placeholder="Nama Lengkap *" 
                 value={form.nama} 
                 onChange={e => setForm({...form, nama: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={inputClass} 
@@ -131,20 +129,18 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className={labelClass}>No. WhatsApp *</label>
                 <input 
                   type="tel" 
-                  placeholder="Misal: 081234..." 
+                  placeholder="No. WhatsApp *" 
                   value={form.nomor} 
                   onChange={e => setForm({...form, nomor: e.target.value})} 
                   className={inputClass} 
                 />
               </div>
               <div>
-                <label className={labelClass}>Nama Usaha (Opsional)</label>
                 <input 
                   type="text" 
-                  placeholder="Misal: Warung Sembako Barokah" 
+                  placeholder="Nama Usaha (Opsional)" 
                   value={form.usaha} 
                   onChange={e => setForm({...form, usaha: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                   className={inputClass} 
@@ -152,9 +148,8 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             <div>
-              <label className={labelClass}>Alamat Lengkap *</label>
               <textarea 
-                placeholder="Alamat detail untuk pengiriman..." 
+                placeholder="Alamat Lengkap *" 
                 value={form.alamat} 
                 onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={`${inputClass} min-h-[100px] resize-none h-auto`} 
@@ -167,26 +162,23 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="mb-2">
               <h2 className="text-xl font-black text-text-primary tracking-tight">Detail Order</h2>
-              <p className="text-xs text-text-muted mt-1">Order dan skema angsuran untuk {form.nama}.</p>
             </div>
             <div>
-              <label className={labelClass}>Nama Produk *</label>
               <input 
                 type="text" 
                 autoFocus
-                placeholder="Misal: Kulkas 2 Pintu..." 
+                placeholder="Nama Produk *" 
                 value={form.barang} 
                 onChange={e => setForm({...form, barang: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={inputClass} 
               />
             </div>
             
-            <div className="p-4 rounded-[14px] border border-primary/20 bg-primary/5 space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className={labelClass}>Angsuran (Rp) *</label>
                 <input 
                   type="text" 
-                  placeholder="Rp 0" 
+                  placeholder="Angsuran (Rp) *" 
                   value={form.angsuran ? formatIDR(Number(form.angsuran)) : ''} 
                   onChange={e => setForm({...form, angsuran: e.target.value.replace(/\D/g, '')})} 
                   className={inputClass} 
@@ -241,14 +233,14 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Floating Footers */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 flex items-center justify-between gap-3 z-30 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+      <div className="sticky bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 flex items-center justify-between gap-3 z-30 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
         {step === 1 ? (
           <button 
             type="button"
             onClick={handleNext}
             className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all"
           >
-            Lanjut Detail Order
+            Simpan
             <ArrowRight className="w-4 h-4" />
           </button>
         ) : (

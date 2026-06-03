@@ -95,10 +95,9 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               <h3 className="text-[10px] font-black tracking-widest text-text-muted uppercase mb-3">Data Diri</h3>
             </div>
             <div>
-              <label className={labelClass}>Nama Lengkap *</label>
               <input 
                 type="text" 
-                placeholder="Misal: Budi Santoso" 
+                placeholder="Nama Lengkap *" 
                 value={form.nama} 
                 onChange={e => setForm({...form, nama: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={inputClass} 
@@ -106,20 +105,18 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className={labelClass}>No. WhatsApp *</label>
                 <input 
                   type="tel" 
-                  placeholder="Misal: 081234..." 
+                  placeholder="No. WhatsApp *" 
                   value={form.nomor} 
                   onChange={e => setForm({...form, nomor: e.target.value})} 
                   className={inputClass} 
                 />
               </div>
               <div>
-                <label className={labelClass}>Nama Usaha (Opsional)</label>
                 <input 
                   type="text" 
-                  placeholder="Misal: Warung Sembako Barokah" 
+                  placeholder="Nama Usaha (Opsional)" 
                   value={form.usaha} 
                   onChange={e => setForm({...form, usaha: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                   className={inputClass} 
@@ -127,9 +124,8 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               </div>
             </div>
             <div>
-              <label className={labelClass}>Alamat Lengkap *</label>
               <textarea 
-                placeholder="Alamat detail untuk pengiriman..." 
+                placeholder="Alamat Lengkap *" 
                 value={form.alamat} 
                 onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={`${inputClass} min-h-[100px] resize-none h-auto`} 
@@ -142,22 +138,20 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               <h3 className="text-[10px] font-black tracking-widest text-text-muted uppercase mb-3">Detail Order</h3>
             </div>
             <div>
-              <label className={labelClass}>Nama Produk *</label>
               <input 
                 type="text" 
-                placeholder="Misal: Kulkas 2 Pintu..." 
+                placeholder="Nama Produk *" 
                 value={form.barang} 
                 onChange={e => setForm({...form, barang: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
                 className={inputClass} 
               />
             </div>
             
-            <div className="p-4 rounded-[14px] border border-border/40 bg-card space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className={labelClass}>Angsuran (Rp) *</label>
                 <input 
                   type="text" 
-                  placeholder="Rp 0" 
+                  placeholder="Angsuran (Rp) *" 
                   value={form.angsuran ? formatIDR(Number(form.angsuran)) : ''} 
                   onChange={e => setForm({...form, angsuran: e.target.value.replace(/\D/g, '')})} 
                   className={inputClass} 
@@ -212,7 +206,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
       </div>
 
       {/* Floating Footer */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
+      <div className="sticky bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
          <button 
             type="button"
             disabled={isSubmitting}
