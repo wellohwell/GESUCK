@@ -94,28 +94,28 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const inputClass = "w-full px-4 py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-brand-primary/50 focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
-  const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
+  const inputClass = "w-full h-9 px-3 bg-zinc-50 dark:bg-zinc-900 border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all outline-none rounded-md text-[11px] font-semibold text-text-primary placeholder:text-text-muted/75 placeholder:font-medium shadow-sm";
+  const labelClass = "block text-[9px] font-extrabold text-text-muted uppercase tracking-wider mb-1 ml-0.5";
 
   return (
     <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-900">
       {/* Step Indicator Header */}
-      <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-border/40 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-text-muted'}`}>1</div>
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${step >= 1 ? 'text-text-primary' : 'text-text-muted'}`}>Konsumen</span>
-          <div className="flex-1 h-px bg-border/50 mx-2" />
-          <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-text-muted'}`}>2</div>
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${step >= 2 ? 'text-text-primary' : 'text-text-muted'}`}>Order</span>
+      <div className="sticky top-0 z-20 px-4 py-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-border/40 shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-text-muted'}`}>1</div>
+          <span className={`text-[9px] font-extrabold uppercase tracking-widest ${step >= 1 ? 'text-text-primary' : 'text-text-muted'}`}>Konsumen</span>
+          <div className="flex-1 h-px bg-border/50 mx-1.5" />
+          <div className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-text-muted'}`}>2</div>
+          <span className={`text-[9px] font-extrabold uppercase tracking-widest ${step >= 2 ? 'text-text-primary' : 'text-text-muted'}`}>Order</span>
         </div>
       </div>
 
       {/* Main Container Form Body */}
-      <div className="p-6 pb-28">
+      <div className="p-4 pb-20">
         {step === 1 && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="mb-2">
-              <h2 className="text-xl font-black text-text-primary tracking-tight">Data Konsumen Baru</h2>
+          <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="mb-1">
+              <h2 className="text-[12px] font-black text-text-primary tracking-wider uppercase">Data Konsumen Baru</h2>
             </div>
             <div>
               <input 
@@ -127,7 +127,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
                 className={inputClass} 
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <input 
                   type="tel" 
@@ -152,16 +152,16 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
                 placeholder="Alamat Lengkap *" 
                 value={form.alamat} 
                 onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
-                className={`${inputClass} min-h-[100px] resize-none h-auto`} 
+                className={`${inputClass} min-h-[60px] py-1.5 resize-none h-auto`} 
               />
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="mb-2">
-              <h2 className="text-xl font-black text-text-primary tracking-tight">Detail Order</h2>
+          <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="mb-1">
+              <h2 className="text-[12px] font-black text-text-primary tracking-wider uppercase">Detail Order</h2>
             </div>
             <div>
               <input 
@@ -174,7 +174,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               />
             </div>
             
-            <div className="space-y-5">
+            <div className="space-y-3">
               <div>
                 <input 
                   type="text" 
@@ -187,13 +187,13 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Tipe Tenor</label>
-                  <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-xl border border-border/50">
+                  <div className="flex p-0.5 bg-zinc-200/50 dark:bg-zinc-900 rounded-md border border-border/50 h-8">
                     {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
                       <button
                         key={type.id}
                         type="button"
                         onClick={() => setForm({ ...form, tenorType: type.id, tenor: type.id === 'hari' ? '30' : '1' })}
-                        className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        className={`flex-1 flex items-center justify-center py-1 rounded-md text-[10px] font-bold transition-all ${
                           form.tenorType === type.id
                             ? 'bg-white dark:bg-zinc-800 text-text-primary shadow-sm'
                             : 'text-text-muted'
@@ -209,7 +209,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
                   <select 
                     value={form.tenor} 
                     onChange={e => setForm({...form, tenor: e.target.value})} 
-                    className={inputClass} 
+                    className="w-full h-8 px-2 bg-zinc-50 dark:bg-zinc-900 border border-border/50 outline-none rounded-md text-[11px] font-semibold text-text-primary"
                   >
                     <option value="" disabled>Pilih</option>
                     {form.tenorType === 'hari' ? (
@@ -222,9 +222,9 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
               </div>
               
               {omset > 0 && (
-                <div className="flex items-center justify-between pt-4 border-t border-primary/20">
-                   <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Estimasi Omset</p>
-                   <p className="text-lg font-black text-primary">{formatIDR(omset)}</p>
+                <div className="flex items-center justify-between pt-2.5 border-t border-primary/20">
+                   <p className="text-[9px] font-extrabold text-text-muted uppercase tracking-wider">Estimasi Omset</p>
+                   <p className="text-sm font-black text-primary">{formatIDR(omset)}</p>
                 </div>
               )}
             </div>
@@ -233,30 +233,30 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Floating Footers */}
-      <div className="sticky bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 flex items-center justify-between gap-3 z-30 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+      <div className="sticky bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-border/40 p-2 shrink-0 flex items-center justify-between gap-2 z-30 shadow-md">
         {step === 1 ? (
           <button 
             type="button"
             onClick={handleNext}
-            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+            className="w-full flex items-center justify-center gap-1.5 h-8.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-bold text-[11px] uppercase tracking-wider active:scale-95 transition-all"
           >
             Simpan
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         ) : (
           <>
             <button 
               type="button"
               onClick={() => setStep(1)}
-              className="h-14 px-6 bg-secondary/50 hover:bg-secondary text-text-primary rounded-xl font-bold transition-colors"
+              className="h-8.5 px-3 bg-secondary/50 hover:bg-secondary text-text-primary rounded-md font-bold transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-3.5 h-3.5" />
             </button>
             <button 
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="flex-1 flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-1.5 h-8.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-bold text-[11px] uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50"
             >
               {isSubmitting ? 'Menyimpan...' : 'Submit Order Baru'}
             </button>

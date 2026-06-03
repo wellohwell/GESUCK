@@ -21,21 +21,21 @@ const ProductItem = React.memo(({ product, onClick }: { product: Product, onClic
        {/* Mobile Layout (Table-like rows) */}
        <div className="flex items-center justify-between md:hidden w-full gap-4">
           <div className="flex flex-col gap-0 min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{product.merk}</span>
-              <div className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-card/10" />
-              <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 truncate leading-none uppercase tracking-tighter">{product.type}</span>
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-normal">
+              <span>{product.merk}</span>
+              <span className="text-zinc-300 dark:text-zinc-700">•</span>
+              <span className="truncate">{product.type}</span>
             </div>
-            <span className="font-bold text-[12px] text-zinc-900 dark:text-zinc-100 leading-tight truncate uppercase mt-0.5">{product.model}</span>
+            <span className="font-black text-[13px] text-zinc-900 dark:text-zinc-100 leading-tight truncate uppercase mt-0.5">{product.model}</span>
             {(product.fitur || product.caption) && (
-               <span className="text-[8px] text-zinc-400 dark:text-zinc-500 italic truncate tracking-tight mt-0.5">
+               <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-500 truncate uppercase tracking-normal mt-0.5">
                  {product.fitur || product.caption}
                </span>
             )}
           </div>
 
           <div className="flex-shrink-0 text-right">
-            <span className="font-black text-[#86b100] dark:text-primary text-[12px] tracking-tighter tabular-nums">
+            <span className="font-black text-[#86b100] dark:text-primary text-[13px] tracking-normal tabular-nums">
               {product.jual || formatRp(product.harga)}
             </span>
           </div>

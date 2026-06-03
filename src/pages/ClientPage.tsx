@@ -414,23 +414,23 @@ export default function ClientPage() {
   }, [clients, searchQuery]);
 
   return (
-      <div className="min-h-screen pb-32">
+      <div className="min-h-screen pb-20">
         {/* TOP BAR & SEARCH */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-4 pb-4 px-4">
-          <div className="max-w-3xl mx-auto space-y-4">
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-2 pb-2 px-3">
+          <div className="max-w-3xl mx-auto space-y-2">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
               <input 
                 type="text" 
                 placeholder="Cari nama, usaha, nomor..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 bg-card border border-border/60 rounded-full text-sm font-medium text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                className="w-full pl-8.5 pr-3 bg-card border border-border/60 rounded-md text-xs font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-1 focus:ring-primary/20 transition-all shadow-sm h-9"
               />
             </div>
 
             {/* FLOATING TABS */}
-            <div className="flex bg-card p-1 rounded-full border border-border/40 shadow-sm mx-auto w-full md:w-3/4">
+            <div className="flex bg-card p-0.5 rounded-lg border border-border/40 shadow-sm mx-auto w-full md:w-3/4">
               {[
                 { id: 'pipeline', label: 'Pipeline', icon: ClipboardList },
                 { id: 'client', label: 'Client', icon: Users },
@@ -440,54 +440,54 @@ export default function ClientPage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Stage)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-bold transition-all active:scale-95",
+                    "flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[11px] font-bold transition-all active:scale-95",
                     activeTab === tab.id 
-                      ? 'bg-white text-black shadow-sm' 
+                      ? 'bg-white text-black shadow-sm dark:bg-zinc-800 dark:text-white' 
                       : 'text-text-muted hover:text-text-primary'
                   )}
                 >
-                  <tab.icon className={cn("w-3.5 h-3.5", activeTab === tab.id ? 'text-black' : 'text-text-muted opacity-70')} />
+                  <tab.icon className={cn("w-3 h-3", activeTab === tab.id ? 'text-black dark:text-white' : 'text-text-muted opacity-70')} />
                   {tab.label}
                 </button>
               ))}
             </div>
 
             {/* Floating Action Button */}
-            <div className="flex justify-end pr-2">
+            <div className="flex justify-end pr-1">
               <div className="relative group">
                 <button 
                   onClick={() => setShowAddMenu(!showAddMenu)}
-                  className="w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground shadow-sm hover:scale-105 active:scale-95 transition-all rounded-full"
+                  className="w-8 h-8 flex items-center justify-center bg-primary text-primary-foreground shadow-sm hover:scale-105 active:scale-95 transition-all rounded-lg"
                 >
-                  <Plus className={cn("w-5 h-5 stroke-[3] transition-transform", showAddMenu && "rotate-45")} />
+                  <Plus className={cn("w-4 h-4 stroke-[3] transition-transform", showAddMenu && "rotate-45")} />
                 </button>
                 
                 {/* Floating Menu */}
                 {showAddMenu && (
-                  <div className="absolute top-12 right-0 flex flex-col p-1 min-w-[200px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-2xl animate-in zoom-in-95 duration-200">
+                  <div className="absolute top-10 right-0 flex flex-col p-1 min-w-[180px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-xl animate-in zoom-in-95 duration-200">
                      <button onClick={() => { 
                        setShowAddMenu(false); 
                        const id = openModal({ title: 'Konsumen Baru', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-3 py-3 flex items-center gap-3 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
-                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                         <Plus className="w-4 h-4" />
+                     }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-lg transition-colors">
+                       <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                         <Plus className="w-3.5 h-3.5" />
                        </div>
                        <div className="text-left">
-                         <p className="text-xs font-bold leading-tight">Konsumen Baru</p>
-                         <p className="text-[10px] text-text-muted mt-0.5">Daftar & Request</p>
+                         <p className="text-[11px] font-bold leading-tight">Konsumen Baru</p>
+                         <p className="text-[9px] text-text-muted mt-0.5">Daftar & Request</p>
                        </div>
                      </button>
                      <div className="h-[1px] w-full bg-border/40 my-0.5" />
                      <button onClick={() => { 
                        setShowAddMenu(false); 
                        const id = openModal({ title: 'Repeat Order', content: <RepeatOrderContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-3 py-3 flex items-center gap-3 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
-                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
-                         <HistoryIcon className="w-4 h-4" />
+                     }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-lg transition-colors">
+                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                         <HistoryIcon className="w-3.5 h-3.5" />
                        </div>
                        <div className="text-left">
-                         <p className="text-xs font-bold leading-tight">Repeat Order</p>
-                         <p className="text-[10px] text-text-muted mt-0.5">Order tambahan</p>
+                         <p className="text-[11px] font-bold leading-tight">Repeat Order</p>
+                         <p className="text-[9px] text-text-muted mt-0.5">Order tambahan</p>
                        </div>
                      </button>
                   </div>
@@ -498,8 +498,8 @@ export default function ClientPage() {
         </div>
 
         {/* LIST AREA */}
-        <div className="max-w-3xl mx-auto px-4 mt-6">
-          <div className="space-y-3">
+        <div className="max-w-3xl mx-auto px-3.5 mt-4">
+          <div className="space-y-2.5">
             {loading ? (
               <SkeletonFeed count={5} />
             ) : filteredClients.length === 0 ? (
@@ -509,29 +509,29 @@ export default function ClientPage() {
                 description="Belum ada data pada tahap ini."
               />
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {activeTab === 'pipeline' ? (
                   <>
                     {/* Survey Queue */}
                     {filteredClients.filter(c => getNormalizedClient(c).currentStep === 'survey').length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-1.5">
                         {filteredClients.filter(c => getNormalizedClient(c).currentStep === 'survey').map(client => {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
+                            <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 mb-0.5">
                                    <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
                                      {badge.label}
                                    </span>
                                 </div>
-                                <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1 shrink-0">
-                                <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                                <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                                 {canDeleteClient(client, profile) && (
                                   <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
                                     <Trash2 className="w-3 h-3" />
@@ -546,24 +546,24 @@ export default function ClientPage() {
 
                     {/* Warehouse Queue */}
                     {filteredClients.filter(c => getNormalizedClient(c).currentStep === 'warehouse').length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-1.5 mt-3">
                         {filteredClients.filter(c => getNormalizedClient(c).currentStep === 'warehouse').map(client => {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
+                            <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 mb-0.5">
                                    <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
                                      {badge.label}
                                    </span>
                                 </div>
-                                <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1 shrink-0">
-                                <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                                <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                                 {canDeleteClient(client, profile) && (
                                   <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
                                     <Trash2 className="w-3 h-3" />
@@ -577,24 +577,24 @@ export default function ClientPage() {
                     )}
                   </>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-1.5">
                     {filteredClients.map(client => {
                       const norm = getNormalizedClient(client);
                       const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                       return (
-                        <div className="flex justify-between items-center bg-card p-3 rounded-xl border border-border/10 cursor-pointer hover:bg-card/80 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 mb-0.5">
                                <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                               <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider", badge.color)}>
+                               <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
                                  {badge.label}
                                </span>
                             </div>
-                            <p className="text-[10px] font-medium text-text-primary truncate">{norm.usaha || '-'}</p>
-                            <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                            <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
+                            <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                           </div>
-                          <div className="flex flex-col items-end gap-1 shrink-0">
-                            <span className="text-[10px] text-text-muted">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
+                          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                            <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                             {canDeleteClient(client, profile) && (
                               <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
                                 <Trash2 className="w-3 h-3" />
@@ -766,20 +766,20 @@ export default function ClientPage() {
 
                           {/* 5. WORKFLOW ACTIONS */}
                           {canAction() && normalizedClient.stage === 'pipeline' && (
-                            <div className="border border-border/10 bg-card rounded-xl p-4 space-y-3.5 shadow-inner">
-                              <div className="flex items-center gap-1.5 border-b border-border/10 pb-2 mb-1.5">
+                            <div className="border border-border/10 bg-card rounded-lg p-2.5 space-y-2 shadow-inner">
+                              <div className="flex items-center gap-1.5 border-b border-border/10 pb-1 mb-1">
                                 <UserCheck className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
+                                <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
                               </div>
                               
                               <div className="w-full">
                                 {normalizedClient.currentStep === 'survey' ? (
                                   isSurveyor() ? (
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-1.5">
                                       <button 
                                         onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
                                         disabled={isUpdating}
-                                        className="flex-1 py-2.5 px-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 h-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                         ACC
@@ -787,7 +787,7 @@ export default function ClientPage() {
                                       <button 
                                         onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
                                         disabled={isUpdating}
-                                        className="flex-1 py-2.5 px-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <Clock className="w-3.5 h-3.5 shrink-0" />
                                         Pending
@@ -795,24 +795,24 @@ export default function ClientPage() {
                                       <button 
                                         onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
                                         disabled={isUpdating}
-                                        className="flex-1 py-2.5 px-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 h-8 bg-red-500 hover:bg-red-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <XCircle className="w-3.5 h-3.5 shrink-0" />
                                         Tolak
                                       </button>
                                     </div>
-                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu tindakan surveyor</p>
+                                  ) : <p className="text-[10px] text-text-muted text-center py-1 font-bold uppercase tracking-wider">Menunggu tindakan surveyor</p>
                                 ) : normalizedClient.currentStep === 'warehouse' ? (
                                   isGudang() ? (
                                      <button 
                                       onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
                                       disabled={isUpdating}
-                                      className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                                      className="flex items-center justify-center gap-1.5 w-full h-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
                                     >
-                                      <Truck className="w-4 h-4" />
+                                      <Truck className="w-3.5 h-3.5" />
                                       Tandai Sudah Terkirim
                                     </button>
-                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu proses gudang</p>
+                                  ) : <p className="text-[10px] text-text-muted text-center py-1 font-bold uppercase tracking-wider">Menunggu proses gudang</p>
                                 ) : null}
                               </div>
                             </div>
@@ -835,15 +835,15 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-xl p-3.5 shadow-2xl"
               >
-                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-                      <Edit className="w-5 h-5" />
+                 <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-md bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
+                      <Edit className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight">Keterangan Wajib</h3>
-                      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Alasan Status: {pendingAction?.orderStatus?.toUpperCase()}</p>
+                      <h3 className="text-xs font-black text-text-primary uppercase tracking-wider">Keterangan Wajib</h3>
+                      <p className="text-[8px] font-extrabold text-text-muted uppercase tracking-wider leading-none mt-0.5">Alasan Status: {pendingAction?.orderStatus?.toUpperCase()}</p>
                     </div>
                  </div>
                  <textarea 
@@ -851,11 +851,11 @@ export default function ClientPage() {
                     placeholder="Tulis alasan atau catatan operasional di sini..."
                     value={noteContent}
                     onChange={e => setNoteContent(e.target.value)}
-                    className="w-full h-32 bg-card border border-border/50 rounded-[10px] p-4 text-sm text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-4"
+                    className="w-full h-20 bg-card border border-border/50 rounded-md p-2 text-xs text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-2.5"
                  />
                  <div className="flex gap-2">
-                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 py-3 bg-secondary/50 rounded-xl text-xs font-bold text-text-primary hover:bg-secondary transition-colors active:scale-95">Batal</button>
-                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 py-3 bg-primary rounded-xl text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-sm transition-all active:scale-95">Simpan</button>
+                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 h-8 bg-secondary/50 rounded-md text-[10px] font-bold text-text-primary hover:bg-secondary transition-colors">Batal</button>
+                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 h-8 bg-primary rounded-md text-[10px] font-bold text-primary-foreground hover:bg-primary/95 disabled:opacity-50">Simpan</button>
                  </div>
               </motion.div>
             </div>
@@ -870,36 +870,36 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-xl p-3.5 shadow-2xl relative overflow-hidden"
               >
                 {/* Background glow for delete warning */}
                 <div className="absolute -top-12 -left-12 w-24 h-24 bg-destructive/10 blur-3xl rounded-full pointer-events-none" />
                 
-                <div className="flex items-center gap-3 mb-6 relative z-10">
-                  <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive">
-                    <Trash2 className="w-5 h-5" />
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                  <div className="w-7 h-7 rounded-md bg-destructive/10 flex items-center justify-center text-destructive shrink-0">
+                    <Trash2 className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight">Konfirmasi Hapus</h3>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Hapus Data Operasional</p>
+                    <h3 className="text-xs font-black text-text-primary uppercase tracking-wider">Konfirmasi Hapus</h3>
+                    <p className="text-[8px] font-extrabold text-text-muted uppercase tracking-widest mt-0.5">Hapus Data Operasional</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-6 relative z-10">
-                  <p className="text-xs text-text-secondary leading-relaxed text-left">
-                    Apakah Anda yakin ingin menghapus data konsumen <strong className="text-text-primary uppercase">{clientToDelete.nama}</strong>? Tindakan ini permanen dan tidak dapat dibatalkan.
+                <div className="space-y-2 mb-3 relative z-10">
+                  <p className="text-[11px] text-text-secondary leading-relaxed text-left">
+                    Apakah Anda yakin ingin menghapus data konsumen <strong className="text-text-primary uppercase">{clientToDelete.nama}</strong>? Tindakan ini permanen.
                   </p>
-                  <div className="p-3 bg-secondary/30 rounded-xl border border-border/30 text-left">
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Detail Dokumen:</p>
-                    <p className="text-xs font-semibold text-text-primary truncate">{clientToDelete.nama} • {clientToDelete.usaha || 'Personal'}</p>
-                    <p className="text-[10px] font-medium text-text-muted truncate mt-0.5">{clientToDelete.alamat}</p>
+                  <div className="p-2 bg-secondary/30 rounded-lg border border-border/30 text-left">
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-wider mb-0.5">Detail Dokumen:</p>
+                    <p className="text-[11px] font-semibold text-text-primary truncate">{clientToDelete.nama} • {clientToDelete.usaha || 'Personal'}</p>
+                    <p className="text-[9px] font-medium text-text-muted truncate mt-0.5">{clientToDelete.alamat}</p>
                   </div>
                 </div>
 
                 <div className="flex gap-2 relative z-10">
                   <button 
                     onClick={() => setClientToDelete(null)} 
-                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-xl text-xs font-bold text-text-primary transition-colors active:scale-95"
+                    className="flex-1 h-8 bg-secondary hover:bg-secondary/80 rounded-md text-[10px] font-bold text-text-primary transition-colors"
                   >
                     Batal
                   </button>
@@ -917,7 +917,7 @@ export default function ClientPage() {
                         toast.error("Gagal menghapus data");
                       }
                     }} 
-                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                    className="flex-1 h-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-[10px] font-bold transition-colors"
                   >
                     Hapus
                   </button>
