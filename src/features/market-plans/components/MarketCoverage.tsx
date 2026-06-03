@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useMemo } from 'react';
+import { motion } from 'motion/react';
 import { cn } from '../../../lib/utils';
 import { Target } from 'lucide-react';
 import { REGION_IDENTITY } from '../utils/regionIdentity';
@@ -10,6 +10,7 @@ interface MarketCoverageProps {
 }
 
 export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
+
   const coverageData = useMemo(() => {
     const totalMarkets = markets.length;
     
@@ -87,7 +88,6 @@ export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
     };
   }, [markets, allPlans]);
   
-  const [showDetails, setShowDetails] = useState(false);
   if (coverageData.total === 0) return null;
   
   const statusConfig = {
@@ -163,45 +163,8 @@ export function MarketCoverage({ markets, allPlans }: MarketCoverageProps) {
             })}
           </div>
           
-          {/* Action Button */}
-          <div className="mt-0.5 flex justify-center">
-            <button 
-              onClick={() => setShowDetails(true)}
-              className="text-[8px] text-muted-foreground hover:text-primary transition-colors font-bold underline decoration-dotted underline-offset-4"
-            >
-              Detail
-            </button>
-          </div>
         </div>
       </motion.div>
-      
-      {/* Modal / Overlay (Placeholder for now) */}
-      <AnimatePresence>
-        {showDetails && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-card w-full max-w-md p-6 rounded-xl border shadow-xl"
-            >
-              <h2 className="text-lg font-black mb-4">Detail Cakupan</h2>
-              <p className="text-muted-foreground mb-6">Analisis cakupan regional akan ditampilkan di sini.</p>
-              <button 
-                onClick={() => setShowDetails(false)}
-                className="w-full bg-primary text-primary-foreground py-2 rounded-xl font-bold text-sm"
-              >
-                Tutup
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
