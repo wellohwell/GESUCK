@@ -651,7 +651,7 @@ export default function OperationsPage() {
               </div>
 
               {/* Scrollable Container Area */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-5 bg-background pb-32">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-5 bg-background pb-8">
                 
                 {/* SECTION 1 — CUSTOMER INFORMATION */}
                 <div className="bg-card border border-border-default rounded-xl p-4 space-y-3 shadow-inner">
@@ -842,24 +842,30 @@ export default function OperationsPage() {
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted text-left">Operational Timeline</span>
                   </div>
 
-                  <div className="relative border-l border-border-default/60 ml-2.5 pl-4 space-y-4 text-left">
+                  <div className="space-y-4 text-left">
                     {timelineEvents.map((event, i) => (
-                      <div key={i} className="relative">
-                        {/* Bullet Icon indicator */}
-                        <div className={cn(
-                          "absolute -left-[22.5px] top-0.5 w-3.5 h-3.5 rounded-full border-2 border-card flex items-center justify-center",
-                          event.status === 'success' ? "bg-emerald-500" :
-                          event.status === 'warning' ? "bg-amber-500" : "bg-red-500"
-                        )} />
+                      <div key={i} className="flex gap-3 items-stretch">
+                        {/* Bullet Icon and vertical connection line */}
+                        <div className="flex flex-col items-center shrink-0">
+                          <div className={cn(
+                            "w-3 h-3 rounded-full border-2 border-background flex items-center justify-center shrink-0 mt-0.5 shadow-sm",
+                            event.status === 'success' ? "bg-emerald-500" :
+                            event.status === 'warning' ? "bg-amber-500" : "bg-red-500"
+                          )} />
+                          {i < timelineEvents.length - 1 && (
+                            <div className="w-[1.5px] bg-border-default/50 flex-1 my-1.5 min-h-[1.5rem]" />
+                          )}
+                        </div>
                         
-                        <div>
+                        {/* Event Content Description */}
+                        <div className="flex-1 pb-2">
                           <div className="flex items-baseline justify-between gap-1">
                             <h5 className="text-xs font-bold text-text-primary uppercase tracking-wide">{event.title}</h5>
                             <span className="text-[10px] text-text-muted font-bold shrink-0">{getRelativeTime(event.time)}</span>
                           </div>
                           <p className="text-[11px] text-text-secondary mt-0.5 font-medium">{event.desc}</p>
                           {event.note && (
-                            <p className="text-[10px] font-semibold text-orange-500 bg-orange-500/5 border border-orange-500/10 px-2 py-1 rounded-lg mt-1 mt-1.5 leading-normal max-w-md">
+                            <p className="text-[10px] font-semibold text-orange-500 bg-orange-500/5 border border-orange-500/10 px-2.5 py-1.5 rounded-lg mt-1.5 leading-relaxed max-w-md">
                               Catatan: "{event.note}"
                             </p>
                           )}
@@ -869,54 +875,61 @@ export default function OperationsPage() {
                   </div>
                 </div>
 
-              </div>
+                {/* SECTION 5 — WORKFLOW ACTIONS */}
+                <div className="bg-card border border-border-default rounded-xl p-4 space-y-3.5 shadow-inner">
+                  <div className="flex items-center gap-1.5 border-b border-border-default/30 pb-2 mb-1.5">
+                    <UserCheck className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
+                  </div>
+                  
+                  <div className="flex gap-2 w-full">
+                    {normalizedClient.currentStep === 'survey' ? (
+                      // Surveyor Controls
+                      <>
+                        <button 
+                          onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' })}
+                          disabled={isUpdating}
+                          className="flex-1 py-2.5 px-1 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 rounded-xl text-[11px] font-black text-red-500 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                        >
+                          <XCircle className="w-3.5 h-3.5 shrink-0" /> Reject
+                        </button>
+                        <button 
+                          onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' })}
+                          disabled={isUpdating}
+                          className="flex-1 py-2.5 px-1 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-xl text-[11px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                        >
+                          <Clock className="w-3.5 h-3.5 shrink-0" /> Pending
+                        </button>
+                        <button 
+                          onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
+                          disabled={isUpdating}
+                          className="flex-1 px-2 py-2.5 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1 whitespace-nowrap shadow-sm active:scale-95"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> ACC
+                        </button>
+                      </>
+                    ) : (
+                      // Warehouse / Gudang Controls
+                      <>
+                        <button 
+                          onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse', 'pending_gudang-action')}
+                          disabled={isUpdating}
+                          className="flex-1 py-2.5 px-2 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-xl text-[11px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                        >
+                          <Clock className="w-3.5 h-3.5 shrink-0" /> Pending Gudang
+                        </button>
+                        <button 
+                          onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
+                          disabled={isUpdating}
+                          className="flex-1 py-2.5 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm active:scale-95"
+                        >
+                          <Truck className="w-3.5 h-3.5 shrink-0" /> Terkirim
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-              {/* SECTION 5 — WORKFLOW ACTIONS STICKY BAR */}
-              <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border-default p-4 flex gap-2.5 z-[100] shadow-[0_-15px_30px_rgba(0,0,0,0.05)] select-none shrink-0 border-b pb-4 pt-4 md:pb-6">
-                {normalizedClient.currentStep === 'survey' ? (
-                  // Surveyor Controls
-                  <>
-                    <button 
-                      onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' })}
-                      disabled={isUpdating}
-                      className="flex-1 py-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 rounded-xl text-xs font-black text-red-500 transition-all flex items-center justify-center gap-1 leading-none shrink-0"
-                    >
-                      <XCircle className="w-3.5 h-3.5" /> Reject
-                    </button>
-                    <button 
-                      onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' })}
-                      disabled={isUpdating}
-                      className="flex-1 py-3 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/15 rounded-xl text-xs font-black text-orange-400 transition-all flex items-center justify-center gap-1 leading-none shrink-0"
-                    >
-                      <Clock className="w-3.5 h-3.5" /> Pending
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
-                      disabled={isUpdating}
-                      className="flex-1.5 py-3 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 leading-none shadow-md shrink-0"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> ACC
-                    </button>
-                  </>
-                ) : (
-                  // Warehouse / Gudang Controls
-                  <>
-                    <button 
-                      onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse', 'pending_gudang-action')}
-                      disabled={isUpdating}
-                      className="flex-1 py-3 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/15 rounded-xl text-xs font-black text-orange-400 transition-all flex items-center justify-center gap-1 leading-none shrink-0"
-                    >
-                      <Clock className="w-3.5 h-3.5" /> Pending Gudang
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
-                      disabled={isUpdating}
-                      className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 leading-none shadow-md shrink-0"
-                    >
-                      <Truck className="w-3.5 h-3.5" /> Terkirim
-                    </button>
-                  </>
-                )}
               </div>
 
             </motion.div>

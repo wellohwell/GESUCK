@@ -763,59 +763,62 @@ export default function ClientPage() {
                                ))}
                              </div>
                           </div>
-                      </div>
-                    </div>
 
-                    {/* ACTION BAR */}
-                    {canAction() && (
-                      <div className="sticky bottom-0 bg-background border-t border-border/10 p-4 z-40">
-                          {normalizedClient.stage === 'pipeline' && (
-                            <div className="w-full">
-                              {normalizedClient.currentStep === 'survey' ? (
-                                isSurveyor() ? (
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <button 
-                                      onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
+                          {/* 5. WORKFLOW ACTIONS */}
+                          {canAction() && normalizedClient.stage === 'pipeline' && (
+                            <div className="border border-border/10 bg-card rounded-xl p-4 space-y-3.5 shadow-inner">
+                              <div className="flex items-center gap-1.5 border-b border-border/10 pb-2 mb-1.5">
+                                <UserCheck className="w-3.5 h-3.5 text-primary" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
+                              </div>
+                              
+                              <div className="w-full">
+                                {normalizedClient.currentStep === 'survey' ? (
+                                  isSurveyor() ? (
+                                    <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
+                                        disabled={isUpdating}
+                                        className="flex-1 py-2.5 px-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                        ACC
+                                      </button>
+                                      <button 
+                                        onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
+                                        disabled={isUpdating}
+                                        className="flex-1 py-2.5 px-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                      >
+                                        <Clock className="w-3.5 h-3.5 shrink-0" />
+                                        Pending
+                                      </button>
+                                      <button 
+                                        onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
+                                        disabled={isUpdating}
+                                        className="flex-1 py-2.5 px-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                      >
+                                        <XCircle className="w-3.5 h-3.5 shrink-0" />
+                                        Tolak
+                                      </button>
+                                    </div>
+                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu tindakan surveyor</p>
+                                ) : normalizedClient.currentStep === 'warehouse' ? (
+                                  isGudang() ? (
+                                     <button 
+                                      onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
                                       disabled={isUpdating}
-                                      className="flex items-center justify-center gap-1 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                      className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95"
                                     >
-                                      <CheckCircle2 className="w-3 h-3" />
-                                      ACC
+                                      <Truck className="w-4 h-4" />
+                                      Tandai Sudah Terkirim
                                     </button>
-                                    <button 
-                                      onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
-                                      disabled={isUpdating}
-                                      className="flex items-center justify-center gap-1 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                                    >
-                                      <Clock className="w-3 h-3" />
-                                      Pending
-                                    </button>
-                                    <button 
-                                      onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
-                                      disabled={isUpdating}
-                                      className="flex items-center justify-center gap-1 h-10 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                                    >
-                                      <XCircle className="w-3 h-3" />
-                                      Tolak
-                                    </button>
-                                  </div>
-                                ) : <p className="text-xs text-text-muted text-center">Menunggu tindakan surveyor</p>
-                              ) : normalizedClient.currentStep === 'warehouse' ? (
-                                isGudang() ? (
-                                   <button 
-                                    onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
-                                    disabled={isUpdating}
-                                    className="flex items-center justify-center gap-1.5 w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
-                                  >
-                                    <Truck className="w-4 h-4" />
-                                    Tandai Sudah Terkirim
-                                  </button>
-                                ) : <p className="text-xs text-text-muted text-center">Menunggu proses gudang</p>
-                              ) : null}
+                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu proses gudang</p>
+                                ) : null}
+                              </div>
                             </div>
                           )}
                       </div>
-                    )}
+                    </div>
                     </>
                   );
                 })()}
