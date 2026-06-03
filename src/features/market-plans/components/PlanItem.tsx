@@ -6,6 +6,7 @@ import { toTitleCase } from "../../../utils/format";
 import dayjs from "dayjs";
 import { auth } from "../../../firebase/config";
 import { useAuth } from "../../../providers/AuthProvider";
+import { getRegionIdentity } from "../utils/regionIdentity";
 
 interface PlanItemProps {
   plan: any;
@@ -120,9 +121,16 @@ export const PlanItem = React.memo(({
           <div className="w-[1.5px] h-[1.5px] md:w-1 md:h-1 rounded-full bg-muted-foreground/30 shrink-0" />
           <span className={cn(
             "text-[8px] md:text-[10px] font-semibold tracking-tight uppercase whitespace-normal break-words",
-            hideDeleteButton ? "text-zinc-600 dark:text-zinc-400" : "text-muted-foreground"
+            (() => {
+              const identity = getRegionIdentity(plan.city);
+              return identity ? identity.color : (hideDeleteButton ? "text-zinc-600 dark:text-zinc-400" : "text-muted-foreground");
+            })()
           )}>
             {toTitleCase(plan.city)}
+            {(() => {
+              const identity = getRegionIdentity(plan.city);
+              return identity ? ` • ${identity.label}` : "";
+            })()}
           </span>
           {plan.marketJam && (
             <>

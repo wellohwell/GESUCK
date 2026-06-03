@@ -15,7 +15,6 @@ interface ReportProps {
   onBack: () => void;
   computedPlans?: any[];
   computedUserMap?: any;
-  marketTemperature?: any;
   pendingUsersCount?: number;
   pendingUsersList?: any[];
 }
@@ -24,7 +23,6 @@ export default function Report({
   onBack,
   computedPlans,
   computedUserMap,
-  marketTemperature,
   pendingUsersCount = 0,
   pendingUsersList = []
 }: ReportProps) {
@@ -322,7 +320,6 @@ export default function Report({
                   handleDelete={() => {}}
                   loading={loading}
                   isReportView={true}
-                  marketTemperature={marketTemperature}
                   pendingUsersCount={pendingUsersCount}
                   pendingUsersList={pendingUsersList}
                 />

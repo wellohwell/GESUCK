@@ -1,6 +1,9 @@
 export const ROLE_LANDING: Record<string, string> = {
   sales: "/workspace/explore",
   supervisor: "/workspace/explore",
+  staff: "/workspace/operations",
+  survey: "/workspace/operations",
+  gudang: "/workspace/operations",
 };
 
 export function getDefaultRouteByRole(role?: string) {

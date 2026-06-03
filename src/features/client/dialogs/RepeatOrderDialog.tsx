@@ -89,51 +89,51 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const inputClass = "w-full h-9 px-3 bg-input border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all outline-none rounded-md text-[11px] font-semibold text-text-primary placeholder:text-text-muted/75 placeholder:font-medium shadow-sm";
-  const labelClass = "block text-[9px] font-extrabold text-text-muted uppercase tracking-wider mb-1 ml-0.5";
+  const inputClass = "w-full px-4 py-3.5 bg-input border border-border/50 translate-y-0 focus:-translate-y-0.5 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all outline-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted placeholder:font-medium shadow-sm";
+  const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   if (!selectedClient) {
     return (
       <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-background">
-        <div className="sticky top-0 z-20 px-4 py-3 bg-card/85 backdrop-blur-xl border-b border-border/40 shrink-0 space-y-2">
+        <div className="sticky top-0 z-20 px-6 py-6 bg-card/85 backdrop-blur-xl border-b border-border/40 shrink-0 space-y-4">
           <div>
-            <h2 className="text-[12px] font-black text-text-primary uppercase tracking-wider">Cari Konsumen</h2>
-            <p className="text-[10px] text-text-muted">Pilih konsumen yang sudah ada dari database.</p>
+            <h2 className="text-xl font-black text-text-primary tracking-tight mb-1">Cari Konsumen</h2>
+            <p className="text-xs text-text-muted">Pilih konsumen yang sudah ada dari database.</p>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
             <input 
               type="text" 
               autoFocus
               placeholder="Cari nama, nomor WhatsApp, alamat..."
               value={clientSearchQuery}
               onChange={e => setClientSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 h-9 bg-muted border-none rounded-md text-[11px] font-semibold text-text-primary placeholder:text-text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all shadow-inner"
+              className="w-full pl-12 pr-4 py-4 bg-muted border-none rounded-xl text-sm font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
             />
           </div>
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="p-6">
           {filteredClients.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {!clientSearchQuery && (
-                <p className="text-[8px] font-extrabold text-text-muted uppercase tracking-widest pl-0.5">Konsumen Terbaru</p>
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest pl-1">Konsumen Terbaru</p>
               )}
-              <div className="space-y-1.5">
+              <div className="space-y-3">
                 {filteredClients.map(client => {
                   const norm = getNormalizedClient(client);
                   return (
                     <button 
                       key={client.id}
                       onClick={() => setSelectedClient(norm)}
-                      className="w-full flex items-center justify-between p-2.5 bg-card border border-border/50 rounded-lg hover:border-primary/50 hover:shadow-sm transition-all group text-left shadow-sm"
+                      className="w-full flex items-center justify-between p-4 bg-card border border-border/50 rounded-[14px] hover:border-primary/50 hover:shadow-md transition-all group text-left shadow-sm"
                     >
-                      <div className="min-w-0 pr-2">
-                        <h4 className="font-bold text-xs text-text-primary group-hover:text-primary transition-colors truncate">{norm.nama}</h4>
-                        <p className="text-[10px] text-text-muted font-medium mt-0.5 truncate">{norm.alamat}</p>
+                      <div>
+                        <h4 className="font-bold text-sm text-text-primary group-hover:text-primary transition-colors">{norm.nama}</h4>
+                        <p className="text-[11px] text-text-muted font-medium mt-1 pr-4">{norm.alamat}</p>
                       </div>
-                      <div className="w-6 h-6 rounded-full bg-secondary/50 group-hover:bg-primary group-hover:text-primary-foreground flex items-center justify-center shrink-0 transition-colors">
-                        <ArrowRight className="w-3.5 h-3.5" />
+                      <div className="w-8 h-8 rounded-full bg-secondary/50 group-hover:bg-primary group-hover:text-primary-foreground flex items-center justify-center shrink-0 transition-colors">
+                        <ArrowRight className="w-4 h-4" />
                       </div>
                     </button>
                   );
@@ -141,14 +141,14 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           ) : (
-            <div className="text-center py-6">
-              <p className="text-xs font-bold text-text-primary mb-0.5">
+            <div className="text-center py-12">
+              <p className="text-sm font-bold text-text-primary mb-1">
                 {clientSearchQuery ? "Tidak ditemukan" : "Belum ada data konsumen"}
               </p>
-              <p className="text-[10px] text-text-muted">
+              <p className="text-xs text-text-muted">
                 {clientSearchQuery 
                   ? "Konsumen dengan kata kunci tersebut tidak ada." 
-                  : "Konsumen belum tersedia di database."}
+                  : "Konsumen yang berada di stage 'client' atau lainnya belum terbuat."}
               </p>
             </div>
           )}
@@ -159,23 +159,23 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-background">
-      <div className="sticky top-0 z-20 px-4 py-2 bg-card/85 backdrop-blur-xl border-b border-border/40 shrink-0">
-        <div className="p-1.5 rounded-lg border border-primary/20 bg-primary/5 flex items-center gap-2 h-11">
-          <div className="w-7 h-7 rounded bg-primary/20 flex items-center justify-center text-primary shrink-0">
-            <UserCheck className="w-4 h-4" />
+      <div className="sticky top-0 z-20 px-6 py-4 bg-card/85 backdrop-blur-xl border-b border-border/40 shrink-0">
+        <div className="p-4 rounded-[14px] border border-primary/20 bg-primary/5 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
+            <UserCheck className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[8px] font-bold text-primary tracking-widest leading-none">TERPILIH</p>
-            <h3 className="text-xs font-black text-text-primary truncate mt-0.5 leading-none">{selectedClient.nama}</h3>
+            <p className="text-[10px] font-bold text-primary tracking-widest mb-0.5">TERPILIH</p>
+            <h3 className="text-sm font-black text-text-primary truncate">{selectedClient.nama}</h3>
           </div>
-          <button onClick={() => setSelectedClient(null)} className="text-[9px] font-semibold text-text-muted hover:text-text-primary underline px-1.5 py-1">Ubah</button>
+          <button onClick={() => setSelectedClient(null)} className="text-[10px] font-bold text-text-muted hover:text-text-primary underline px-2 py-1">Ubah</button>
         </div>
       </div>
 
-      <div className="p-4 pb-20">
-        <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
-          <div className="mb-1">
-             <h2 className="text-[12px] font-black text-text-primary uppercase tracking-wider">Detail Order Baru</h2>
+      <div className="p-6 pb-28">
+        <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="mb-4">
+             <h2 className="text-xl font-black text-text-primary tracking-tight">Detail Order Baru</h2>
           </div>
           
           <div>
@@ -189,7 +189,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             />
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div>
               <input 
                 type="text" 
@@ -202,13 +202,13 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Tipe Tenor</label>
-                <div className="flex p-0.5 bg-muted rounded-md border border-border/50 h-8">
+                <div className="flex p-1 bg-muted rounded-xl border border-border/50">
                   {[ { id: 'hari', label: 'Harian' }, { id: 'bulan', label: 'Bulanan' } ].map((type) => (
                     <button
                       key={type.id}
                       type="button"
                       onClick={() => setForm({ ...form, tenorType: type.id, tenor: type.id === 'hari' ? '30' : '1' })}
-                      className={`flex-1 flex items-center justify-center py-1 rounded-md text-[10px] font-bold transition-all ${
+                      className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${
                         form.tenorType === type.id
                           ? 'bg-card text-text-primary shadow-sm'
                           : 'text-text-muted'
@@ -224,7 +224,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
                 <select 
                   value={form.tenor} 
                   onChange={e => setForm({...form, tenor: e.target.value})} 
-                  className="w-full h-8 px-2 bg-zinc-50 dark:bg-zinc-900 border border-border/50 outline-none rounded-md text-[11px] font-semibold text-text-primary"
+                  className={inputClass} 
                 >
                   <option value="" disabled>Pilih</option>
                   {form.tenorType === 'hari' ? (
@@ -237,23 +237,23 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             </div>
             
             {omset > 0 && (
-              <div className="flex items-center justify-between pt-2.5 border-t border-primary/20">
-                 <p className="text-[9px] font-extrabold text-text-muted uppercase tracking-wider">Estimasi Omset</p>
-                 <p className="text-sm font-black text-primary">{formatIDR(omset)}</p>
+              <div className="flex items-center justify-between pt-4 border-t border-primary/20">
+                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Estimasi Omset</p>
+                 <p className="text-lg font-black text-primary">{formatIDR(omset)}</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="sticky bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border/40 p-2 shrink-0 shadow-md z-30">
+      <div className="sticky bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border/40 p-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
          <button 
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmit}
-            className="w-full flex items-center justify-center gap-1.5 h-8.5 bg-primary hover:bg-primary/95 text-primary-foreground rounded-md font-bold text-[11px] uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
-            <Package className="w-3.5 h-3.5" />
+            <Package className="w-4 h-4" />
             {isSubmitting ? 'Menyimpan...' : 'Submit Repeat Order'}
           </button>
       </div>

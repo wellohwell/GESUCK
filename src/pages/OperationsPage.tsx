@@ -67,6 +67,7 @@ function getNormalizedClient(client: any) {
 
   return {
     ...client,
+    barang: client.produk || client.barang || '',
     orderStatus,
     currentStep,
     survey,
@@ -623,65 +624,63 @@ export default function OperationsPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              className="w-full h-full md:max-w-xl md:max-h-[82vh] bg-background border border-border-default md:rounded-xl flex flex-col overflow-hidden shadow-2xl relative"
+              className="w-full h-full md:max-w-2xl md:max-h-[85vh] bg-background border border-border-default md:rounded-[20px] flex flex-col overflow-hidden shadow-2xl relative"
             >
               {/* Sticky Top Header Section */}
-              <div className="sticky top-0 px-3.5 py-3 bg-card border-b border-border-default/60 flex items-center justify-between z-30 shrink-0 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setSelectedClient(null)} className="p-1.5 -ml-1.5 rounded hover:bg-secondary/60 text-text-primary transition-colors">
+              <div className="sticky top-0 px-4 py-4 bg-card border-b border-border-default/60 flex items-center justify-between z-30 shrink-0 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setSelectedClient(null)} className="p-2 -ml-2 rounded-full hover:bg-secondary/60 text-text-primary transition-colors">
                     <ArrowLeft className="w-4 h-4" />
                   </button>
                   <div className="text-left">
-                    <h3 className="text-xs font-black text-text-primary uppercase tracking-wide truncate max-w-[180px] md:max-w-xs">{normalizedClient.nama}</h3>
-                    <p className="text-[10px] font-semibold text-text-muted mt-0.5">{normalizedClient.nomor || '-'}</p>
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-wide truncate max-w-[180px] md:max-w-xs">{normalizedClient.nama}</h3>
+                    <p className="text-[11px] font-medium text-text-muted mt-0.5">{normalizedClient.nomor || '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 font-bold">
+                <div className="flex items-center gap-1.5 font-bold">
                   {normalizedClient.currentStep === 'survey' ? (
-                    <span className="text-[8px] uppercase px-2 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/10 font-bold">Survey Queue</span>
+                    <span className="text-[9px] uppercase px-2.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/10">Survey Queue</span>
                   ) : (
-                    <span className="text-[8px] uppercase px-2 py-0.5 rounded bg-sky-500/15 text-sky-500 border border-sky-500/10 font-bold">Warehouse Queue</span>
+                    <span className="text-[9px] uppercase px-2.5 py-0.5 rounded bg-sky-500/15 text-sky-500 border border-sky-500/10">Warehouse Queue</span>
                   )}
                 </div>
               </div>
 
               {/* Scrollable Container Area */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 bg-background pb-12">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-5 bg-background pb-8">
                 
                 {/* SECTION 1 — CUSTOMER INFORMATION */}
-                <div className="bg-card border border-border-default rounded-lg p-2.5 space-y-2 shadow-inner">
-                  <div className="flex items-center gap-1 border-b border-border-default/30 pb-1.5 mb-1">
+                <div className="bg-card border border-border-default rounded-xl p-4 space-y-3 shadow-inner">
+                  <div className="flex items-center gap-1 border-b border-border-default/30 pb-2 mb-2">
                     <ClipboardList className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted text-left">Customer Information</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted text-center">Customer Information</span>
                   </div>
                   
-                  <div className="space-y-2 text-left font-sans">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-[9px] font-extrabold uppercase text-text-muted tracking-wide block">Nama Konsumen</label>
-                        <p className="text-[11px] font-bold text-text-primary uppercase mt-0.5">{normalizedClient.nama || '-'}</p>
-                      </div>
-                      {normalizedClient.usaha && (
-                        <div>
-                          <label className="text-[9px] font-extrabold uppercase text-text-muted tracking-wide block">Nama Usaha</label>
-                          <p className="text-[11px] font-bold text-text-primary uppercase mt-0.5">{normalizedClient.usaha}</p>
-                        </div>
-                      )}
-                    </div>
+                  <div className="space-y-2.5 text-center font-sans">
                     <div>
-                      <label className="text-[9px] font-extrabold uppercase text-text-muted tracking-wide block">Alamat</label>
-                      <p className="text-[10.5px] font-semibold text-text-secondary leading-relaxed mt-0.5">{normalizedClient.alamat || '-'}</p>
+                      <label className="text-[10px] font-extrabold uppercase text-text-muted tracking-widest block">Nama Konsumen</label>
+                      <p className="text-sm font-bold text-text-primary uppercase mt-0.5">{normalizedClient.nama || '-'}</p>
+                    </div>
+                    {normalizedClient.usaha && (
+                      <div>
+                        <label className="text-[10px] font-extrabold uppercase text-text-muted tracking-widest block">Nama Usaha</label>
+                        <p className="text-sm font-bold text-text-primary uppercase mt-0.5">{normalizedClient.usaha}</p>
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-[10px] font-extrabold uppercase text-text-muted tracking-widest block">Alamat</label>
+                      <p className="text-xs font-semibold text-text-secondary leading-relaxed mt-0.5">{normalizedClient.alamat || '-'}</p>
                     </div>
                   </div>
 
                   {/* QUICK LINK CTAs */}
-                  <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-2">
                     {/* WhatsApp */}
                     <a
                       href={`https://wa.me/${formatWhatsApp(normalizedClient.nomor || '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1 h-8 bg-emerald-500 hover:bg-emerald-600 rounded-md text-[10.5px] font-bold text-white transition-all shadow-sm shrink-0"
+                      className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-xs font-bold text-white transition-all shadow-sm shrink-0"
                     >
                       <Phone className="w-3.5 h-3.5" /> WhatsApp
                     </a>
@@ -690,7 +689,7 @@ export default function OperationsPage() {
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((normalizedClient.usaha ? normalizedClient.usaha + ' ' : '') + (normalizedClient.alamat || ''))}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1 h-8 bg-primary rounded-md text-[10.5px] font-bold text-primary-foreground hover:bg-primary/95 transition-all shadow-sm shrink-0"
+                      className="flex items-center justify-center gap-1.5 py-2.5 bg-primary rounded-xl text-xs font-bold text-primary-foreground hover:bg-primary/95 transition-all shadow-sm shrink-0"
                     >
                       <MapPin className="w-3.5 h-3.5" /> Google Maps
                     </a>
@@ -698,21 +697,21 @@ export default function OperationsPage() {
                 </div>
 
                 {/* SECTION 2 — CURRENT ORDER */}
-                <div className="bg-card border border-border-default rounded-lg overflow-hidden shadow-inner">
+                <div className="bg-card border border-border-default rounded-xl overflow-hidden shadow-inner">
                   <button 
                     onClick={() => setIsCurrentOrderExpanded(!isCurrentOrderExpanded)}
-                    className="w-full px-3 py-2 bg-secondary/30 flex items-center justify-between text-left h-[44px]"
+                    className="w-full px-4 py-3 bg-secondary/30 flex items-center justify-between text-left"
                   >
-                    <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5">
                       <Package className="w-4 h-4 text-primary" />
-                      <div className="min-w-0">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted block leading-tight">Current Active Order</span>
-                        <p className="text-[11px] font-extrabold text-text-primary uppercase mt-0.5 truncate pr-2">
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted">Current Active Order</span>
+                        <p className="text-xs font-extrabold text-text-primary uppercase mt-0.5 truncate max-w-[200px]">
                           {normalizedClient.barang || 'Order Barang'}
                         </p>
                       </div>
                     </div>
-                    {isCurrentOrderExpanded ? <ChevronDown className="w-3.5 h-3.5 text-text-muted shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-text-muted shrink-0" />}
+                    {isCurrentOrderExpanded ? <ChevronDown className="w-4 h-4 text-text-muted" /> : <ChevronRight className="w-4 h-4 text-text-muted" />}
                   </button>
 
                   <AnimatePresence>
@@ -721,44 +720,47 @@ export default function OperationsPage() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-border-default/40 p-2.5 space-y-2 text-left text-[11px] text-text-secondary overflow-hidden font-semibold bg-card"
+                        className="border-t border-border-default/40 p-4 space-y-4 text-center text-xs text-text-secondary overflow-hidden font-medium bg-card"
                       >
-                        <div className="flex justify-between border-b border-border-default/20 pb-1.5">
-                          <span className="text-text-muted">Harga / Barang:</span>
-                          <span className="font-bold text-text-primary">{normalizedClient.hargaString || normalizedClient.barang || '-'}</span>
+                        <div className="flex justify-end mb-2">
+                          <button onClick={() => setIsCurrentOrderExpanded(false)} className="text-[10px] font-bold text-text-muted hover:text-text-primary">Tutup</button>
                         </div>
-                        <div className="flex justify-between border-b border-border-default/20 pb-1.5">
-                          <span className="text-text-muted">Angsuran / Tenor:</span>
-                          <span className="font-bold text-text-primary shadow-sm">
-                            {formatCurrency(normalizedClient.angsuran || 0)} <span className="text-[10px] text-text-muted font-normal">/ {normalizedClient.tenor} {normalizedClient.tenorType || 'hari'}</span>
+                        <div className="flex flex-col gap-0.5 items-center border-b border-border-default/20 pb-3">
+                          <span className="text-text-muted text-[9px] uppercase tracking-wide">Harga / Barang:</span>
+                          <span className="font-bold text-text-primary text-sm">{normalizedClient.hargaString || normalizedClient.barang || '-'}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 items-center border-b border-border-default/20 pb-3">
+                          <span className="text-text-muted text-[9px] uppercase tracking-wide">Angsuran / Tenor:</span>
+                          <span className="font-bold text-text-primary text-sm shadow-sm">
+                            {formatCurrency(normalizedClient.angsuran || 0)} <span className="text-[10px] text-text-muted">/ {normalizedClient.tenor} {normalizedClient.tenorType || 'hari'}</span>
                           </span>
                         </div>
-                        <div className="flex justify-between border-b border-border-default/20 pb-1.5">
-                          <span className="text-text-muted">Tanggal Pengajuan:</span>
-                          <span className="font-bold text-text-primary">
+                        <div className="flex flex-col gap-0.5 items-center border-b border-border-default/20 pb-3">
+                          <span className="text-text-muted text-[9px] uppercase tracking-wide">Tanggal Pengajuan:</span>
+                          <span className="font-bold text-text-primary text-sm">
                             {normalizedClient.createdAt ? (normalizedClient.createdAt.toDate ? normalizedClient.createdAt.toDate().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : new Date(normalizedClient.createdAt).toLocaleDateString()) : '-'}
                           </span>
                         </div>
                         {normalizedClient.orderStatus === 'completed' && (
-                          <div className="flex justify-between border-b border-border-default/20 pb-1.5">
-                            <span className="text-text-muted">Tanggal Terkirim:</span>
-                            <span className="font-bold text-emerald-500">
+                          <div className="flex flex-col gap-0.5 items-center border-b border-border-default/20 pb-3">
+                            <span className="text-text-muted text-[9px] uppercase tracking-wide">Tanggal Terkirim:</span>
+                            <span className="font-bold text-emerald-500 text-sm">
                               {normalizedClient.warehouse?.updatedAt ? (normalizedClient.warehouse.updatedAt.toDate ? normalizedClient.warehouse.updatedAt.toDate().toLocaleDateString('id-ID', {day: 'numeric', month: 'long'}) : new Date(normalizedClient.warehouse.updatedAt).toLocaleDateString()) : '-'}
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between">
-                          <span className="text-text-muted">Status Operasional:</span>
+                        <div className="flex flex-col gap-0.5 items-center">
+                          <span className="text-text-muted text-[9px] uppercase tracking-wide">Status Operasional:</span>
                           <span className={cn(
-                            "px-1.5 py-0.5 rounded text-[9px] font-black uppercase text-center",
+                            "px-2 py-0.5 rounded text-[10px] font-black uppercase text-center mx-auto",
                             normalizedClient.orderStatus === 'approved' ? "bg-sky-500/10 text-sky-400 border border-sky-500/20" :
                             normalizedClient.orderStatus === 'completed' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                             normalizedClient.orderStatus === 'pending' ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
                             normalizedClient.orderStatus === 'rejected' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                           )}>
-                            {normalizedClient.orderStatus === 'approved' ? 'Antrean Gudang' :
-                             normalizedClient.orderStatus === 'completed' ? 'Selesai' :
-                             normalizedClient.orderStatus === 'pending' ? 'Pending' :
+                             {normalizedClient.orderStatus === 'approved' ? 'Antrean Gudang' :
+                             normalizedClient.orderStatus === 'completed' ? 'Terkirim / Selesai' :
+                             normalizedClient.orderStatus === 'pending' ? 'Ditunda (Pending)' :
                              normalizedClient.orderStatus === 'rejected' ? 'Ditolak' : 'Proses Survey'}
                           </span>
                         </div>
@@ -768,21 +770,21 @@ export default function OperationsPage() {
                 </div>
 
                 {/* SECTION 3 — ORDER HISTORY */}
-                <div className="bg-card border border-border-default rounded-lg overflow-hidden shadow-inner">
+                <div className="bg-card border border-border-default rounded-xl overflow-hidden shadow-inner">
                   <button 
                     onClick={() => setIsOrderHistoryExpanded(!isOrderHistoryExpanded)}
-                    className="w-full px-3 py-2 bg-secondary/30 flex items-center justify-between text-left h-[44px]"
+                    className="w-full px-4 py-3 bg-secondary/30 flex items-center justify-between text-left"
                   >
-                    <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5">
                       <Database className="w-4 h-4 text-emerald-400" />
-                      <div className="min-w-0">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted block leading-tight">Order History</span>
-                        <p className="text-[11px] font-extrabold text-text-primary uppercase mt-0.5">
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted">Order History</span>
+                        <p className="text-xs font-extrabold text-text-primary uppercase mt-0.5">
                           {normalizedHistory.filter(h => h.id !== normalizedClient.id).length} Orders Found
                         </p>
                       </div>
                     </div>
-                    {isOrderHistoryExpanded ? <ChevronDown className="w-3.5 h-3.5 text-text-muted shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-text-muted shrink-0" />}
+                    {isOrderHistoryExpanded ? <ChevronDown className="w-4 h-4 text-text-muted" /> : <ChevronRight className="w-4 h-4 text-text-muted" />}
                   </button>
 
                   <AnimatePresence>
@@ -791,10 +793,10 @@ export default function OperationsPage() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-border-default/40 p-2.5 space-y-2 text-left overflow-hidden bg-card"
+                        className="border-t border-border-default/40 p-4 space-y-3 text-left overflow-hidden bg-card"
                       >
                         {normalizedHistory.filter(h => h.id !== normalizedClient.id).length === 0 ? (
-                          <div className="text-center py-2.5 text-[10.5px] text-text-muted font-medium">
+                          <div className="text-center py-4 text-xs text-text-muted font-medium">
                             Belum memiliki riwayat order terdahulu.
                           </div>
                         ) : (
@@ -802,23 +804,23 @@ export default function OperationsPage() {
                             .filter(h => h.id !== normalizedClient.id)
                             .sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
                             .map((order, idx) => (
-                              <div key={order.id || idx} className="p-2 bg-secondary/20 rounded border border-border-default/40 space-y-1.5">
-                                <div className="flex items-center justify-between gap-1">
-                                  <span className="text-[10.5px] font-bold text-text-primary uppercase truncate">{order.barang || 'Order Lain'}</span>
+                              <div key={order.id || idx} className="p-3 bg-secondary/20 rounded-lg border border-border-default/40 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-text-primary uppercase">{order.barang || 'Order Lain'}</span>
                                   <span className={cn(
-                                    "px-1 py-0.5 rounded text-[8px] font-black uppercase border shrink-0",
-                                    order.orderStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase border",
+                                    order.orderStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
                                   )}>
                                     {order.orderStatus === 'completed' ? 'Selesai' : 'Arsip'}
                                   </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-[10px] text-text-muted font-semibold">
+                                <div className="grid grid-cols-2 gap-2 text-[11px] text-text-muted font-semibold">
                                   <div>
-                                    <span className="block text-[8px] uppercase font-extrabold tracking-wider text-text-muted/65">Angsuran / Tenor</span>
+                                    <span className="block text-[9px] uppercase font-bold tracking-wider text-text-muted/65">Angsuran / Tenor</span>
                                     <span className="text-text-secondary">{formatCurrency(order.angsuran || 0)} / {order.tenor} {order.tenorType || 'hari'}</span>
                                   </div>
                                   <div>
-                                    <span className="block text-[8px] uppercase font-extrabold tracking-wider text-text-muted/65">Tanggal Order</span>
+                                    <span className="block text-[9px] uppercase font-bold tracking-wider text-text-muted/65">Tanggal Order</span>
                                     <span className="text-text-secondary">
                                       {order.createdAt ? (order.createdAt.toDate ? order.createdAt.toDate().toLocaleDateString('id-ID', {day: 'numeric', month: 'short'}) : new Date(order.createdAt).toLocaleDateString()) : '-'}
                                     </span>
@@ -833,36 +835,36 @@ export default function OperationsPage() {
                 </div>
 
                 {/* SECTION 4 — OPERATIONAL TIMELINE */}
-                <div className="bg-card border border-border-default rounded-lg p-2.5 space-y-2 shadow-inner">
-                  <div className="flex items-center gap-1 border-b border-border-default/30 pb-1.5 mb-1">
+                <div className="bg-card border border-border-default rounded-xl p-4 space-y-3 shadow-inner">
+                  <div className="flex items-center gap-1 border-b border-border-default/30 pb-2 mb-2">
                     <Clock className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted text-left">Operational Timeline</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted text-left">Operational Timeline</span>
                   </div>
 
-                  <div className="space-y-2.5 text-left">
+                  <div className="space-y-4 text-left">
                     {timelineEvents.map((event, i) => (
-                      <div key={i} className="flex gap-2.5 items-stretch">
+                      <div key={i} className="flex gap-3 items-stretch">
                         {/* Bullet Icon and vertical connection line */}
                         <div className="flex flex-col items-center shrink-0">
                           <div className={cn(
-                            "w-2.5 h-2.5 rounded-full border-2 border-background flex items-center justify-center shrink-0 mt-0.5 shadow-sm",
+                            "w-3 h-3 rounded-full border-2 border-background flex items-center justify-center shrink-0 mt-0.5 shadow-sm",
                             event.status === 'success' ? "bg-emerald-500" :
                             event.status === 'warning' ? "bg-amber-500" : "bg-red-500"
                           )} />
                           {i < timelineEvents.length - 1 && (
-                            <div className="w-[1.2px] bg-border-default/50 flex-1 my-1 min-h-[1.2rem]" />
+                            <div className="w-[1.5px] bg-border-default/50 flex-1 my-1.5 min-h-[1.5rem]" />
                           )}
                         </div>
                         
                         {/* Event Content Description */}
-                        <div className="flex-1 pb-1">
+                        <div className="flex-1 pb-2">
                           <div className="flex items-baseline justify-between gap-1">
-                            <h5 className="text-[11px] font-bold text-text-primary uppercase tracking-wide leading-tight">{event.title}</h5>
-                            <span className="text-[9px] text-text-muted font-bold tracking-tight shrink-0">{getRelativeTime(event.time)}</span>
+                            <h5 className="text-xs font-bold text-text-primary uppercase tracking-wide">{event.title}</h5>
+                            <span className="text-[10px] text-text-muted font-bold shrink-0">{getRelativeTime(event.time)}</span>
                           </div>
-                          <p className="text-[10.5px] text-text-secondary mt-0.5 font-semibold leading-snug">{event.desc}</p>
+                          <p className="text-[11px] text-text-secondary mt-0.5 font-medium">{event.desc}</p>
                           {event.note && (
-                            <p className="text-[9px] font-bold text-orange-500 bg-orange-500/5 border border-orange-500/10 px-2 py-1 rounded mt-1 leading-normal max-w-md">
+                            <p className="text-[10px] font-semibold text-orange-500 bg-orange-500/5 border border-orange-500/10 px-2.5 py-1.5 rounded-lg mt-1.5 leading-relaxed max-w-md">
                               Catatan: "{event.note}"
                             </p>
                           )}
@@ -873,34 +875,34 @@ export default function OperationsPage() {
                 </div>
 
                 {/* SECTION 5 — WORKFLOW ACTIONS */}
-                <div className="bg-card border border-border-default rounded-lg p-2.5 space-y-2 shadow-inner">
-                  <div className="flex items-center gap-1.5 border-b border-border-default/30 pb-1.5 mb-1">
+                <div className="bg-card border border-border-default rounded-xl p-4 space-y-3.5 shadow-inner">
+                  <div className="flex items-center gap-1.5 border-b border-border-default/30 pb-2 mb-1.5">
                     <UserCheck className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
                   </div>
                   
-                  <div className="flex gap-1.5 w-full">
+                  <div className="flex gap-2 w-full">
                     {normalizedClient.currentStep === 'survey' ? (
                       // Surveyor Controls
                       <>
                         <button 
                           onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' })}
                           disabled={isUpdating}
-                          className="flex-1 h-8 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 rounded-md text-[10.5px] font-black text-red-500 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                          className="flex-1 py-2.5 px-1 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 rounded-xl text-[11px] font-black text-red-500 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
                         >
                           <XCircle className="w-3.5 h-3.5 shrink-0" /> Reject
                         </button>
                         <button 
                           onClick={() => openNotePrompt({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' })}
                           disabled={isUpdating}
-                          className="flex-1 h-8 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-md text-[10.5px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                          className="flex-1 py-2.5 px-1 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-xl text-[11px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
                         >
                           <Clock className="w-3.5 h-3.5 shrink-0" /> Pending
                         </button>
                         <button 
                           onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
                           disabled={isUpdating}
-                          className="flex-1 h-8 px-2 bg-primary hover:bg-primary/95 text-primary-foreground rounded-md text-[10.5px] font-black transition-all flex items-center justify-center gap-1 whitespace-nowrap shadow-sm active:scale-95"
+                          className="flex-1 px-2 py-2.5 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1 whitespace-nowrap shadow-sm active:scale-95"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> ACC
                         </button>
@@ -911,14 +913,14 @@ export default function OperationsPage() {
                         <button 
                           onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse', 'pending_gudang-action')}
                           disabled={isUpdating}
-                          className="flex-1 h-8 px-2 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-md text-[10.5px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
+                          className="flex-1 py-2.5 px-2 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 rounded-xl text-[11px] font-black text-orange-400 transition-all flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
                         >
                           <Clock className="w-3.5 h-3.5 shrink-0" /> Pending Gudang
                         </button>
                         <button 
                           onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
                           disabled={isUpdating}
-                          className="flex-1 h-8 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md text-[10.5px] font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm active:scale-95"
+                          className="flex-1 py-2.5 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm active:scale-95"
                         >
                           <Truck className="w-3.5 h-3.5 shrink-0" /> Terkirim
                         </button>
@@ -942,15 +944,15 @@ export default function OperationsPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm bg-background border border-border-default rounded-xl p-4 shadow-2xl space-y-3"
+              className="w-full max-w-sm bg-background border border-border-default rounded-2xl p-6 shadow-2xl space-y-4"
             >
-               <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
-                    <ClipboardList className="w-4 h-4" />
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
+                    <ClipboardList className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-xs font-black text-text-primary uppercase tracking-tight leading-none">Keterangan Wajib</h3>
-                    <p className="text-[8px] font-black text-text-muted uppercase tracking-wider mt-1 block">
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-tight">Keterangan Wajib</h3>
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">
                       Lengkapi alasan: {pendingAction?.orderStatus === 'rejected' ? 'REJECT' : 'PENDING'}
                     </p>
                   </div>
@@ -961,21 +963,21 @@ export default function OperationsPage() {
                   placeholder="Tulis alasan, catatan, atau hambatan di lapangan..."
                   value={noteContent}
                   onChange={e => setNoteContent(e.target.value)}
-                  className="w-full h-20 bg-card border border-border-default rounded-lg p-2.5 text-[11px] text-text-primary outline-none focus:border-primary/50 resize-none font-semibold text-left leading-normal"
+                  className="w-full h-32 bg-card border border-border-default rounded-xl p-4 text-xs text-text-primary outline-none focus:border-primary/50 resize-none font-medium text-left leading-normal"
                />
 
                <div className="flex gap-2">
                   <button 
                     onClick={() => setShowNoteDialog(false)} 
                     disabled={isUpdating}
-                    className="flex-1 h-8 bg-secondary rounded-lg text-[11px] font-bold text-text-secondary transition-colors"
+                    className="flex-1 py-3 bg-secondary rounded-xl text-xs font-bold text-text-secondary transition-colors"
                   >
                     Batal
                   </button>
                   <button 
                     onClick={executeNoteAction} 
                     disabled={isUpdating || !noteContent.trim()} 
-                    className="flex-1 h-8 bg-primary text-primary-foreground hover:bg-primary/95 rounded-lg text-[11px] font-black transition-all disabled:opacity-50"
+                    className="flex-1 py-3 bg-primary text-primary-foreground hover:bg-primary/95 rounded-xl text-xs font-black transition-all disabled:opacity-50"
                   >
                     Simpan
                   </button>

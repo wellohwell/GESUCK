@@ -81,6 +81,7 @@ function getNormalizedClient(client: any) {
 
   return {
     ...client,
+    barang: client.produk || client.barang || '',
     orderStatus,
     currentStep,
     survey,
@@ -129,6 +130,54 @@ function canDeleteClient(client: any, profile: any) {
   return false;
 }
 
+function getTimelineEvents(client: any) {
+  if (!client) return [];
+  const events = [];
+  
+  if (client.createdAt) {
+    events.push({
+      title: 'Submit',
+      time: client.createdAt,
+      status: 'success'
+    });
+  }
+  
+  if (client.survey?.status && client.survey.status !== 'submitted') {
+    const isApproved = client.survey.status === 'approved';
+    const isPending = client.survey.status === 'pending';
+    const isRejected = client.survey.status === 'rejected';
+    
+    events.push({
+      title: isApproved ? 'ACC' : isPending ? 'Pending' : 'Reject',
+      time: client.survey.updatedAt || client.updatedAt,
+      status: isApproved ? 'success' : isPending ? 'warning' : 'danger'
+    });
+  }
+  
+  if (client.currentStep === 'warehouse' || client.orderStatus === 'completed') {
+    const isPending = client.orderStatus === 'approved' || client.status === 'pending_gudang';
+    events.push({
+      title: 'Gudang',
+      time: client.warehouse?.updatedAt || client.updatedAt,
+      status: isPending ? 'warning' : 'success'
+    });
+  }
+  
+  if (client.orderStatus === 'completed') {
+    events.push({
+      title: 'Terkirim',
+      time: client.warehouse?.updatedAt || client.updatedAt,
+      status: 'success'
+    });
+  }
+
+  return events.sort((a, b) => {
+    const tA = a.time?.toDate ? a.time.toDate() : new Date(a.time || 0);
+    const tB = b.time?.toDate ? b.time.toDate() : new Date(b.time || 0);
+    return tA.getTime() - tB.getTime();
+  });
+}
+
 export default function ClientPage() {
   const user = useCurrentUser();
   const { profile } = useUserProfile();
@@ -154,65 +203,6 @@ export default function ClientPage() {
 
   const normalizedClient = useMemo(() => getNormalizedClient(selectedClient), [selectedClient]);
   const normalizedHistory = useMemo(() => clientHistory.map(getNormalizedClient), [clientHistory]);
-
-  const timelineEvents = useMemo(() => {
-    if (!normalizedClient) return [];
-    const events = [];
-    
-    // 1. Submitted
-    if (normalizedClient.createdAt) {
-      events.push({
-        title: 'Submitted (Pengajuan)',
-        time: normalizedClient.createdAt,
-        desc: 'Data konsumen berhasil dibuat dan diajukan ke tim survei.',
-        status: 'success'
-      });
-    }
-    
-    // 2. Survey Status
-    if (normalizedClient.survey?.status && normalizedClient.survey.status !== 'submitted') {
-      const isApproved = normalizedClient.survey.status === 'approved';
-      const isPending = normalizedClient.survey.status === 'pending';
-      const isRejected = normalizedClient.survey.status === 'rejected';
-      
-      events.push({
-        title: isApproved ? 'Survey Disetujui (ACC)' : isPending ? 'Survey Ditunda (Pending)' : 'Survey Ditolak',
-        time: normalizedClient.survey.updatedAt || normalizedClient.updatedAt,
-        desc: `Diproses oleh ${normalizedClient.survey.updatedBy || 'Surveyor'}.`,
-        note: normalizedClient.survey.note,
-        status: isApproved ? 'success' : isPending ? 'warning' : 'danger'
-      });
-    }
-    
-    // 3. Warehouse Pending
-    if (normalizedClient.currentStep === 'warehouse' || normalizedClient.orderStatus === 'completed') {
-      const isPending = normalizedClient.orderStatus === 'approved' || normalizedClient.status === 'pending_gudang';
-      events.push({
-        title: 'Antrean Gudang & Pengiriman',
-        time: normalizedClient.warehouse?.updatedAt || normalizedClient.updatedAt,
-        desc: 'Data didelegasikan ke tim gudang untuk persiapan barang.',
-        note: normalizedClient.warehouse?.note,
-        status: isPending ? 'warning' : 'success'
-      });
-    }
-    
-    // 4. Delivered
-    if (normalizedClient.orderStatus === 'completed') {
-      events.push({
-        title: 'Pesanan Terkirim',
-        time: normalizedClient.warehouse?.updatedAt || normalizedClient.updatedAt,
-        desc: `Pesanan berhasil diserahkan ke konsumen oleh ${normalizedClient.warehouse?.updatedBy || 'Gudang'}.`,
-        status: 'success'
-      });
-    }
-
-    // Sort events by time
-    return events.sort((a, b) => {
-      const tA = a.time?.toDate ? a.time.toDate() : new Date(a.time || 0);
-      const tB = b.time?.toDate ? b.time.toDate() : new Date(b.time || 0);
-      return tA.getTime() - tB.getTime(); // Chronological order
-    });
-  }, [normalizedClient]);
 
   const isSurveyor = () => {
     const role = profile?.role?.toUpperCase();
@@ -414,18 +404,18 @@ export default function ClientPage() {
   }, [clients, searchQuery]);
 
   return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pb-32">
         {/* TOP BAR & SEARCH */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-2 pb-2 px-3">
-          <div className="max-w-3xl mx-auto space-y-2">
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-3 pb-3 px-3.5">
+          <div className="max-w-3xl mx-auto space-y-2.5">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
               <input 
                 type="text" 
                 placeholder="Cari nama, usaha, nomor..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-8.5 pr-3 bg-card border border-border/60 rounded-md text-xs font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-1 focus:ring-primary/20 transition-all shadow-sm h-9"
+                className="w-full pl-9 pr-4 py-2 bg-card border border-border/60 rounded-lg text-xs font-semibold text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm h-[40px]"
               />
             </div>
 
@@ -452,48 +442,7 @@ export default function ClientPage() {
               ))}
             </div>
 
-            {/* Floating Action Button */}
-            <div className="flex justify-end pr-1">
-              <div className="relative group">
-                <button 
-                  onClick={() => setShowAddMenu(!showAddMenu)}
-                  className="w-8 h-8 flex items-center justify-center bg-primary text-primary-foreground shadow-sm hover:scale-105 active:scale-95 transition-all rounded-lg"
-                >
-                  <Plus className={cn("w-4 h-4 stroke-[3] transition-transform", showAddMenu && "rotate-45")} />
-                </button>
-                
-                {/* Floating Menu */}
-                {showAddMenu && (
-                  <div className="absolute top-10 right-0 flex flex-col p-1 min-w-[180px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-xl animate-in zoom-in-95 duration-200">
-                     <button onClick={() => { 
-                       setShowAddMenu(false); 
-                       const id = openModal({ title: 'Konsumen Baru', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-lg transition-colors">
-                       <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                         <Plus className="w-3.5 h-3.5" />
-                       </div>
-                       <div className="text-left">
-                         <p className="text-[11px] font-bold leading-tight">Konsumen Baru</p>
-                         <p className="text-[9px] text-text-muted mt-0.5">Daftar & Request</p>
-                       </div>
-                     </button>
-                     <div className="h-[1px] w-full bg-border/40 my-0.5" />
-                     <button onClick={() => { 
-                       setShowAddMenu(false); 
-                       const id = openModal({ title: 'Repeat Order', content: <RepeatOrderContent onClose={() => closeModal(id)} />, size: 'xl' }); 
-                     }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-lg transition-colors">
-                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
-                         <HistoryIcon className="w-3.5 h-3.5" />
-                       </div>
-                       <div className="text-left">
-                         <p className="text-[11px] font-bold leading-tight">Repeat Order</p>
-                         <p className="text-[9px] text-text-muted mt-0.5">Order tambahan</p>
-                       </div>
-                     </button>
-                  </div>
-                )}
-              </div>
-            </div>
+
           </div>
         </div>
 
@@ -521,16 +470,14 @@ export default function ClientPage() {
                           return (
                             <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                   <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
-                                     {badge.label}
-                                   </span>
-                                </div>
+                                <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                                 <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                                <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                                  {badge.label}
+                                </span>
                                 <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                                 {canDeleteClient(client, profile) && (
                                   <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
@@ -553,16 +500,14 @@ export default function ClientPage() {
                           return (
                             <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                   <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                   <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
-                                     {badge.label}
-                                   </span>
-                                </div>
+                                <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                                 <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                                <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                                  {badge.label}
+                                </span>
                                 <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                                 {canDeleteClient(client, profile) && (
                                   <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
@@ -584,16 +529,14 @@ export default function ClientPage() {
                       return (
                         <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                               <h3 className="text-xs font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                               <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider", badge.color)}>
-                                 {badge.label}
-                               </span>
-                            </div>
+                            <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
                             <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                             <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
                           </div>
-                          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                          <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                            <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                              {badge.label}
+                            </span>
                             <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
                             {canDeleteClient(client, profile) && (
                               <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
@@ -676,19 +619,31 @@ export default function ClientPage() {
                         <div className="max-w-2xl mx-auto p-4 space-y-6">
                           
                           {/* 1. CUSTOMER INFORMATION */}
-                          <div className="font-sans px-1 space-y-3">
-                             <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight text-left">{normalizedClient.nama}</h3>
+                          <div className="font-sans px-1 space-y-3 relative">
+                             {/* CLOSE BUTTON AT THE TOP RIGHT FOR MOBILE */}
+                             <button 
+                               onClick={() => setSelectedClient(null)} 
+                               className="absolute top-0 right-0 p-2 bg-secondary/30 rounded-full hover:bg-secondary/50 text-text-muted hover:text-text-primary transition-colors md:hidden"
+                             >
+                                <X className="w-5 h-5" />
+                             </button>
+
+                             <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight text-center sm:text-left">{normalizedClient.nama}</h3>
                              <div className="space-y-1">
-                               <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
-                                  <Building2 className="w-3 h-3 text-text-muted shrink-0" />
-                                  {normalizedClient.usaha || '-'}
+                               <div className="flex flex-col sm:flex-row items-center sm:justify-start gap-1 sm:gap-2 text-xs font-semibold text-text-primary text-center sm:text-left">
+                                  <div className="flex items-center gap-1.5 opacity-80 justify-center">
+                                    <Building2 className="w-3 h-3 text-text-muted shrink-0" />
+                                    <span>{normalizedClient.usaha || '-'}</span>
+                                  </div>
                                </div>
-                               <div className="flex items-center gap-2 text-xs text-text-muted leading-tight">
-                                  <MapPin className="w-3 h-3 text-text-muted shrink-0" />
-                                  {normalizedClient.alamat || '-'}
+                               <div className="flex flex-col sm:flex-row items-center sm:justify-start gap-1 sm:gap-2 text-xs text-text-muted leading-tight text-center sm:text-left">
+                                  <div className="flex justify-center items-center gap-1.5">
+                                    <MapPin className="w-3 h-3 text-text-muted shrink-0" />
+                                    <span>{normalizedClient.alamat || '-'}</span>
+                                  </div>
                                </div>
                              </div>
-                             <div className="flex items-center gap-2 pt-2">
+                             <div className="flex items-center gap-2 pt-3">
                                 <a href={`https://wa.me/${formatWhatsApp(normalizedClient.nomor)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-xl font-bold text-[11px] transition-colors">
                                    <MessageCircle className="w-3.5 h-3.5" />
                                    WhatsApp
@@ -703,7 +658,7 @@ export default function ClientPage() {
                           {/* 2. CURRENT ACTIVE ORDER */}
                           <div className="space-y-2 text-left font-sans">
                             <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Order Aktif</h4>
-                            <details className="group border border-border/10 rounded-xl bg-card/30">
+                            <details className="group border border-border/10 rounded-xl bg-card/30" open>
                               <summary className="p-3 flex items-center justify-between cursor-pointer list-none text-xs font-bold text-text-primary">
                                 <div className="flex items-center gap-2 truncate">
                                   <span className="truncate">{normalizedClient.produk || '-'}</span>
@@ -717,6 +672,35 @@ export default function ClientPage() {
                                 <p>Angsuran: {formatCurrency(normalizedClient.angsuran)} / {normalizedClient.tenorType || '-'}</p>
                                 <p>Tenor: {normalizedClient.tenor || 0} {normalizedClient.tenorType || '-'}</p>
                                 <p>Dibuat: {normalizedClient.createdAt?.toDate ? normalizedClient.createdAt.toDate().toLocaleDateString('id-ID') : '-'}</p>
+                                
+                                <div className="mt-4 pt-3 border-t border-border/10">
+                                  <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-3">Timeline</h4>
+                                  <div className="flex w-full items-start mt-2">
+                                    {getTimelineEvents(normalizedClient).map((event, i, arr) => (
+                                      <div key={i} className="flex-1 flex flex-col items-center relative">
+                                        {i > 0 && (
+                                          <div className={cn("absolute top-[7px] left-0 w-1/2 h-[2px]", 
+                                            event.status === 'success' ? 'bg-emerald-500' : 'bg-zinc-700')} />
+                                        )}
+                                        {i < arr.length - 1 && (
+                                          <div className={cn("absolute top-[7px] right-0 w-1/2 h-[2px]", 
+                                            arr[i+1]?.status === 'success' ? 'bg-emerald-500' : 'bg-zinc-700')} />
+                                        )}
+                                        <div className="w-full flex justify-center items-center h-4 relative z-10">
+                                          <div className={cn("w-2 h-2 rounded-full outline outline-[2px] outline-card", 
+                                             event.status === 'success' ? 'bg-emerald-500' :
+                                             event.status === 'warning' ? 'bg-orange-500' :
+                                             'bg-zinc-600'
+                                          )} />
+                                        </div>
+                                        <div className="text-center w-full mt-1 px-0.5">
+                                           <p className="text-[9px] text-text-primary leading-tight font-bold break-words">{event.title}</p>
+                                           <p className="text-[8px] text-text-muted mt-0.5">{getRelativeTime(event.time)}</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
                             </details>
                           </div>
@@ -731,55 +715,58 @@ export default function ClientPage() {
                                         <p className="text-xs font-bold text-text-primary">{order.produk}</p>
                                         <p className="text-[10px] text-text-muted mt-0.5">{formatCurrency(order.omset)}</p>
                                      </div>
-                                      <span className={cn("text-[8px] px-2 py-0.5 rounded-lg uppercase font-bold text-right bg-emerald-500/10 text-emerald-500")}>
-                                        {order.orderStatus === 'completed' ? 'Selesai' : 'Ongoing'}
-                                      </span>
+                                      <ChevronRight className="w-4 h-4 text-text-muted group-open:rotate-90 transition-transform" />
                                    </summary>
                                    <div className="px-4 pb-3 pt-1 border-t border-border/10 text-xs text-text-muted space-y-1">
-                                       <p>Angsuran: {formatCurrency(order.angsuran)}</p>
+                                       <p>Status: {getStatusBadgeProps(order.orderStatus, order.currentStep).label}</p>
+                                       <p>Angsuran: {formatCurrency(order.angsuran)} / {order.tenorType || '-'}</p>
                                        <p>Tenor: {order.tenor} {order.tenorType}</p>
-                                       <p>Tanggal: {order.updatedAt?.toDate ? order.updatedAt.toDate().toLocaleDateString('id-ID') : '-'}</p>
+                                       <p>Dibuat: {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('id-ID') : '-'}</p>
+                                       
+                                       <div className="mt-4 pt-3 border-t border-border/10">
+                                         <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-3">Timeline</h4>
+                                         <div className="flex w-full justify-between items-start mt-2 relative">
+
+                                           {getTimelineEvents(order).map((event, i, arr) => (
+                                             <div key={i} className="flex-1 flex flex-col items-center relative z-10">
+                                                {i > 0 && (<div className={cn("absolute top-[7px] left-0 w-1/2 h-[2px]", event.status === 'success' ? 'bg-emerald-500' : 'bg-zinc-700')} />)}
+                                                {i < arr.length - 1 && (<div className={cn("absolute top-[7px] right-0 w-1/2 h-[2px]", arr[i+1]?.status === 'success' ? 'bg-emerald-500' : 'bg-zinc-700')} />)}
+                                                <div className="w-full flex justify-center items-center h-4 relative z-10">
+                                                  <div className={cn("w-2 h-2 rounded-full outline outline-[2px] outline-card", 
+                                                     event.status === 'success' ? 'bg-emerald-500' :
+                                                     event.status === 'warning' ? 'bg-orange-500' :
+                                                     'bg-zinc-600'
+                                                  )} />
+                                                </div>
+                                                <div className="text-center w-full mt-1 px-0.5">
+                                                   <p className="text-[9px] text-text-primary leading-tight font-bold break-words">{event.title}</p>
+                                                   <p className="text-[8px] text-text-muted mt-0.5">{getRelativeTime(event.time)}</p>
+                                                </div>
+                                             </div>
+                                           ))}
+                                         </div>
+                                       </div>
                                    </div>
                                  </details>
                                ))}
                           </div>
 
-                          {/* 4. TIMELINE */}
-                          <div className="space-y-2 text-left font-sans">
-                             <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Timeline</h4>
-                             <div className="space-y-3 pl-1 pt-1">
-                               {timelineEvents.map((event, i) => (
-                                 <div key={i} className="flex gap-3">
-                                    <div className={cn("w-1.5 h-1.5 rounded-full mt-1.5 shrink-0", 
-                                       event.status === 'success' ? 'bg-emerald-500' :
-                                       event.status === 'warning' ? 'bg-orange-500' :
-                                       'bg-zinc-300'
-                                    )} />
-                                    <div>
-                                       <p className="text-xs font-bold text-text-primary leading-tight">{event.title}</p>
-                                       <p className="text-[10px] text-text-muted mt-0.5">{getRelativeTime(event.time)}</p>
-                                    </div>
-                                 </div>
-                               ))}
-                             </div>
-                          </div>
-
                           {/* 5. WORKFLOW ACTIONS */}
                           {canAction() && normalizedClient.stage === 'pipeline' && (
-                            <div className="border border-border/10 bg-card rounded-lg p-2.5 space-y-2 shadow-inner">
-                              <div className="flex items-center gap-1.5 border-b border-border/10 pb-1 mb-1">
+                            <div className="border border-border/10 bg-card rounded-xl p-4 space-y-3.5 shadow-inner">
+                              <div className="flex items-center gap-1.5 border-b border-border/10 pb-2 mb-1.5">
                                 <UserCheck className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-[9px] font-extrabold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted text-left">Workflow Actions</span>
                               </div>
                               
                               <div className="w-full">
                                 {normalizedClient.currentStep === 'survey' ? (
                                   isSurveyor() ? (
-                                    <div className="flex gap-1.5">
+                                    <div className="flex gap-2">
                                       <button 
                                         onClick={() => handleUpdateStatus(normalizedClient.id, 'pipeline', 'approved', 'warehouse')}
                                         disabled={isUpdating}
-                                        className="flex-1 h-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 py-2.5 px-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                                         ACC
@@ -787,7 +774,7 @@ export default function ClientPage() {
                                       <button 
                                         onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'pending', currentStep: 'done' }); setShowNoteDialog(true); }}
                                         disabled={isUpdating}
-                                        className="flex-1 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 py-2.5 px-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <Clock className="w-3.5 h-3.5 shrink-0" />
                                         Pending
@@ -795,24 +782,24 @@ export default function ClientPage() {
                                       <button 
                                         onClick={() => { setPendingAction({ stage: 'arsip', orderStatus: 'rejected', currentStep: 'done' }); setShowNoteDialog(true); }}
                                         disabled={isUpdating}
-                                        className="flex-1 h-8 bg-red-500 hover:bg-red-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
+                                        className="flex-1 py-2.5 px-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 shrink-0"
                                       >
                                         <XCircle className="w-3.5 h-3.5 shrink-0" />
                                         Tolak
                                       </button>
                                     </div>
-                                  ) : <p className="text-[10px] text-text-muted text-center py-1 font-bold uppercase tracking-wider">Menunggu tindakan surveyor</p>
+                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu tindakan surveyor</p>
                                 ) : normalizedClient.currentStep === 'warehouse' ? (
                                   isGudang() ? (
                                      <button 
                                       onClick={() => handleUpdateStatus(normalizedClient.id, 'client', 'completed', 'done')}
                                       disabled={isUpdating}
-                                      className="flex items-center justify-center gap-1.5 w-full h-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                                      className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95"
                                     >
-                                      <Truck className="w-3.5 h-3.5" />
+                                      <Truck className="w-4 h-4" />
                                       Tandai Sudah Terkirim
                                     </button>
-                                  ) : <p className="text-[10px] text-text-muted text-center py-1 font-bold uppercase tracking-wider">Menunggu proses gudang</p>
+                                  ) : <p className="text-xs text-text-muted text-center py-2">Menunggu proses gudang</p>
                                 ) : null}
                               </div>
                             </div>
@@ -835,15 +822,15 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-xl p-3.5 shadow-2xl"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl"
               >
-                 <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-md bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0">
-                      <Edit className="w-4 h-4" />
+                 <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                      <Edit className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-black text-text-primary uppercase tracking-wider">Keterangan Wajib</h3>
-                      <p className="text-[8px] font-extrabold text-text-muted uppercase tracking-wider leading-none mt-0.5">Alasan Status: {pendingAction?.orderStatus?.toUpperCase()}</p>
+                      <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight">Keterangan Wajib</h3>
+                      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Alasan Status: {pendingAction?.orderStatus?.toUpperCase()}</p>
                     </div>
                  </div>
                  <textarea 
@@ -851,11 +838,11 @@ export default function ClientPage() {
                     placeholder="Tulis alasan atau catatan operasional di sini..."
                     value={noteContent}
                     onChange={e => setNoteContent(e.target.value)}
-                    className="w-full h-20 bg-card border border-border/50 rounded-md p-2 text-xs text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-2.5"
+                    className="w-full h-32 bg-card border border-border/50 rounded-[10px] p-4 text-sm text-text-primary outline-none focus:border-primary/50 resize-none font-medium mb-4"
                  />
                  <div className="flex gap-2">
-                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 h-8 bg-secondary/50 rounded-md text-[10px] font-bold text-text-primary hover:bg-secondary transition-colors">Batal</button>
-                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 h-8 bg-primary rounded-md text-[10px] font-bold text-primary-foreground hover:bg-primary/95 disabled:opacity-50">Simpan</button>
+                    <button onClick={() => setShowNoteDialog(false)} className="flex-1 py-3 bg-secondary/50 rounded-xl text-xs font-bold text-text-primary hover:bg-secondary transition-colors active:scale-95">Batal</button>
+                    <button onClick={() => handleUpdateStatus(selectedClient.id, pendingAction.stage, pendingAction.orderStatus, pendingAction.currentStep, noteContent)} disabled={isUpdating || !noteContent.trim()} className="flex-1 py-3 bg-primary rounded-xl text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-sm transition-all active:scale-95">Simpan</button>
                  </div>
               </motion.div>
             </div>
@@ -870,36 +857,36 @@ export default function ClientPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-sm bg-background border border-border/50 rounded-xl p-3.5 shadow-2xl relative overflow-hidden"
+                className="w-full max-w-sm bg-background border border-border/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
               >
                 {/* Background glow for delete warning */}
                 <div className="absolute -top-12 -left-12 w-24 h-24 bg-destructive/10 blur-3xl rounded-full pointer-events-none" />
                 
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <div className="w-7 h-7 rounded-md bg-destructive/10 flex items-center justify-center text-destructive shrink-0">
-                    <Trash2 className="w-4 h-4" />
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive">
+                    <Trash2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black text-text-primary uppercase tracking-wider">Konfirmasi Hapus</h3>
-                    <p className="text-[8px] font-extrabold text-text-muted uppercase tracking-widest mt-0.5">Hapus Data Operasional</p>
+                    <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight">Konfirmasi Hapus</h3>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Hapus Data Operasional</p>
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-3 relative z-10">
-                  <p className="text-[11px] text-text-secondary leading-relaxed text-left">
-                    Apakah Anda yakin ingin menghapus data konsumen <strong className="text-text-primary uppercase">{clientToDelete.nama}</strong>? Tindakan ini permanen.
+                <div className="space-y-3 mb-6 relative z-10">
+                  <p className="text-xs text-text-secondary leading-relaxed text-left">
+                    Apakah Anda yakin ingin menghapus data konsumen <strong className="text-text-primary uppercase">{clientToDelete.nama}</strong>? Tindakan ini permanen dan tidak dapat dibatalkan.
                   </p>
-                  <div className="p-2 bg-secondary/30 rounded-lg border border-border/30 text-left">
-                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-wider mb-0.5">Detail Dokumen:</p>
-                    <p className="text-[11px] font-semibold text-text-primary truncate">{clientToDelete.nama} • {clientToDelete.usaha || 'Personal'}</p>
-                    <p className="text-[9px] font-medium text-text-muted truncate mt-0.5">{clientToDelete.alamat}</p>
+                  <div className="p-3 bg-secondary/30 rounded-xl border border-border/30 text-left">
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Detail Dokumen:</p>
+                    <p className="text-xs font-semibold text-text-primary truncate">{clientToDelete.nama} • {clientToDelete.usaha || 'Personal'}</p>
+                    <p className="text-[10px] font-medium text-text-muted truncate mt-0.5">{clientToDelete.alamat}</p>
                   </div>
                 </div>
 
                 <div className="flex gap-2 relative z-10">
                   <button 
                     onClick={() => setClientToDelete(null)} 
-                    className="flex-1 h-8 bg-secondary hover:bg-secondary/80 rounded-md text-[10px] font-bold text-text-primary transition-colors"
+                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-xl text-xs font-bold text-text-primary transition-colors active:scale-95"
                   >
                     Batal
                   </button>
@@ -917,7 +904,7 @@ export default function ClientPage() {
                         toast.error("Gagal menghapus data");
                       }
                     }} 
-                    className="flex-1 h-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-[10px] font-bold transition-colors"
+                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                   >
                     Hapus
                   </button>
@@ -926,6 +913,49 @@ export default function ClientPage() {
             </div>
           )}
         </AnimatePresence>
+
+        {/* Floating Action Button (FAB) */}
+        <div className="fixed bottom-24 right-6 left-auto md:bottom-8 md:right-8 z-[90]" style={{ right: '1.5rem', left: 'auto' }}>
+          <div className="relative">
+            <button 
+              onClick={() => setShowAddMenu(!showAddMenu)}
+              className="w-12 h-12 flex items-center justify-center bg-primary text-primary-foreground shadow-xl hover:scale-110 active:scale-95 transition-all rounded-full"
+            >
+              <Plus className={cn("w-5 h-5 stroke-[3.5] transition-transform duration-300", showAddMenu && "rotate-45")} />
+            </button>
+            
+            {/* Floating Menu (Expands Upwards) */}
+            {showAddMenu && (
+              <div className="absolute bottom-14 right-0 flex flex-col p-1 min-w-[180px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-2xl animate-in slide-in-from-bottom-2 fade-in duration-200">
+                 <button onClick={() => { 
+                   setShowAddMenu(false); 
+                   const id = openModal({ title: 'Konsumen Baru', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
+                 }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
+                   <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                     <Plus className="w-3.5 h-3.5" />
+                   </div>
+                   <div className="text-left">
+                     <p className="text-[11px] font-bold leading-tight">Konsumen Baru</p>
+                     <p className="text-[9px] text-text-muted mt-0.5">Daftar & Request</p>
+                   </div>
+                 </button>
+                 <div className="h-[1px] w-full bg-border/40 my-0.5" />
+                 <button onClick={() => { 
+                   setShowAddMenu(false); 
+                   const id = openModal({ title: 'Repeat Order', content: <RepeatOrderContent onClose={() => closeModal(id)} />, size: 'xl' }); 
+                 }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
+                   <div className="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                     <HistoryIcon className="w-3.5 h-3.5" />
+                   </div>
+                   <div className="text-left">
+                     <p className="text-[11px] font-bold leading-tight">Repeat Order</p>
+                     <p className="text-[9px] text-text-muted mt-0.5">Order tambahan</p>
+                   </div>
+                 </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Modal Dialogs are handled globally */}
       </div>

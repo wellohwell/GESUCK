@@ -40,7 +40,7 @@ import Report from "./Report";
 import { TambahRencanaModal } from "../features/market-plans/modals/TambahRencanaModal";
 import { PlanItem } from "../features/market-plans/components/PlanItem";
 import { SharedMarketPlanRenderer } from "../features/market-plans/components/SharedMarketPlanRenderer";
-import { MarketTemperature } from "../features/market-plans/components/MarketTemperature";
+import { MarketCoverage } from "../features/market-plans/components/MarketCoverage";
 
 dayjs.extend(dayOfYear);
 dayjs.locale("id");
@@ -424,83 +424,12 @@ export default function MarketPlans({
 
   const myPlan = plans.find((p) => p.userId === auth.currentUser?.uid);
 
-  const marketTemperature = useMemo(() => {
-    if (allPlans.length < 5) return { hot: [], cold: [], isLowData: true };
-
-    const now = dayjs();
-    const scores: Record<string, { 
-      score: number; 
-      name: string; 
-      city: string; 
-      currentWeekVisits: number; 
-      prevWeekVisits: number;
-      totalVisits: number;
-    }> = {};
-
-    allPlans.forEach((plan) => {
-      const planDate = dayjs(plan.dayStart);
-      const diffDays = Math.abs(now.diff(planDate, 'day'));
-      
-      let weight = 0.2;
-      if (diffDays === 0) weight = 1.0;
-      else if (diffDays <= 7) weight = 0.8;
-      else if (diffDays <= 30) weight = 0.5;
-
-      const key = plan.marketName;
-      if (!scores[key]) {
-        scores[key] = { 
-          score: 0, 
-          name: plan.marketName, 
-          city: plan.city, 
-          currentWeekVisits: 0, 
-          prevWeekVisits: 0,
-          totalVisits: 0 
-        };
-      }
-      
-      scores[key].score += weight;
-      scores[key].totalVisits += 1;
-
-      // For trends: compare this week (0-7 days) with last week (8-14 days)
-      if (diffDays <= 7) {
-        scores[key].currentWeekVisits += 1;
-      } else if (diffDays > 7 && diffDays <= 14) {
-        scores[key].prevWeekVisits += 1;
-      }
-    });
-
-    const sortedByScore = Object.values(scores).sort((a, b) => b.score - a.score);
-    const hot = sortedByScore.slice(0, 4).map(m => ({
-      ...m,
-      trend: m.currentWeekVisits > m.prevWeekVisits ? 'up' : m.currentWeekVisits < m.prevWeekVisits ? 'down' : 'stable'
-    }));
-
-    const hotNames = new Set(hot.map(h => h.name));
-    
-    const allKnownMarketNames = markets.map(m => m.nama_pasar);
-    const visitedMarketNames = new Set(Object.keys(scores));
-    
-    const unvisitedMarkets = allKnownMarketNames
-      .filter(name => !visitedMarketNames.has(name) && !hotNames.has(name))
-      .map(name => ({ name, score: 0, totalVisits: 0, status: 'NO ACTIVITY' }));
-
-    const visitedButNotHot = sortedByScore
-      .filter(m => !hotNames.has(m.name))
-      .sort((a, b) => a.score - b.score)
-      .map(m => ({ ...m, status: 'LOW ACTIVITY' }));
-
-    const cold = [...visitedButNotHot, ...unvisitedMarkets].slice(0, 4);
-
-    return { hot, cold, isLowData: false };
-  }, [allPlans, markets]);
-
   if (activeTab === 'laporan') {
     return (
       <Report 
         onBack={() => setActiveTab('plans')} 
         computedPlans={plans}
         computedUserMap={userMap}
-        marketTemperature={marketTemperature}
         pendingUsersCount={pendingUsersCount}
         pendingUsersList={pendingUsersList}
       />
@@ -833,14 +762,7 @@ export default function MarketPlans({
             {activeDate.fullDate}
           </p>
 
-          <div className="flex flex-col items-center md:items-start gap-1.5 mb-2">
-             <div className="h-px w-8 bg-zinc-200 dark:bg-card/10" />
-             <h2 className="text-[8px] md:text-[10px] font-black text-zinc-400 dark:text-white/20 uppercase tracking-[0.3em] md:tracking-[0.4em]">
-               MARKET TEMPERATURE
-             </h2>
-          </div>
-
-          <MarketTemperature marketTemperature={marketTemperature} />
+          <MarketCoverage markets={markets} allPlans={allPlans} />
           </section>
 
           {/* Live List & Footer */}

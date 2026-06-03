@@ -1,6 +1,5 @@
 import React from 'react';
 import { PlanItem } from './PlanItem';
-import { MarketTemperature } from './MarketTemperature';
 import { PendingIndicator } from './PendingIndicator';
 import { Users } from 'lucide-react';
 
@@ -11,7 +10,6 @@ interface Props {
   actualIsAdmin: boolean;
   handleDelete: (e: React.MouseEvent, id: string) => void;
   loading: boolean;
-  marketTemperature?: any;
   pendingUsersCount?: number;
   pendingUsersList?: any[];
   showPendingTooltip?: boolean;
@@ -28,7 +26,6 @@ export function SharedMarketPlanRenderer({
   actualIsAdmin,
   handleDelete,
   loading,
-  marketTemperature,
   pendingUsersCount = 0,
   pendingUsersList = [],
   showPendingTooltip = false,
@@ -39,10 +36,6 @@ export function SharedMarketPlanRenderer({
 }: Props) {
   return (
     <div className="flex flex-col gap-4">
-      {marketTemperature && (
-        <MarketTemperature marketTemperature={marketTemperature} />
-      )}
-
       <div className="flex flex-col">
         {/* Rencana Kunjungan Header with Pending Indicator */}
         {!isReportView && (

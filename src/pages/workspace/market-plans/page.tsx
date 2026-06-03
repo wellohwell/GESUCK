@@ -24,6 +24,7 @@ import { ROLES } from "../../../config/roles";
 import { ActionButton } from "../../../components/ui/buttons";
 import { MasterDataView } from "../../admin/Master";
 import { PlanItem } from "../../../features/market-plans/components/PlanItem";
+import { MarketCoverage } from "../../../features/market-plans/components/MarketCoverage";
 import { motion } from "motion/react";
 
 export default function MarketPlansPage() {
@@ -103,47 +104,6 @@ export default function MarketPlansPage() {
     return plans.some(p => p.userId === currentUserId);
   }, [plans]);
 
-  const marketTemperature = useMemo(() => {
-    if (allPlans.length < 5) return { hot: [], cold: [], isLowData: true };
-    const now = dayjs();
-    const scores: Record<string, any> = {};
-
-    allPlans.forEach((plan) => {
-      const planDate = dayjs(plan.dayStart);
-      const diffDays = Math.abs(now.diff(planDate, 'day'));
-      let weight = 0.2;
-      if (diffDays === 0) weight = 1.0;
-      else if (diffDays <= 7) weight = 0.8;
-      else if (diffDays <= 30) weight = 0.5;
-
-      const key = plan.marketName;
-      if (!scores[key]) {
-        scores[key] = { score: 0, name: plan.marketName, currentWeekVisits: 0, prevWeekVisits: 0 };
-      }
-      scores[key].score += weight;
-      if (diffDays <= 7) scores[key].currentWeekVisits += 1;
-      else if (diffDays > 7 && diffDays <= 14) scores[key].prevWeekVisits += 1;
-    });
-
-    const sorted = Object.values(scores).sort((a: any, b: any) => b.score - a.score);
-    const hot = sorted.slice(0, 4).map((m: any) => ({
-      ...m,
-      trend: m.currentWeekVisits > m.prevWeekVisits ? 'up' : m.currentWeekVisits < m.prevWeekVisits ? 'down' : 'stable'
-    }));
-
-    const hotNames = new Set(hot.map((h: any) => h.name));
-    const cold = sorted
-      .filter((m: any) => !hotNames.has(m.name))
-      .reverse()
-      .slice(0, 4)
-      .map((m: any) => ({
-        ...m,
-        trend: m.currentWeekVisits > m.prevWeekVisits ? 'up' : m.currentWeekVisits < m.prevWeekVisits ? 'down' : 'stable'
-      }));
-
-    return { hot, cold, isLowData: false };
-  }, [allPlans]);
-
   const { openConfirm } = useModal();
 
   const handleDeletePlan = async (e: React.MouseEvent, id: string) => {
@@ -187,61 +147,7 @@ export default function MarketPlansPage() {
                 </p>
               </div>
 
-              {/* Market Temperature */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-3 px-1">
-                  <div className="h-[1px] flex-1 bg-white/[0.05]" />
-                  <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.5em] flex items-center gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                    Market Temperature
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  </h2>
-                  <div className="h-[1px] flex-1 bg-white/[0.05]" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 py-3 px-1">
-                  {marketTemperature.isLowData ? (
-                    <div className="col-span-2 py-6 text-center opacity-30 text-[8px] font-black uppercase tracking-widest">
-                      CALLECTING DATA...
-                    </div>
-                  ) : (
-                    <>
-                      <div className="pr-1.5 flex flex-col items-stretch text-left">
-                        <div className="flex flex-col items-start gap-0.5 mb-3">
-                          <span className="text-sm leading-tight">🔥</span>
-                          <p className="text-[7.5px] text-muted-foreground/40 font-bold uppercase tracking-wider leading-none text-left">Paling Sering Dipilih</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          {marketTemperature.hot.map((m: any, idx: number) => (
-                            <div key={idx} className="flex items-center justify-between gap-1 group/item w-full">
-                              <p className="text-[9px] font-bold text-foreground/80 truncate leading-none text-left">{toTitleCase(m.name)}</p>
-                              <span className={cn("text-[8px] font-black transition-transform group-hover/item:scale-110", m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-zinc-500")}>
-                                {m.trend === 'up' ? "↑" : m.trend === 'down' ? "↓" : "→"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="pl-2 flex flex-col items-stretch text-right">
-                        <div className="flex flex-col items-end gap-0.5 mb-3">
-                          <span className="text-sm leading-tight text-right">❄️</span>
-                          <p className="text-[7.5px] text-muted-foreground/40 font-bold uppercase tracking-wider leading-none text-right">Jarang Terjangkau</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          {marketTemperature.cold.map((m: any, idx: number) => (
-                            <div key={idx} className="flex items-center justify-between gap-1 group/item w-full">
-                              <span className={cn("text-[8px] font-black transition-transform group-hover/item:scale-110", m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-zinc-500")}>
-                                {m.trend === 'up' ? "↑" : m.trend === 'down' ? "↓" : "→"}
-                              </span>
-                              <p className="text-[9px] font-bold text-foreground/60 truncate leading-none text-right">{toTitleCase(m.name)}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+              <MarketCoverage markets={markets} allPlans={allPlans} />
             </section>
 
             {/* Right Section: Plans List */}

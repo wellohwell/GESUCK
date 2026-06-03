@@ -459,12 +459,8 @@ export function subscribeMarketPlans(date: string, callback: (plans: any[]) => v
 }
 
 export function subscribeAllMarketPlans(callback: (plans: any[]) => void, branchId?: string | null) {
-  let q;
-  if (branchId) {
-    q = query(collection(db, "market_plans"), where("branchId", "==", branchId));
-  } else {
-    q = query(collection(db, "market_plans"));
-  }
+  // Let's get all plans for calculating overall coverage, or you can add OR logic if firestore supported it easily. Let's just fetch all for now to handle legacy data without branchId.
+  const q = query(collection(db, "market_plans"));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {

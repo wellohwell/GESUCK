@@ -27,13 +27,13 @@ export function BottomNavbar() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 z-[100] px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pointer-events-none flex justify-center md:hidden" 
+      className="fixed bottom-0 left-0 right-0 z-[100] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pointer-events-none flex justify-center md:hidden" 
       id="global-bottom-nav"
     >
       <nav 
         className={cn(
-          "w-fit mx-auto px-1.5 py-1 pointer-events-auto flex items-center justify-center gap-1 rounded-xl overflow-hidden h-[52px]",
-          "bg-card/95 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/20"
+          "w-fit mx-auto px-1 py-1 pointer-events-auto flex items-center justify-center gap-0.5 rounded-full overflow-hidden",
+          "bg-card/90 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/20"
         )}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -53,9 +53,9 @@ export function BottomNavbar() {
                 <Link
                   to={item.route}
                   className={cn(
-                    'relative flex items-center justify-center transition-all h-[42px] rounded-lg z-10 group tap-highlight-transparent overflow-hidden',
+                    'relative flex items-center justify-center transition-all h-8 rounded-full z-10 group tap-highlight-transparent overflow-hidden',
                     'focus:outline-none active:scale-[0.96]',
-                    isActive ? 'px-3' : 'w-[42px]'
+                    isActive ? 'px-3' : 'w-9'
                   )}
                   aria-label={item.label}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -63,7 +63,7 @@ export function BottomNavbar() {
                   {isActive && (
                     <motion.div
                        layoutId="active-pill"
-                       className="absolute inset-0 bg-[#C6FF00] rounded-lg"
+                       className="absolute inset-0 bg-[#C6FF00] rounded-full"
                        initial={false}
                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
@@ -71,9 +71,9 @@ export function BottomNavbar() {
                   
                   <div className="relative z-10 flex items-center justify-center gap-1.5 px-0.5">
                     <Icon 
-                      strokeWidth={isActive ? 2.5 : 2}
+                      strokeWidth={isActive ? 3 : 2}
                       className={cn(
-                        'h-4.5 w-4.5 transition-all duration-300',
+                        'h-3.5 w-3.5 transition-all duration-300',
                         isActive 
                           ? 'text-black' 
                           : 'text-muted-foreground group-hover:text-foreground'
@@ -86,7 +86,7 @@ export function BottomNavbar() {
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-[9px] font-black text-black whitespace-nowrap overflow-hidden uppercase tracking-wider"
+                        className="text-[10px] font-black text-black whitespace-nowrap overflow-hidden"
                       >
                         {item.label}
                       </motion.span>
