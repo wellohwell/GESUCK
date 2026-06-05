@@ -3,10 +3,12 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/config";
 import { motion } from "motion/react";
 import { toast } from "../hooks/use-toast";
+import { AlertTriangle, ExternalLink } from "lucide-react";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -19,6 +21,7 @@ export default function Login() {
     if (loading) return;
     try {
       setLoading(true);
+      setAuthError(null);
       await signInWithPopup(auth, googleProvider);
       toast.success("Berhasil masuk!");
     } catch (error: any) {
@@ -29,8 +32,22 @@ export default function Login() {
         return; // Multiple popup requests
       }
 
-      console.error(error);
-      toast.error("Gagal masuk dengan Google.");
+      console.error("Authentication Error Details:", error);
+      
+      const errorMsg = error?.message || "";
+      const errorCode = error?.code || "";
+      
+      if (
+        errorCode === "auth/internal-error" || 
+        errorMsg.includes("internal-error") || 
+        errorMsg.includes("auth/internal-error") ||
+        errorMsg.includes("storage-unsupported")
+      ) {
+        setAuthError("iframe-restriction");
+        toast.error("Format akses terblokir: Batasan Sandbox Iframe terdeteksi.");
+      } else {
+        toast.error("Gagal masuk dengan Google.");
+      }
     } finally {
       setLoading(false);
     }
@@ -105,6 +122,31 @@ export default function Login() {
             )}
             {loading ? "Memproses..." : "Masuk dengan Google"}
           </motion.button>
+
+          {authError === "iframe-restriction" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 rounded-xl bg-zinc-900 border border-amber-500/25 text-left max-w-[280px]"
+            >
+              <div className="flex items-start gap-2.5 mb-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
+                <h3 className="text-[10px] font-black uppercase text-amber-500 tracking-wider">
+                  Iframe Sandbox Berupaya Memblokir
+                </h3>
+              </div>
+              <p className="text-[9px] text-zinc-400 font-medium leading-relaxed mb-3">
+                Browser mendeteksi batasan cookie pihak ketiga di dalam iframe visualisasi ini. Klik tombol di bawah untuk membuka aplikasi di tab tersendiri agar proses login berjalan 100% lancar.
+              </p>
+              <button
+                onClick={() => window.open(window.location.origin, "_blank")}
+                className="w-full h-8 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-black text-[9px] tracking-wider uppercase rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              >
+                <ExternalLink size={12} />
+                Buka di Tab Baru
+              </button>
+            </motion.div>
+          )}
 
           {/* Footer */}
           <div className="mt-10">

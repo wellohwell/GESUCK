@@ -23,7 +23,9 @@ import {
   Filter,
   BookOpen,
   Search,
-  Phone
+  Phone,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { db, auth } from "../../firebase/config";
 import { doc, onSnapshot, setDoc, collection, query, orderBy, deleteDoc, getDocs, where, updateDoc } from "firebase/firestore";
@@ -92,6 +94,29 @@ interface AutomationSettings {
   finalReminderTemplate?: string;
 }
 
+const parseTimeString = (timeStr: string) => {
+  if (!timeStr) return null;
+  // Match a sequence of digits separated by ':' or '.' or '-' or space
+  const match = timeStr.trim().match(/^(\d{1,2})[\s.:\-]+(\d{2})/);
+  if (match) {
+    const hour = parseInt(match[1], 10);
+    const min = parseInt(match[2], 10);
+    if (!isNaN(hour) && !isNaN(min) && hour >= 0 && hour < 24 && min >= 0 && min < 60) {
+      return { hour, min };
+    }
+  }
+  // Fallback search anywhere in the string
+  const generalMatch = timeStr.match(/(\d{1,2})[\s.:\-]+(\d{2})/);
+  if (generalMatch) {
+    const hour = parseInt(generalMatch[1], 10);
+    const min = parseInt(generalMatch[2], 10);
+    if (!isNaN(hour) && !isNaN(min) && hour >= 0 && hour < 24 && min >= 0 && min < 60) {
+      return { hour, min };
+    }
+  }
+  return null;
+};
+
 const DEFAULT_SETTINGS: AutomationSettings = {
   enabled: true,
   visitPlanReminderEnabled: true,
@@ -108,24 +133,44 @@ export default function AdminAutomationPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
 
+  const [targetDate, setTargetDate] = useState<string>(
+    dayjs().add(1, "day").format("YYYY-MM-DD")
+  );
+  const [cycleActive, setCycleActive] = useState<boolean>(true);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  
+  // Collapse/Expand states for lists/tables
+  const [isQueueExpanded, setIsQueueExpanded] = useState<boolean>(false);
+  const [isPrefsExpanded, setIsPrefsExpanded] = useState<boolean>(false);
+
+  const detectedSPVsCount = users.filter(u => {
+    const uStatusLower = (u.status || "").toLowerCase();
+    const isApproved = uStatusLower === "active" || uStatusLower === "approved";
+    const rLower = (u.role || "").toLowerCase();
+    return isApproved && (rLower === "spv" || rLower === "supervisor" || rLower.includes("spv") || rLower.includes("supervisor"));
+  }).length;
+
   // Load user notification preferences list
   useEffect(() => {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, orderBy("name", "asc"));
+    const q = query(usersRef);
     const unsubscribeUsers = onSnapshot(q, (snapshot) => {
       const list: any[] = [];
       snapshot.forEach((doc) => {
         const d = doc.data();
         list.push({
           id: doc.id,
-          name: d.name || d.nama || "-",
+          name: d.displayName || d.name || d.nama || "-",
           email: d.email || "-",
           role: d.role || "-",
           status: d.status || "active",
           phone: d.phone || d.telepon || d.noHp || d.whatsapp || "-",
-          notifications: d.notifications || {}
+          notifications: d.notifications || {},
+          photoURL: d.photoURL || d.photoUrl || d.picture || ""
         });
       });
+      // Resilient alphabet sort in client memory
+      list.sort((a, b) => a.name.localeCompare(b.name));
       setUsers(list);
       setUsersLoading(false);
     }, (error) => {
@@ -205,6 +250,218 @@ export default function AdminAutomationPage() {
     return () => unsubscribeQueue();
   }, []);
 
+  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
+  const [expandedMessages, setExpandedMessages] = useState<Record<string, boolean>>({});
+
+  const toggleMessageExpand = (id: string) => {
+    setExpandedMessages(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const [currentTimeWIB, setCurrentTimeWIB] = useState<string>("");
+  const [currentDateWIB, setCurrentDateWIB] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      try {
+        const timeFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: "Asia/Jakarta",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        });
+        const dateFormatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: "Asia/Jakarta",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        });
+        
+        const now = new Date();
+        const timeParts = timeFormatter.formatToParts(now);
+        let hour = timeParts.find(p => p.type === "hour")?.value || "00";
+        if (hour === "24") hour = "00";
+        // Safe 2-digit padding
+        hour = hour.padStart(2, "0");
+        const minute = (timeParts.find(p => p.type === "minute")?.value || "00").padStart(2, "0");
+        const second = (timeParts.find(p => p.type === "second")?.value || "00").padStart(2, "0");
+        setCurrentTimeWIB(`${hour}:${minute}:${second}`);
+        
+        const parts = dateFormatter.formatToParts(now);
+        const year = parts.find(p => p.type === "year")?.value || "2026";
+        const month = (parts.find(p => p.type === "month")?.value || "06").padStart(2, "0");
+        const day = (parts.find(p => p.type === "day")?.value || "01").padStart(2, "0");
+        setCurrentDateWIB(`${year}-${month}-${day}`);
+      } catch (e) {
+        setCurrentTimeWIB(dayjs().format("HH:mm:ss"));
+        setCurrentDateWIB(dayjs().format("YYYY-MM-DD"));
+      }
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Secure target date synchronization (WIB Tomorrow alignment)
+  useEffect(() => {
+    if (currentDateWIB) {
+      setTargetDate(dayjs(currentDateWIB).add(1, "day").format("YYYY-MM-DD"));
+    }
+  }, [currentDateWIB]);
+
+  // AUTOMATIC CLIENT-SIDE CRON EMULATION WITH RESILIENT COMPARATORS
+  useEffect(() => {
+    if (isLoading || queueLoading || usersLoading || users.length === 0 || !settings.enabled || !settings.visitPlanReminderEnabled || !cycleActive) {
+      return;
+    }
+
+    const checkAndTriggerAutoScans = async () => {
+      if (!currentDateWIB || !currentTimeWIB) return;
+      
+      const tomorrowWIB = dayjs(currentDateWIB).add(1, "day").format("YYYY-MM-DD");
+      const [currHour, currMin] = currentTimeWIB.split(":").map(Number);
+      
+      const compareTimePast = (targetTimeStr: string) => {
+        const parsed = parseTimeString(targetTimeStr);
+        if (!parsed) return false;
+        const { hour: targHour, min: targMin } = parsed;
+        
+        if (currHour > targHour) return true;
+        if (currHour === targHour) return currMin >= targMin;
+        return false;
+      };
+
+      // 1. LEVEL 1 REMINDER AUTO TRIGGER (e.g. 18:30)
+      if (compareTimePast(settings.firstReminderTime)) {
+        const hasL1Queue = queueItems.some(q => 
+          q.metadata?.reminderLevel === 1 && 
+          q.metadata?.targetDate === tomorrowWIB
+        );
+        const l1Key = `auto_run_l1_${tomorrowWIB}`;
+        if (!hasL1Queue && !localStorage.getItem(l1Key)) {
+          localStorage.setItem(l1Key, "true");
+          toast.success(`🤖 AUTOMATOR: Mendeteksi Jam > ${settings.firstReminderTime} WIB`, {
+            description: `Menjalankan pencarian/auto-scan Pengingat #1 otomatis untuk Tanggal Kunjungan ${dayjs(tomorrowWIB).format("dddd, D MMMM YYYY")}.`
+          });
+          await handleRunReminderScan(1, tomorrowWIB);
+        }
+      }
+
+      // 2. LEVEL 2 REMINDER AUTO TRIGGER (e.g. 19:45)
+      if (compareTimePast(settings.finalReminderTime)) {
+        const hasL2Queue = queueItems.some(q => 
+          q.metadata?.reminderLevel === 2 && 
+          q.metadata?.targetDate === tomorrowWIB
+        );
+        const l2Key = `auto_run_l2_${tomorrowWIB}`;
+        if (!hasL2Queue && !localStorage.getItem(l2Key)) {
+          localStorage.setItem(l2Key, "true");
+          toast.success(`🚨 AUTOMATOR: Mendeteksi Jam > ${settings.finalReminderTime} WIB`, {
+            description: `Menjalankan pencarian/auto-scan Pengingat Final #2 otomatis untuk Tanggal Kunjungan ${dayjs(tomorrowWIB).format("dddd, D MMMM YYYY")}.`
+          });
+          await handleRunReminderScan(2, tomorrowWIB);
+        }
+      }
+    };
+
+    checkAndTriggerAutoScans();
+  }, [currentTimeWIB, currentDateWIB, isLoading, queueLoading, usersLoading, users, settings, cycleActive, queueItems]);
+
+  const handleProcessQueue = async () => {
+    const pendingItems = queueItems.filter(i => i.status === "pending");
+    if (pendingItems.length === 0) {
+      toast.info("Tidak ada antrean pending", {
+        description: "Semua pesan dalam antrean sudah selesai diproses."
+      });
+      return;
+    }
+
+    setIsProcessingQueue(true);
+    const toastId = "queue-processing-toast";
+    toast.info("Memulai pemrosesan antrean...", {
+      id: toastId,
+      description: `Sedang mengirimkan ${pendingItems.length} pesan di antrean.`
+    });
+
+    let successCount = 0;
+    let failCount = 0;
+    let index = 0;
+
+    try {
+      for (const item of pendingItems) {
+        index++;
+        const itemRef = doc(db, "notification_queue", item.id);
+        
+        // Update user on current progress
+        toast.info(`Memproses Antrean (${index}/${pendingItems.length})`, {
+          id: toastId,
+          description: `Mengirim pesan ke nomor ${item.phone || item.to || "N/A"}...`
+        });
+
+        // Update status to processing
+        await setDoc(itemRef, {
+          status: "processing",
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        const phoneToSend = item.phone || item.to;
+        if (!phoneToSend || phoneToSend === "-" || phoneToSend.trim() === "") {
+          await setDoc(itemRef, {
+            status: "failed",
+            error: "Nomor telepon kosong atau tidak valid",
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+          failCount++;
+          continue;
+        }
+
+        const cleanMessage = item.message || "";
+        const result = await sendWhatsApp(phoneToSend, cleanMessage);
+
+        if (result.success) {
+          await setDoc(itemRef, {
+            status: "sent",
+            response: result.response || null,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+          successCount++;
+        } else {
+          await setDoc(itemRef, {
+            status: "failed",
+            error: result.error || "Gagal mengirim melalui WhatsApp API",
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+          failCount++;
+        }
+
+        // Apply a safe, human-like delay between messages to prevent WhatsApp bans
+        // Only delay if there are more items waiting to be sent
+        if (index < pendingItems.length) {
+          const delayMs = Math.floor(Math.random() * (4000 - 2500 + 1)) + 2500; // 2.5s to 4s random delay
+          toast.info(`Jeda Aman Anti-Banned...`, {
+            id: toastId,
+            description: `Mengambil cooling pause ${(delayMs / 1000).toFixed(1)} detik sebelum mengirim pesan berikutnya.`
+          });
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+
+      toast.success("Pemrosesan antrean selesai!", {
+        id: toastId,
+        description: `Berhasil terkirim: ${successCount} | Gagal: ${failCount}`
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Terjadi kegagalan saat menjalankan antrean", {
+        id: toastId,
+        description: err.message || "Kesalahan koneksi atau hak akses."
+      });
+    } finally {
+      setIsProcessingQueue(false);
+    }
+  };
+
   const handleCreateTestJob = async (type: string) => {
     const randomUser = users[Math.floor(Math.random() * users.length)] || {
       id: auth.currentUser?.uid || "mock_uid",
@@ -219,13 +476,32 @@ export default function AdminAutomationPage() {
     let title = "";
     let message = "";
     let priority = 1;
+    let reminderLevel: number | null = null;
+
+    const formattedTargetDate = dayjs().add(1, "day").format("dddd, D MMMM YYYY");
 
     switch (type) {
-      case "visit_plan_reminder":
+      case "visit_plan_reminder_1":
+      case "visit_plan_reminder": {
         title = "Pengingat Rencana Kunjungan";
-        message = `Halo ${randomUser.name}, Anda belum mengisi Rencana Kunjungan (Visit Plan) untuk besok. Harap segera lengkapi di aplikasi.`;
+        const rawTemplate = settings.firstReminderTemplate || DEFAULT_SETTINGS.firstReminderTemplate || "";
+        message = rawTemplate
+          .replace(/{name}/g, randomUser.name)
+          .replace(/{date}/g, formattedTargetDate);
         priority = 2;
+        reminderLevel = 1;
         break;
+      }
+      case "visit_plan_reminder_2": {
+        title = "PENTING: Tenggat Rencana Kunjungan";
+        const rawTemplate = settings.finalReminderTemplate || DEFAULT_SETTINGS.finalReminderTemplate || "";
+        message = rawTemplate
+          .replace(/{name}/g, randomUser.name)
+          .replace(/{date}/g, formattedTargetDate);
+        priority = 2;
+        reminderLevel = 2;
+        break;
+      }
       case "account_approved":
         title = "Akun Disetujui";
         message = `Selamat ${randomUser.name}, registrasi akun Anda telah disetujui oleh Administrator. Anda sekarang dapat mengakses layanan penuh kami.`;
@@ -271,8 +547,9 @@ export default function AdminAutomationPage() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         metadata: {
-          reminderLevel: type === "visit_plan_reminder" ? 1 : null,
-          source: type
+          reminderLevel,
+          source: type,
+          targetDate: dayjs().add(1, "day").format("YYYY-MM-DD")
         }
       });
       toast.success(`Pekerjaan antrean (${type}) berhasil dibuat`, {
@@ -309,12 +586,6 @@ export default function AdminAutomationPage() {
     }
   };
 
-  const [targetDate, setTargetDate] = useState<string>(
-    dayjs().add(1, "day").format("YYYY-MM-DD")
-  );
-  const [cycleActive, setCycleActive] = useState<boolean>(true);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-
   // WhatsApp Sandbox Live States
   const [testPhone, setTestPhone] = useState<string>("");
   const [testMessage, setTestMessage] = useState<string>("");
@@ -322,6 +593,7 @@ export default function AdminAutomationPage() {
   const [waTestResult, setWaTestResult] = useState<any>(null);
   const [phoneBookSearch, setPhoneBookSearch] = useState<string>("");
   const [phoneBookRole, setPhoneBookRole] = useState<string>("ALL");
+  const [isPhoneBookDropdownOpen, setIsPhoneBookDropdownOpen] = useState<boolean>(false);
   const [scanReport, setScanReport] = useState<{
     date: string;
     totalUsers: number;
@@ -334,13 +606,30 @@ export default function AdminAutomationPage() {
 
   // Mark Tomorrow's Cycle Active at 17:00 (Simulation Trigger)
   const handleToggleCycleAt17 = () => {
-    setCycleActive(prev => !prev);
+    const nextStatus = !cycleActive;
+    setCycleActive(nextStatus);
+    
+    // Clear auto-trigger flags from localStorage when cycle is toggled back to active
+    // so administrators can test the cron auto-run multiple times
+    if (nextStatus) {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("auto_run_")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    }
+
     toast.success(
-      !cycleActive 
+      nextStatus 
         ? "Siklus Rencana Kunjungan besok diaktifkan secara internal" 
         : "Siklus Rencana Kunjungan dinonaktifkan",
       {
-        description: "Status persiapan internal diperbarui (Aturan Reset 17:00 WIB)."
+        description: nextStatus 
+          ? "Status persiapan internal diperbarui (Aturan Reset 17:00 WIB). Flag scan dinormalisasi."
+          : "Status persiapan internal dinonaktifkan."
       }
     );
   };
@@ -413,7 +702,8 @@ export default function AdminAutomationPage() {
     }
   };
 
-  const handleRunReminderScan = async (level: 1 | 2) => {
+  const handleRunReminderScan = async (level: 1 | 2, overrideDate?: string) => {
+    const dateToScan = overrideDate || targetDate;
     if (!settings.visitPlanReminderEnabled || !settings.enabled) {
       toast.error("Automasi dinonaktifkan", {
         description: "Harap aktifkan status automasi global dan opsi pengingat rencana kunjungan terlebih dahulu."
@@ -430,13 +720,13 @@ export default function AdminAutomationPage() {
 
     setIsGenerating(true);
     const logsList: string[] = [];
-    logsList.push(`[${dayjs().format("HH:mm:ss")}] Membuka scan pemicu pengingat Tingkat ${level} untuk tanggal ${targetDate}`);
+    logsList.push(`[${dayjs().format("HH:mm:ss")}] Membuka scan pemicu pengingat Tingkat ${level} untuk tanggal ${dateToScan}`);
     
     try {
-      // 1. Fetch market plans for tomorrow (targetDate)
+      // 1. Fetch market plans for tomorrow (dateToScan)
       logsList.push(`[${dayjs().format("HH:mm:ss")}] Mengambil data rencana kunjungan di Firestore...`);
       const plansSnap = await getDocs(
-        query(collection(db, "market_plans"), where("dayStart", "==", targetDate))
+        query(collection(db, "market_plans"), where("dayStart", "==", dateToScan))
       );
       const plansList = plansSnap.docs.map(d => ({
         id: d.id,
@@ -447,9 +737,11 @@ export default function AdminAutomationPage() {
       // 2. Identify active users
       // Users with active/approved status, preferences enabled, and role SPV/Supervisor
       const eligibleUsers = users.filter(u => {
-        const isApproved = u.status === "active" || u.status === "approved";
+        const uStatusLower = (u.status || "").toLowerCase();
+        const isApproved = uStatusLower === "active" || uStatusLower === "approved";
         const prefEnabled = u.notifications?.visitPlanReminder ?? true; // defaults to true
-        const isSPV = u.role?.toLowerCase() === "spv" || u.role?.toLowerCase() === "supervisor";
+        const rLower = (u.role || "").toLowerCase();
+        const isSPV = rLower === "spv" || rLower === "supervisor" || rLower.includes("spv") || rLower.includes("supervisor");
         return isApproved && prefEnabled && isSPV;
       });
 
@@ -470,12 +762,12 @@ export default function AdminAutomationPage() {
           const isDuplicated = queueItems.some(q => 
             q.uid === user.id && 
             q.metadata?.reminderLevel === level && 
-            q.metadata?.targetDate === targetDate
+            q.metadata?.targetDate === dateToScan
           );
 
           if (isDuplicated) {
             alreadyInQueueCount++;
-            logsList.push(`[SKIP DUPLIKAT] ${user.name} (${user.email || "No Email"}) belum memiliki rencana, namun sudah ada di antrean Pengingat L${level} untuk ${targetDate}.`);
+            logsList.push(`[SKIP DUPLIKAT] ${user.name} (${user.email || "No Email"}) belum memiliki rencana, namun sudah ada di antrean Pengingat L${level} untuk ${dateToScan}.`);
             continue;
           }
 
@@ -491,7 +783,7 @@ export default function AdminAutomationPage() {
             ? "Pengingat Rencana Kunjungan"
             : "PENTING: Tenggat Rencana Kunjungan";
           
-          const formattedTargetDate = dayjs(targetDate).format("dddd, D MMMM YYYY");
+          const formattedTargetDate = dayjs(dateToScan).format("dddd, D MMMM YYYY");
           const rawTemplate = level === 1
             ? (settings.firstReminderTemplate || DEFAULT_SETTINGS.firstReminderTemplate || "")
             : (settings.finalReminderTemplate || DEFAULT_SETTINGS.finalReminderTemplate || "");
@@ -517,7 +809,7 @@ export default function AdminAutomationPage() {
             metadata: {
               reminderLevel: level,
               source: "visit_plan_reminder",
-              targetDate: targetDate
+              targetDate: dateToScan
             }
           });
 
@@ -530,7 +822,7 @@ export default function AdminAutomationPage() {
       logsList.push(`[${dayjs().format("HH:mm:ss")}] Operasi selesai. Diterbitkan: ${jobsCreatedCount} antrean baru.`);
       
       setScanReport({
-        date: targetDate,
+        date: dateToScan,
         totalUsers: users.length,
         activeUsers: eligibleUsers.length,
         missingPlans: missingPlansCount,
@@ -576,6 +868,17 @@ export default function AdminAutomationPage() {
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
+      // Clear auto-trigger flags from localStorage when configuration changes
+      // so the system can immediately re-evaluate and trigger for newly schedule times
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("auto_run_")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
       toast.success("Konfigurasi Berhasil Disimpan", {
         description: "Pengaturan automasi global dan aturan pengingat kunjungan telah diperbarui.",
       });
@@ -616,6 +919,79 @@ export default function AdminAutomationPage() {
     return item.status === statusFilter;
   });
 
+  const getTimerStatus = (targetTimeStr: string, level: number) => {
+    if (!currentDateWIB || !currentTimeWIB || !targetTimeStr) {
+      return { status: "loading", badge: "Memuat...", countdown: "00:00:00", isPast: false };
+    }
+
+    const tomorrowWIB = dayjs(currentDateWIB).add(1, "day").format("YYYY-MM-DD");
+    const lKey = `auto_run_l${level}_${tomorrowWIB}`;
+    const hasQueue = queueItems.some(q => 
+      q.metadata?.reminderLevel === level && 
+      q.metadata?.targetDate === tomorrowWIB
+    );
+    const alreadySavedRun = localStorage.getItem(lKey) === "true";
+    const isTriggered = hasQueue || alreadySavedRun;
+
+    const parsed = parseTimeString(targetTimeStr);
+    if (!parsed) {
+      return { status: "invalid", badge: "Format Salah", countdown: "00:00:00", isPast: false };
+    }
+    const { hour: targHour, min: targMin } = parsed;
+
+    const [currHour, currMin, currSec] = currentTimeWIB.split(":").map(Number);
+    const currentTotalSec = currHour * 3600 + currMin * 60 + (currSec || 0);
+    const targetTotalSec = targHour * 3600 + targMin * 60;
+    
+    const diffSec = targetTotalSec - currentTotalSec;
+    const isPast = diffSec <= 0;
+
+    if (isTriggered) {
+      return { 
+        status: "triggered", 
+        badge: "TERPICU ✅", 
+        countdown: "Sudah Berjalan",
+        isPast 
+      };
+    }
+
+    if (isPast) {
+      return { 
+        status: "past_untriggered", 
+        badge: "WAIT RUN ⚠️", 
+        countdown: "Sistem Menunggu",
+        isPast 
+      };
+    }
+
+    // Counting down
+    const h = Math.floor(diffSec / 3600);
+    const m = Math.floor((diffSec % 3600) / 60);
+    const s = diffSec % 60;
+    const countdown = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+
+    return { 
+      status: "counting", 
+      badge: countdown, 
+      countdown: `${countdown} sisa`,
+      isPast 
+    };
+  };
+
+  const handleResetTriggerFlags = () => {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("auto_run_")) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    toast.success("Flag Auto-Trigger Berhasil Direset", {
+      description: "Anda sekarang dapat menguji kembali pemicu otomatis untuk sisa hari ini secara instan."
+    });
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* Page Title Header */}
@@ -646,18 +1022,21 @@ export default function AdminAutomationPage() {
               <div className="p-2.5 rounded-2xl bg-primary/10 w-fit">
                 <Sliders className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-[10px] bg-primary/15 text-primary font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                Beta V1
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full animate-pulse flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                  WIB ACTIVE CLOCK: {currentTimeWIB || "Checking..."}
+                </span>
+                <span className="text-[8px] font-mono text-muted-foreground mr-1.5 font-bold">
+                  {currentDateWIB}
+                </span>
+              </div>
             </div>
             
             <div className="space-y-1.5">
               <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
                 Sistem Pusat Automasi
               </h3>
-              <p className="text-[11px] md:text-xs leading-relaxed text-muted-foreground font-medium">
-                Pusat administrasi aturan automasi, jadwal pemicu, dan manajemen notifikasi latar belakang. Fitur integrasi otomatisasi seperti WhatsApp Delivery dan webhooks API (OpenClaw) saat ini nonaktif sampai rilis versi lanjutan stabil.
-              </p>
             </div>
 
             {/* Global Master Switch */}
@@ -918,34 +1297,142 @@ export default function AdminAutomationPage() {
                 </div>
               </div>
 
+              {/* Checklist Syarat Automasi & Reset Trigger */}
+              <div className="p-3.5 bg-zinc-950/30 border border-border/20 rounded-2xl space-y-3 text-[10px]">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="font-extrabold uppercase tracking-wider text-muted-foreground text-[8px]">
+                        Syarat Auto-Trigger Cron ({currentTimeWIB || "--:--:--"})
+                      </span>
+                      <span className="text-[9px] text-zinc-500 font-medium">Validasi engine real-time WIB</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleResetTriggerFlags}
+                      className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase text-[8px] transition cursor-pointer"
+                      title="Reset semua flag auto-run di localStorage agar cron dapat mendeteksi ulang"
+                    >
+                      Reset Flag Scan
+                    </button>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-wider border",
+                      (settings.enabled && settings.visitPlanReminderEnabled && cycleActive && detectedSPVsCount > 0)
+                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                    )}>
+                      {(settings.enabled && settings.visitPlanReminderEnabled && cycleActive && detectedSPVsCount > 0) ? "READY" : "OFFLINE"}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[9px] text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", settings.enabled ? "bg-emerald-500" : "bg-rose-500")} />
+                    <span className={settings.enabled ? "text-zinc-300 font-semibold" : "text-zinc-500"}>Master Switch</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", settings.visitPlanReminderEnabled ? "bg-emerald-500" : "bg-rose-500")} />
+                    <span className={settings.visitPlanReminderEnabled ? "text-zinc-300 font-semibold" : "text-zinc-500"}>Pengingat Kunjungan</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cycleActive ? "bg-emerald-500" : "bg-rose-500")} />
+                    <span className={cycleActive ? "text-zinc-300 font-semibold" : "text-zinc-500"}>Siklus 17:00 WIB</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", users.length > 0 ? "bg-emerald-500" : "bg-rose-500")} />
+                    <span className={users.length > 0 ? "text-zinc-300 font-semibold" : "text-zinc-500"}>{users.length} User Terdaftar</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 col-span-2 mt-0.5 pt-1 border-t border-border/10">
+                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", detectedSPVsCount > 0 ? "bg-emerald-500" : "bg-rose-500")} />
+                    <span className={detectedSPVsCount > 0 ? "text-zinc-200 font-bold" : "text-rose-400 font-bold"}>
+                      {detectedSPVsCount} Supervisor (SPV) Terdeteksi
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Countdown Live Matrix */}
+              <div className="grid grid-cols-2 gap-3 text-center">
+                {(() => {
+                  const s1 = getTimerStatus(settings.firstReminderTime, 1);
+                  const s2 = getTimerStatus(settings.finalReminderTime, 2);
+                  return (
+                    <>
+                      <div className="p-3 rounded-2xl border border-border/30 bg-card/10 flex flex-col justify-between items-center space-y-1">
+                        <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">COUNTDOWN #1</span>
+                        <div className={cn(
+                          "text-base font-black font-mono leading-none tracking-tight py-1",
+                          s1.status === "triggered" ? "text-emerald-500" : s1.status === "past_untriggered" ? "text-amber-500" : "text-primary hover:scale-105 transition-transform"
+                        )}>
+                          {s1.countdown}
+                        </div>
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded font-mono text-[7.5px] font-extrabold uppercase shrink-0",
+                          s1.status === "triggered" ? "bg-emerald-500/10 text-emerald-500" : s1.status === "past_untriggered" ? "bg-amber-500/10 text-amber-500" : "bg-zinc-800 text-zinc-400"
+                        )}>
+                          {s1.badge}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-2xl border border-border/30 bg-card/10 flex flex-col justify-between items-center space-y-1">
+                        <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">COUNTDOWN #2</span>
+                        <div className={cn(
+                          "text-base font-black font-mono leading-none tracking-tight py-1",
+                          s2.status === "triggered" ? "text-emerald-500" : s2.status === "past_untriggered" ? "text-amber-500" : "text-rose-500 hover:scale-105 transition-transform"
+                        )}>
+                          {s2.countdown}
+                        </div>
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded font-mono text-[7.5px] font-extrabold uppercase shrink-0",
+                          s2.status === "triggered" ? "bg-emerald-500/10 text-emerald-500" : s2.status === "past_untriggered" ? "bg-amber-500/10 text-amber-500" : "bg-zinc-800 text-zinc-400"
+                        )}>
+                          {s2.badge}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
               {/* Reminder Scan Trigger Buttons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => handleRunReminderScan(1)}
                   disabled={isGenerating || !settings.enabled || !settings.visitPlanReminderEnabled || !cycleActive}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-card hover:bg-card/85 border border-border/50 text-foreground text-[10px] font-black uppercase tracking-wider rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center justify-center gap-1.5 px-4 py-3 bg-card hover:bg-card/85 border border-border/50 text-foreground rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed group relative overflow-hidden"
                 >
-                  {isGenerating ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
-                  )}
-                  <span>Scan Pengingat #1 (18:30)</span>
+                  <div className="flex items-center gap-2">
+                    {isGenerating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Clock className="w-3.5 h-3.5 text-primary shrink-0 group-hover:rotate-12 transition-transform" />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-wider">Scan Pengingat #1</span>
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-mono font-bold">Target: {settings.firstReminderTime} WIB</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleRunReminderScan(2)}
                   disabled={isGenerating || !settings.enabled || !settings.visitPlanReminderEnabled || !cycleActive}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-card hover:bg-card/85 border border-border/50 text-foreground text-[10px] font-black uppercase tracking-wider rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center justify-center gap-1.5 px-4 py-3 bg-card hover:bg-card/85 border border-border/50 text-foreground rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed group relative overflow-hidden"
                 >
-                  {isGenerating ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  )}
-                  <span>Scan Final #2 (19:45)</span>
+                  <div className="flex items-center gap-2">
+                    {isGenerating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0 group-hover:scale-110 transition-transform" />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-wider">Scan Final #2</span>
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-mono font-bold">Target: {settings.finalReminderTime} WIB</span>
                 </button>
               </div>
 
@@ -1026,9 +1513,9 @@ export default function AdminAutomationPage() {
               Uji coba konektivitas WhatsApp API eksternal secara instan. Jika gateway offline atau mengalami kegagalan transmisi, sistem secara cerdas akan mengaktifkan <strong>Hybrid Fallback Mode</strong> untuk menyimpan pesan sebagai antrean <code className="bg-zinc-800 dark:bg-zinc-900 px-1 py-0.5 rounded text-primary font-mono text-[9px]">pending</code> di Firestore agar diproses oleh worker.
             </p>
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-              {/* KOLOM KIRI: Form Tester */}
-              <div className="xl:col-span-6 space-y-4">
+            <div className="space-y-4">
+              {/* Form Tester */}
+              <div className="space-y-4">
                 <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/30 mb-2 font-mono">
                   [ GATEWAY PLAYGROUND TESTER ]
                 </div>
@@ -1036,19 +1523,150 @@ export default function AdminAutomationPage() {
                 <form onSubmit={handleSendWASandbox} className="space-y-4">
                   <div className="space-y-3">
                     {/* Phone input */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 relative">
                       <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">
                         Nomor WhatsApp / HP Target
                       </label>
-                      <input
-                        type="text"
-                        value={testPhone}
-                        onChange={(e) => setTestPhone(e.target.value)}
-                        placeholder="Contoh: 08123456789 atau 628123456789"
-                        className="w-full px-4 py-2 bg-card rounded-xl border border-border/50 text-xs font-bold text-foreground focus:border-primary/60 outline-none placeholder:text-muted-foreground/50 placeholder:font-normal"
-                      />
+                      <div className="relative flex items-center">
+                        <input
+                          type="text"
+                          value={testPhone}
+                          onChange={(e) => {
+                            setTestPhone(e.target.value);
+                            setIsPhoneBookDropdownOpen(true);
+                          }}
+                          onFocus={() => setIsPhoneBookDropdownOpen(true)}
+                          placeholder="Ketik nama koordinator, email, atau no HP target..."
+                          className="w-full pl-10 pr-24 py-2 bg-card rounded-xl border border-border/50 text-xs font-bold text-foreground focus:border-primary/60 outline-none placeholder:text-muted-foreground/45 placeholder:font-normal"
+                        />
+                        {/* Book logo left inside */}
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                          <BookOpen className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+                        </div>
+                        {/* Toggle button on the right inside */}
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                          {testPhone && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTestPhone("");
+                                setIsPhoneBookDropdownOpen(true);
+                              }}
+                              className="text-[8px] bg-muted hover:bg-muted/95 border border-border/30 text-muted-foreground hover:text-foreground font-black uppercase px-1.5 py-0.5 rounded cursor-pointer"
+                            >
+                              Reset
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setIsPhoneBookDropdownOpen(!isPhoneBookDropdownOpen)}
+                            className={cn(
+                              "text-[8px] px-2 py-0.5 rounded-lg border border-border/40 font-black uppercase tracking-wider select-none cursor-pointer transition-all",
+                              isPhoneBookDropdownOpen
+                                ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                                : "bg-muted text-muted-foreground hover:bg-muted/70"
+                            )}
+                          >
+                            {isPhoneBookDropdownOpen ? "Tutup" : "Daftar"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Dropdown phonebook overlay */}
+                      {isPhoneBookDropdownOpen && (
+                        <div className="absolute left-0 right-0 z-50 mt-1 bg-zinc-950/95 dark:bg-black/95 backdrop-blur-md border border-border/70 rounded-2xl shadow-2xl p-3.5 space-y-3.5 max-h-[300px] overflow-y-auto scrollbar-thin">
+                          <div className="flex items-center justify-between text-[9px] text-muted-foreground font-black uppercase tracking-wider pb-1.5 border-b border-border/20">
+                            <span>Saran Buku Telepon (Integrated Link)</span>
+                            <span className="text-emerald-500 font-bold">{users.length} Kontak Terdaftar</span>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            {users.filter(u => {
+                              if (!testPhone.trim()) return true;
+                              const searchStr = `${u.name} ${u.email} ${u.phone} ${u.role}`.toLowerCase();
+                              return searchStr.includes(testPhone.toLowerCase());
+                            }).length === 0 ? (
+                              <div className="p-4 text-center rounded-xl bg-card/25 border border-dashed border-border/30">
+                                <UserIcon className="w-5 h-5 text-muted-foreground/30 mx-auto mb-1" />
+                                <p className="text-[10px] text-muted-foreground font-semibold">
+                                  Tidak ada kontak cocok dengan "{testPhone}"
+                                </p>
+                              </div>
+                            ) : (
+                              users.filter(u => {
+                                if (!testPhone.trim()) return true;
+                                const searchStr = `${u.name} ${u.email} ${u.phone} ${u.role}`.toLowerCase();
+                                return searchStr.includes(testPhone.toLowerCase());
+                              }).map((u) => {
+                                const isNoPhone = !u.phone || u.phone === "-";
+                                return (
+                                  <div
+                                    key={u.id}
+                                    onClick={() => {
+                                      if (isNoPhone) {
+                                        toast.error("Tidak ada nomor kontak", {
+                                          description: `Pengguna ${u.name} tidak memiliki nomor telepon terdaftar.`
+                                        });
+                                        return;
+                                      }
+                                      setTestPhone(u.phone);
+                                      setTestMessage(`Halo ${u.name}, Rencana Kunjungan besok ({date}) masih belum terisi. Mohon segera melengkapi Rencana Kunjungan Anda.\n\n_Automated message from Vork App_`);
+                                      setIsPhoneBookDropdownOpen(false);
+                                      toast.success(`Mengisi target: ${u.name}`, {
+                                        description: `Nomor ${u.phone} berhasil dimasukkan ke form.`
+                                      });
+                                    }}
+                                    className={cn(
+                                      "flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer group border-border/30 text-left",
+                                      isNoPhone 
+                                        ? "bg-rose-500/5 hover:bg-rose-500/10 border-rose-500/20" 
+                                        : "bg-zinc-900/40 hover:bg-zinc-900/90 border-border/30 hover:border-primary/50"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <div className={cn(
+                                        "w-6 h-6 rounded-lg text-[9px] font-bold uppercase tracking-wider flex items-center justify-center border shrink-0",
+                                        u.role?.toLowerCase() === "spv" || u.role?.toLowerCase() === "supervisor"
+                                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                          : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                      )}>
+                                        {u.name ? u.name.substring(0, 2) : "US"}
+                                      </div>
+                                      <div className="space-y-0.5 text-left">
+                                        <div className="text-[10px] font-extrabold text-foreground flex items-center gap-1.5">
+                                          <span>{u.name}</span>
+                                          <span className="text-[7.5px] px-1 py-0.2 rounded bg-zinc-805 uppercase text-zinc-400 font-mono">
+                                            {u.role}
+                                          </span>
+                                        </div>
+                                        <div className="text-[8.5px] text-muted-foreground font-semibold flex items-center gap-1">
+                                          <Phone className="w-2.5 h-2.5 opacity-60 text-emerald-500" />
+                                          <span>{u.phone}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      {isNoPhone ? (
+                                        <span className="text-[7.5px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-bold uppercase tracking-wider border border-rose-500/20 animate-pulse">
+                                          Kosong
+                                        </span>
+                                      ) : (
+                                        <span className="text-[7.5px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold uppercase tracking-wider border border-emerald-500/20 group-hover:bg-primary group-hover:text-white transition-all whitespace-nowrap">
+                                          Pilih
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {testPhone.trim() && (
-                        <div className="text-[9px] font-bold text-muted-foreground flex items-center gap-1.5">
+                        <div className="text-[9px] font-bold text-muted-foreground flex items-center gap-1.5 mt-1">
                           <span>Normalisasi sistem:</span>
                           <span className="font-mono text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                             {testPhone.startsWith("0") ? "62" + testPhone.substring(1).replace(/[^0-9]/g, "") : testPhone.replace(/[^0-9]/g, "")}
@@ -1113,144 +1731,6 @@ export default function AdminAutomationPage() {
                     )}
                   </div>
                 </form>
-              </div>
-
-              {/* KOLOM KANAN: Phone Book & Contact Audit */}
-              <div className="xl:col-span-6 space-y-4 border-t xl:border-t-0 xl:border-l border-border/30 pt-5 xl:pt-0 xl:pl-6 h-full flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/30 font-mono">
-                      [ LIVE PHONE BOOK & CONTACT AUDIT ]
-                    </span>
-                    <span className="text-[9px] font-bold text-muted-foreground">
-                      {users.length} Terdaftar
-                    </span>
-                  </div>
-
-                  {/* Search and Role Filter in Phone Book */}
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground/60" />
-                      <input
-                        type="text"
-                        value={phoneBookSearch}
-                        onChange={(e) => setPhoneBookSearch(e.target.value)}
-                        placeholder="Cari nama, email, no HP..."
-                        className="w-full pl-9 pr-4 py-2 bg-card rounded-xl border border-border/50 text-[11px] font-medium text-foreground focus:border-primary/60 outline-none placeholder:text-muted-foreground/40"
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5 items-center">
-                      <span className="text-[8px] font-black uppercase tracking-wider text-muted-foreground/60 mr-1">
-                        Filter:
-                      </span>
-                      {["ALL", "SPV", "SALES", "SUPERVISOR"].map((tabRole) => (
-                        <button
-                          key={tabRole}
-                          type="button"
-                          onClick={() => setPhoneBookRole(tabRole)}
-                          className={cn(
-                            "px-2 py-1 rounded-lg text-[8px] font-bold transition-all uppercase tracking-wider cursor-pointer",
-                            phoneBookRole === tabRole
-                              ? "bg-primary text-white"
-                              : "bg-card hover:bg-card/85 text-muted-foreground border border-border/40"
-                          )}
-                        >
-                          {tabRole}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Phone book item collection */}
-                  <div className="space-y-2 max-h-[220px] overflow-y-auto scrollbar-none pr-1">
-                    {users.filter(u => {
-                      const searchStr = `${u.name} ${u.email} ${u.phone} ${u.role}`.toLowerCase();
-                      const matchesSearch = searchStr.includes(phoneBookSearch.toLowerCase());
-                      if (phoneBookRole === "ALL") return matchesSearch;
-                      return matchesSearch && u.role?.toLowerCase() === phoneBookRole.toLowerCase();
-                    }).length === 0 ? (
-                      <div className="p-6 text-center rounded-2xl bg-card/20 border border-dashed border-border/30 space-y-1">
-                        <UserIcon className="w-6 h-6 text-muted-foreground/30 mx-auto" />
-                        <p className="text-[9px] text-muted-foreground font-semibold">
-                          Tidak ada kontak ditemukan
-                        </p>
-                      </div>
-                    ) : (
-                      users.filter(u => {
-                        const searchStr = `${u.name} ${u.email} ${u.phone} ${u.role}`.toLowerCase();
-                        const matchesSearch = searchStr.includes(phoneBookSearch.toLowerCase());
-                        if (phoneBookRole === "ALL") return matchesSearch;
-                        return matchesSearch && u.role?.toLowerCase() === phoneBookRole.toLowerCase();
-                      }).map((u) => {
-                        const isNoPhone = !u.phone || u.phone === "-";
-                        return (
-                          <div
-                            key={u.id}
-                            onClick={() => {
-                              if (isNoPhone) {
-                                toast.error("Tidak ada nomor kontak", {
-                                  description: `Pengguna ${u.name} tidak memiliki nomor telepon terdaftar.`
-                                });
-                                return;
-                              }
-                              setTestPhone(u.phone);
-                              setTestMessage(`Halo ${u.name}, ini adalah pesan tes integrasi WhatsApp dari Dashboard Sistem.`);
-                              toast.success(`Mengisi target: ${u.name}`, {
-                                description: `Nomor ${u.phone} dimasukkan ke form.`
-                              });
-                            }}
-                            className={cn(
-                              "flex items-center justify-between p-2.5 rounded-xl border bg-card/20 transition-all cursor-pointer group",
-                              isNoPhone 
-                                ? "border-rose-500/10 hover:border-rose-500/35 bg-rose-500/5 hover:bg-rose-500/10"
-                                : "border-border/40 hover:border-primary/40 hover:bg-card/60"
-                            )}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className={cn(
-                                "w-7 h-7 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center border",
-                                u.role?.toLowerCase() === "spv" || u.role?.toLowerCase() === "supervisor"
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                  : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                              )}>
-                                {u.name ? u.name.substring(0, 2) : "US"}
-                              </div>
-                              <div className="space-y-0.5 text-left">
-                                <div className="text-[10px] font-extrabold text-foreground flex items-center gap-1.5">
-                                  <span>{u.name}</span>
-                                  <span className="text-[7.5px] px-1 py-0.2 rounded bg-zinc-800 dark:bg-zinc-900 border border-zinc-700/50 uppercase text-zinc-400 font-mono">
-                                    {u.role}
-                                  </span>
-                                </div>
-                                <div className="text-[8.5px] text-muted-foreground font-semibold flex items-center gap-1">
-                                  <Phone className="w-2.5 h-2.5 opacity-60" />
-                                  <span>{u.phone}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                              {isNoPhone ? (
-                                <span className="text-[7.5px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-bold uppercase tracking-wider border border-rose-500/20 animate-pulse">
-                                  KOSONG / PERLU DIISI
-                                </span>
-                              ) : (
-                                <span className="text-[7.5px] px-2 py-0.5 rounded-full bg-emerald-500/5 text-emerald-500 font-bold uppercase tracking-wider border border-emerald-500/20 group-hover:bg-primary group-hover:text-white transition-all">
-                                  PILIH KONTAK
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-3 p-3 rounded-2xl bg-muted/40 border border-border/30 text-[9px] text-muted-foreground leading-normal font-semibold">
-                  💡 <strong>Tip Audit:</strong> Gunakan filter <strong>SPV</strong> untuk melihat status nomor handphone para Koordinator Lapangan. Klik salah satu kartu kontak untuk langsung memindahkannya ke form uji coba.
-                </div>
               </div>
             </div>
           </motion.div>
@@ -1380,10 +1860,18 @@ export default function AdminAutomationPage() {
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <button
                   type="button"
-                  onClick={() => handleCreateTestJob("visit_plan_reminder")}
+                  onClick={() => handleCreateTestJob("visit_plan_reminder_1")}
                   className="px-2.5 py-1.5 bg-card hover:bg-card/80 border border-border/50 text-foreground font-bold rounded-lg text-left truncate flex items-center justify-between"
                 >
-                  <span className="truncate">Visit Reminder</span>
+                  <span className="truncate text-amber-500 font-black">Reminder #1 (L1)</span>
+                  <Plus className="w-3 h-3 text-muted-foreground ml-1 shrink-0" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCreateTestJob("visit_plan_reminder_2")}
+                  className="px-2.5 py-1.5 bg-card hover:bg-card/80 border border-border/50 text-foreground font-bold rounded-lg text-left truncate flex items-center justify-between"
+                >
+                  <span className="truncate text-rose-500 font-black">Final Warn #2 (L2)</span>
                   <Plus className="w-3 h-3 text-muted-foreground ml-1 shrink-0" />
                 </button>
                 <button
@@ -1405,10 +1893,10 @@ export default function AdminAutomationPage() {
                 <button
                   type="button"
                   onClick={() => handleCreateTestJob("follow_up")}
-                  className="px-2.5 py-1.5 bg-card hover:bg-card/80 border border-border/50 text-foreground font-bold rounded-lg text-left truncate flex items-center justify-between"
+                  className="col-span-2 px-2.5 py-1.5 bg-card hover:bg-card/80 border border-border/50 text-foreground font-bold rounded-lg text-center flex items-center justify-center gap-1.5"
                 >
-                  <span className="truncate">Follow Up</span>
-                  <Plus className="w-3 h-3 text-muted-foreground ml-1 shrink-0" />
+                  <span>Follow Up Client Msg</span>
+                  <Plus className="w-3 h-3 text-muted-foreground shrink-0" />
                 </button>
               </div>
               <p className="text-[8px] font-medium text-muted-foreground leading-normal">
@@ -1426,35 +1914,91 @@ export default function AdminAutomationPage() {
         transition={{ delay: 0.18 }}
         className="p-5 md:p-6 rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-sm mt-6"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        {/* Toggleable Header */}
+        <div 
+          onClick={() => setIsQueueExpanded(!isQueueExpanded)}
+          className="flex items-center justify-between gap-4 mb-4 select-none cursor-pointer pb-2 border-b border-border/10 hover:opacity-85 transition-opacity"
+        >
           <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-primary" />
-            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
-              Queue Monitor (Pusat Antrean OpenClaw)
-            </h3>
+            <Database className="w-4.5 h-4.5 text-primary shrink-0" />
+            <div className="flex flex-col">
+              <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
+                Queue Monitor (Pusat Antrean OpenClaw)
+              </h3>
+              <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                {queueItems.filter(i => i.status === "pending").length} Pending • {queueItems.length} Total Jobs
+              </p>
+            </div>
           </div>
-
-          {/* Status Filters */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {["all", "pending", "processing", "sent", "failed"].map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setStatusFilter(f)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider transition-all",
-                  statusFilter === f
-                    ? "bg-primary text-primary-foreground shadow-sm animate-none"
-                    : "bg-muted hover:bg-muted/80 text-muted-foreground border border-border/40"
-                )}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+              isQueueExpanded ? "bg-zinc-800 text-zinc-400" : "bg-primary/20 text-primary animate-pulse"
+            )}>
+              {isQueueExpanded ? "Collapse" : "Expand"}
+            </span>
+            {isQueueExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-primary transition-transform" />
+            )}
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {isQueueExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-950/25 p-3 rounded-2xl border border-border/10">
+              {/* Status Filters */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {["all", "pending", "processing", "sent", "failed"].map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setStatusFilter(f)}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider transition-all",
+                      statusFilter === f
+                        ? "bg-primary text-primary-foreground shadow-sm animate-none"
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground border border-border/40"
+                    )}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              {/* Run Queue Runner Button */}
+              <button
+                type="button"
+                disabled={isProcessingQueue}
+                onClick={handleProcessQueue}
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
+                  queueItems.filter(i => i.status === "pending").length > 0
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white animate-pulse"
+                    : "bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-muted-foreground"
+                )}
+              >
+                {isProcessingQueue ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Kirim Antrean ({queueItems.filter(i => i.status === "pending").length} Pending)</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/20">
@@ -1527,17 +2071,47 @@ export default function AdminAutomationPage() {
                             {item.type?.replace(/_/g, " ")}
                           </span>
                           <span className="text-[10px] text-foreground font-black mt-0.5 line-clamp-1">{item.title}</span>
-                          <span className="text-[9px] text-muted-foreground line-clamp-1 mt-0.5 max-w-[200px]" title={item.message}>
+                          <span 
+                            onClick={() => toggleMessageExpand(item.id)}
+                            className={cn(
+                              "text-[9px] text-muted-foreground mt-1 cursor-pointer transition-colors block text-left hover:text-primary",
+                              expandedMessages[item.id] 
+                                ? "whitespace-pre-wrap font-medium break-all bg-muted/65 p-2 rounded-lg border border-border/20 max-w-sm md:max-w-md" 
+                                : "line-clamp-1 max-w-[200px]"
+                            )} 
+                            title="Klik untuk memperluas / menyembunyikan isi pesan lengkap"
+                          >
                             {item.message}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleMessageExpand(item.id)}
+                            className="text-[8px] text-left text-neutral-400 dark:text-neutral-500 hover:text-primary transition-colors mt-0.5"
+                          >
+                            {expandedMessages[item.id] ? "[-] Sembunyikan" : "[+] Selengkapnya"}
+                          </button>
                         </div>
                       </td>
 
                       {/* User details */}
                       <td className="py-3">
-                        <div className="flex flex-col min-w-[120px]">
-                          <span className="text-[10px] font-bold text-foreground leading-tight truncate">{userName}</span>
-                          <span className="text-[9px] text-muted-foreground font-mono mt-0.5 truncate">{userEmail}</span>
+                        <div className="flex items-center gap-2.5 min-w-[140px]">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-[10px] shrink-0 select-none overflow-hidden border border-border/40">
+                            {userProfile?.photoURL ? (
+                              <img 
+                                src={userProfile.photoURL} 
+                                alt={userName} 
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              userName[0]?.toUpperCase() || "U"
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] font-bold text-foreground leading-tight truncate">{userName}</span>
+                            <span className="text-[9px] text-muted-foreground font-mono mt-0.5 truncate">{userEmail}</span>
+                          </div>
                         </div>
                       </td>
 
@@ -1617,6 +2191,8 @@ export default function AdminAutomationPage() {
             </tbody>
           </table>
         </div>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* SECTION: Notification Preferences Table */}
@@ -1626,14 +2202,45 @@ export default function AdminAutomationPage() {
         transition={{ delay: 0.2 }}
         className="p-5 md:p-6 rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-sm mt-6"
       >
-        <div className="flex items-center gap-2 mb-4">
-          <Bell className="w-4 h-4 text-primary" />
-          <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
-            Notification Preferences (User List Status)
-          </h3>
+        {/* Toggleable Header */}
+        <div 
+          onClick={() => setIsPrefsExpanded(!isPrefsExpanded)}
+          className="flex items-center justify-between gap-4 mb-4 select-none cursor-pointer pb-2 border-b border-border/10 hover:opacity-85 transition-opacity"
+        >
+          <div className="flex items-center gap-2">
+            <Bell className="w-4.5 h-4.5 text-primary shrink-0" />
+            <div className="flex flex-col">
+              <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
+                Notification Preferences (User List Status)
+              </h3>
+              <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
+                {users.length} User Terdaftar
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+              isPrefsExpanded ? "bg-zinc-800 text-zinc-400" : "bg-primary/20 text-primary animate-pulse"
+            )}>
+              {isPrefsExpanded ? "Collapse" : "Expand"}
+            </span>
+            {isPrefsExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-primary transition-transform" />
+            )}
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {isPrefsExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/20">
@@ -1663,8 +2270,17 @@ export default function AdminAutomationPage() {
                     <tr key={u.id} className="hover:bg-card/20 transition-colors">
                       <td className="py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs shrink-0 select-none">
-                            {u.name[0]?.toUpperCase() || "U"}
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-[10px] shrink-0 select-none overflow-hidden border border-border/40">
+                            {u.photoURL ? (
+                              <img 
+                                src={u.photoURL} 
+                                alt={u.name} 
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              u.name[0]?.toUpperCase() || "U"
+                            )}
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="text-[11px] font-bold text-foreground leading-tight truncate">{u.name}</span>
@@ -1707,6 +2323,8 @@ export default function AdminAutomationPage() {
             </tbody>
           </table>
         </div>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

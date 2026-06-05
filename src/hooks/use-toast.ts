@@ -25,9 +25,11 @@ const TOAST_LIMIT = 3;
 
 function dispatch(action: ToastAction) {
   switch (action.type) {
-    case 'ADD_TOAST':
-      memoryState = [action.toast, ...memoryState].slice(0, TOAST_LIMIT);
+    case 'ADD_TOAST': {
+      const filtered = memoryState.filter((t) => t.id !== action.toast.id);
+      memoryState = [action.toast, ...filtered].slice(0, TOAST_LIMIT);
       break;
+    }
     case 'UPDATE_TOAST':
       memoryState = memoryState.map((t) =>
         t.id === action.toast.id ? { ...t, ...action.toast } : t
