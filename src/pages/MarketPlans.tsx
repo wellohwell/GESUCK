@@ -40,7 +40,7 @@ import Report from "./Report";
 import { TambahRencanaModal } from "../features/market-plans/modals/TambahRencanaModal";
 import { PlanItem } from "../features/market-plans/components/PlanItem";
 import { SharedMarketPlanRenderer } from "../features/market-plans/components/SharedMarketPlanRenderer";
-import { MarketCoverage } from "../features/market-plans/components/MarketCoverage";
+import { MarketTemperature } from "../features/market-plans/components/MarketTemperature";
 
 dayjs.extend(dayOfYear);
 dayjs.locale("id");
@@ -762,7 +762,7 @@ export default function MarketPlans({
             {activeDate.fullDate}
           </p>
 
-          <MarketCoverage markets={markets} allPlans={allPlans} />
+          <MarketTemperature markets={markets} allPlans={allPlans} />
           </section>
 
           {/* Live List & Footer */}

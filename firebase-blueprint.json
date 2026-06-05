@@ -187,9 +187,50 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["branchId", "branchName", "active"]
+    },
+    "AutomationSettings": {
+      "title": "Automation Settings",
+      "description": "Global or specific automation system configurations",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "visitPlanReminderEnabled": { "type": "boolean" },
+        "firstReminderTime": { "type": "string" },
+        "finalReminderTime": { "type": "string" }
+      },
+      "required": ["enabled", "visitPlanReminderEnabled", "firstReminderTime", "finalReminderTime"]
+    },
+    "NotificationQueueItem": {
+      "title": "Notification Queue Item",
+      "description": "Outbound campaign task or system notification",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "uid": { "type": "string" },
+        "phone": { "type": "string" },
+        "to": { "type": "string" },
+        "tenant_id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processing", "sent", "failed"] },
+        "priority": { "type": "number" },
+        "retryCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["type", "uid", "phone", "title", "message", "status", "priority", "retryCount", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
+    "/notification_queue/{queueId}": {
+      "schema": "NotificationQueueItem",
+      "description": "Centralized system outbound notification queue"
+    },
+    "/automation_settings/{settingId}": {
+      "schema": "AutomationSettings",
+      "description": "System automation configuration rules"
+    },
     "/branches/{branchId}": {
       "schema": "Branch",
       "description": "Multi-branch operational register"

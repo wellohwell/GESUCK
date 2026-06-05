@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../providers/AuthProvider';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Mail, Shield, MapPin, Calendar, Camera, Settings, LogOut, Pencil, Check, X } from 'lucide-react';
+import { User, Mail, Shield, MapPin, Calendar, Camera, Settings, LogOut, Pencil, Check, X, Bell } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { auth } from '../../firebase/config';
 import { signOut } from 'firebase/auth';
@@ -14,6 +14,30 @@ export function WorkspaceProfilePage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUpdatingNotification, setIsUpdatingNotification] = useState(false);
+
+  const notifications = profile?.notifications ?? { visitPlanReminder: true };
+  const visitReminder = notifications.visitPlanReminder ?? true;
+
+  const handleToggleNotification = async () => {
+    if (!profile?.uid) return;
+    setIsUpdatingNotification(true);
+    const currentNotifications = profile.notifications ?? {};
+    const currentReminder = currentNotifications.visitPlanReminder ?? true;
+    
+    try {
+      await updateUserProfile(profile.uid, {
+        notifications: {
+          ...currentNotifications,
+          visitPlanReminder: !currentReminder
+        }
+      } as any);
+    } catch (error) {
+      console.error('Update notification preference failed:', error);
+    } finally {
+      setIsUpdatingNotification(false);
+    }
+  };
 
   const branchName = profile?.branchId 
     ? branchesList.find(b => b.branchId === profile.branchId)?.branchName || profile.branchId 
@@ -149,6 +173,43 @@ export function WorkspaceProfilePage() {
                   {profile?.userType === 'global' ? 'Global' : branchName}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Notifications Section */}
+          <section className="px-2 sm:px-6">
+            <h2 className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-[0.2em] mb-4 sm:mb-6 flex items-center gap-2">
+              <Bell className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Notifications Settings
+            </h2>
+            
+            <div className="p-5 rounded-3xl bg-black/20 border border-border/40 flex items-center justify-between">
+              <div className="space-y-1.5 pr-4 flex-1">
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-white block">
+                  Visit Plan Reminder
+                </span>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-relaxed">
+                  Receive reminders when tomorrow's Visit Plan has not yet been submitted.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleNotification}
+                disabled={isUpdatingNotification}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50",
+                  visitReminder ? "bg-primary" : "bg-zinc-200 dark:bg-zinc-805"
+                )}
+                role="switch"
+                aria-checked={visitReminder}
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                    visitReminder ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
             </div>
           </section>
 

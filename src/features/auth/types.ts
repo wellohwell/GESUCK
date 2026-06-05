@@ -20,4 +20,8 @@ export interface UserProfile {
   updatedAt: Timestamp;
   userType?: "branch" | "global" | null;
   globalRole?: "owner" | "developer" | "superadmin" | null;
+  notifications?: {
+    visitPlanReminder?: boolean;
+    [key: string]: any;
+  };
 }

@@ -24,7 +24,7 @@ import { ROLES } from "../../../config/roles";
 import { ActionButton } from "../../../components/ui/buttons";
 import { MasterDataView } from "../../admin/Master";
 import { PlanItem } from "../../../features/market-plans/components/PlanItem";
-import { MarketCoverage } from "../../../features/market-plans/components/MarketCoverage";
+import { MarketTemperature } from "../../../features/market-plans/components/MarketTemperature";
 import { motion } from "motion/react";
 
 export default function MarketPlansPage() {
@@ -147,7 +147,7 @@ export default function MarketPlansPage() {
                 </p>
               </div>
 
-              <MarketCoverage markets={markets} allPlans={allPlans} />
+              <MarketTemperature markets={markets} allPlans={allPlans} />
             </section>
 
             {/* Right Section: Plans List */}

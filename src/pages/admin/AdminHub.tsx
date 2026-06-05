@@ -29,6 +29,13 @@ export default function AdminHubPage() {
       requiresOwner: false
     },
     { 
+      title: "Automation Center", 
+      description: "Pusat tata kelola automasi, webhook, dan pengingat harian.", 
+      icon: Sliders, 
+      path: "/admin/automation", 
+      requiresOwner: false
+    },
+    { 
       title: "Approval Akun", 
       description: "Moderasi pendaftaran dan otorisasi role pengguna.", 
       icon: ShieldCheck, 

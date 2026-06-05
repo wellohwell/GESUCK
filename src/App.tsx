@@ -10,6 +10,7 @@ import AdminInsightPage from "./pages/admin/Insight";
 import AdminUserPage from "./pages/admin/User";
 import AdminMasterPage from "./pages/admin/Master";
 import AdminMigrationPage from "./pages/admin/Migration";
+import AdminAutomationPage from "./pages/admin/Automation";
 import OperationalReportPage from "./features/reports/pages/OperationalReportPage";
 import PendingApproval from "./pages/PendingApproval";
 import Blocked from "./pages/Blocked";
@@ -112,6 +113,7 @@ function AppContent() {
             <Route path="insight" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.VIEW_INSIGHT}><AdminInsightPage /></RequirePermission></RequireAdminAccess>} />
             <Route path="master" element={<RequireAdminAccess><AdminMasterPage /></RequireAdminAccess>} />
             <Route path="approvals" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.USER_APPROVAL}><AdminUserApprovalPage /></RequirePermission></RequireAdminAccess>} />
+            <Route path="automation" element={<RequireAdminAccess><AdminAutomationPage /></RequireAdminAccess>} />
             <Route 
               path="users" 
               element={

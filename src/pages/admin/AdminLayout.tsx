@@ -153,6 +153,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
     if (cleanPath.endsWith("/insight")) return "MARKET INSIGHT";
     if (cleanPath.endsWith("/user") || cleanPath.endsWith("/users")) return "USER DETAIL & PENUGASAN";
     if (cleanPath.endsWith("/master")) return "DATA MASTER PASAR";
+    if (cleanPath.endsWith("/automation")) return "AUTOMATION CENTER";
     if (cleanPath.endsWith("/branches")) return "MANAJEMEN CABANG";
     if (cleanPath.endsWith("/modules")) return "TATA KELOLA MODUL";
     if (cleanPath.endsWith("/navigation")) return "TATA KELOLA NAVIGASI";
