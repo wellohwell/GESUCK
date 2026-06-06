@@ -463,7 +463,7 @@ export default function OperationsPage() {
             <span className="text-[9px] uppercase font-bold text-text-muted tracking-wider line-clamp-1">Completed Today</span>
             <div className="flex items-baseline justify-between mt-0.5">
               <span className="text-lg md:text-xl font-black text-text-primary leading-none">{completedToday}</span>
-              <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">Selesai</span>
+              <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">Terkirim</span>
             </div>
           </div>
         </div>
@@ -759,7 +759,7 @@ export default function OperationsPage() {
                             normalizedClient.orderStatus === 'rejected' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                           )}>
                              {normalizedClient.orderStatus === 'approved' ? 'Antrean Gudang' :
-                             normalizedClient.orderStatus === 'completed' ? 'Terkirim / Selesai' :
+                             normalizedClient.orderStatus === 'completed' ? 'Terkirim' :
                              normalizedClient.orderStatus === 'pending' ? 'Ditunda (Pending)' :
                              normalizedClient.orderStatus === 'rejected' ? 'Ditolak' : 'Proses Survey'}
                           </span>
@@ -811,7 +811,7 @@ export default function OperationsPage() {
                                     "px-1.5 py-0.5 rounded text-[8px] font-black uppercase border",
                                     order.orderStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
                                   )}>
-                                    {order.orderStatus === 'completed' ? 'Selesai' : 'Arsip'}
+                                    {order.orderStatus === 'completed' ? 'Terkirim' : 'Arsip'}
                                   </span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-[11px] text-text-muted font-semibold">

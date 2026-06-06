@@ -117,7 +117,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
           {filteredClients.length > 0 ? (
             <div className="space-y-4">
               {!clientSearchQuery && (
-                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest pl-1">Konsumen Terbaru</p>
+                null
               )}
               <div className="space-y-3">
                 {filteredClients.map(client => {

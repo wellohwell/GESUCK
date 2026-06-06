@@ -185,18 +185,15 @@ export function WorkspaceProfilePage() {
             <div className="p-5 rounded-3xl bg-black/20 border border-border/40 flex items-center justify-between">
               <div className="space-y-1.5 pr-4 flex-1">
                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-white block">
-                  Visit Plan Reminder
+                  Notifikasi pengingat
                 </span>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-relaxed">
-                  Receive reminders when tomorrow's Visit Plan has not yet been submitted.
-                </p>
               </div>
               <button
                 type="button"
                 onClick={handleToggleNotification}
                 disabled={isUpdatingNotification}
                 className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 scale-90",
                   visitReminder ? "bg-primary" : "bg-zinc-200 dark:bg-zinc-805"
                 )}
                 role="switch"

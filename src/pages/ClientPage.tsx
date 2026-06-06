@@ -381,14 +381,14 @@ export default function ClientPage() {
       approved: { label: 'Gudang', color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' },
       pending: { label: 'Pending', color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' },
       rejected: { label: 'Rejected', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' },
-      completed: { label: 'Selesai', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' },
+      completed: { label: 'Terkirim', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' },
       cancelled: { label: 'Batal', color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20' },
       
       survey: { label: 'Survey', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' },
       acc: { label: 'ACC', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' },
       reject: { label: 'Reject', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' },
       pending_gudang: { label: 'Gudang', color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' },
-      terkirim: { label: 'Selesai', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' },
+      terkirim: { label: 'Terkirim', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' },
     };
     return map[status] || { label: status, color: 'bg-secondary/50 text-text-secondary border border-border/50' };
   };
@@ -628,18 +628,18 @@ export default function ClientPage() {
                                 <X className="w-5 h-5" />
                              </button>
 
-                             <h3 className="text-sm font-bold text-text-primary uppercase tracking-tight text-center sm:text-left">{normalizedClient.nama}</h3>
+                             <h3 className="text-sm font-semibold text-text-primary uppercase">{normalizedClient.nama}</h3>
                              <div className="space-y-1">
-                               <div className="flex flex-col sm:flex-row items-center sm:justify-start gap-1 sm:gap-2 text-xs font-semibold text-text-primary text-center sm:text-left">
-                                  <div className="flex items-center gap-1.5 opacity-80 justify-center">
+                               <div className="flex flex-col gap-1 text-xs font-semibold text-text-primary">
+                                  <div className="flex items-center gap-1.5 opacity-80">
                                     <Building2 className="w-3 h-3 text-text-muted shrink-0" />
                                     <span>{normalizedClient.usaha || '-'}</span>
                                   </div>
                                </div>
-                               <div className="flex flex-col sm:flex-row items-center sm:justify-start gap-1 sm:gap-2 text-xs text-text-muted leading-tight text-center sm:text-left">
-                                  <div className="flex justify-center items-center gap-1.5">
+                               <div className="flex flex-col gap-1 text-xs text-text-muted leading-tight">
+                                  <div className="flex items-center gap-1.5">
                                     <MapPin className="w-3 h-3 text-text-muted shrink-0" />
-                                    <span>{normalizedClient.alamat || '-'}</span>
+                                    <span className="truncate">{normalizedClient.alamat || '-'}</span>
                                   </div>
                                </div>
                              </div>
@@ -658,7 +658,7 @@ export default function ClientPage() {
                           {/* 2. CURRENT ACTIVE ORDER */}
                           <div className="space-y-2 text-left font-sans">
                             <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Order Aktif</h4>
-                            <details className="group border border-border/10 rounded-xl bg-card/30" open>
+                            <details className="group border border-border/10 rounded-xl bg-card/30">
                               <summary className="p-3 flex items-center justify-between cursor-pointer list-none text-xs font-bold text-text-primary">
                                 <div className="flex items-center gap-2 truncate">
                                   <span className="truncate">{normalizedClient.produk || '-'}</span>
@@ -929,13 +929,13 @@ export default function ClientPage() {
               <div className="absolute bottom-14 right-0 flex flex-col p-1 min-w-[180px] z-[50] bg-white dark:bg-zinc-900 border border-border/50 shadow-2xl rounded-2xl animate-in slide-in-from-bottom-2 fade-in duration-200">
                  <button onClick={() => { 
                    setShowAddMenu(false); 
-                   const id = openModal({ title: 'Konsumen Baru', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
+                   const id = openModal({ title: 'Data Konsumen', content: <NewClientContent onClose={() => closeModal(id)} />, size: 'xl' }); 
                  }} className="px-2.5 py-2 flex items-center gap-2.5 w-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-text-primary rounded-xl transition-colors">
                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                      <Plus className="w-3.5 h-3.5" />
                    </div>
                    <div className="text-left">
-                     <p className="text-[11px] font-bold leading-tight">Konsumen Baru</p>
+                     <p className="text-[11px] font-bold leading-tight">Data Konsumen</p>
                      <p className="text-[9px] text-text-muted mt-0.5">Daftar & Request</p>
                    </div>
                  </button>

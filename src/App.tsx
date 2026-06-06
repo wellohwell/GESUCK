@@ -84,7 +84,13 @@ function AppContent() {
             <Route path="/workspace/tools" element={<ModuleGuard moduleId="tools"><ToolsPage /></ModuleGuard>} />
             <Route path="/workspace/tools/calculator" element={<ModuleGuard moduleId="tools"><CalculatorPage /></ModuleGuard>} />
             <Route path="/workspace/client" element={<ModuleGuard moduleId="client"><ClientPage /></ModuleGuard>} />
-            <Route path="/workspace/operations" element={<ModuleGuard moduleId="operations"><OperationsPage /></ModuleGuard>} />
+            <Route path="/workspace/operations" element={
+              <ModuleGuard moduleId="operations">
+                <RequireRole roles={[ROLES.STAFF, ROLES.SURVEY, ROLES.GUDANG]}>
+                  <OperationsPage />
+                </RequireRole>
+              </ModuleGuard>
+            } />
             <Route path="/workspace/operation" element={<Navigate to="/workspace/operations" replace />} />
             <Route path="/workspace/timeline" element={<ModuleGuard moduleId="timeline"><TimelinePage /></ModuleGuard>} />
             

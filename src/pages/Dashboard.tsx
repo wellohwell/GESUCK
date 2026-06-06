@@ -23,6 +23,9 @@ import {
   Search,
   AlertTriangle,
   AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  MoveHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "../hooks/use-toast";
@@ -450,12 +453,16 @@ export default function Dashboard({
     
     const unvisitedMarkets = allKnownMarketNames
       .filter(name => !visitedMarketNames.has(name) && !hotNames.has(name))
-      .map(name => ({ name, score: 0, totalVisits: 0, status: 'NO ACTIVITY' }));
+      .map(name => ({ name, score: 0, totalVisits: 0, status: 'NO ACTIVITY', trend: 'stable' }));
 
     const visitedButNotHot = sortedByScore
       .filter(m => !hotNames.has(m.name))
       .sort((a, b) => a.score - b.score)
-      .map(m => ({ ...m, status: 'LOW ACTIVITY' }));
+      .map(m => ({ 
+        ...m, 
+        status: 'LOW ACTIVITY',
+        trend: m.currentWeekVisits > m.prevWeekVisits ? 'up' : m.currentWeekVisits < m.prevWeekVisits ? 'down' : 'stable'
+      }));
 
     const cold = [...visitedButNotHot, ...unvisitedMarkets].slice(0, 4);
 
@@ -492,7 +499,7 @@ export default function Dashboard({
 
           {/* Ultra-Compact Market Temperature Indicator */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 card-base p-1.5 shadow-soft divide-x divide-border/20 relative overflow-hidden group">
+            <div className="w-full max-w-[340px] grid grid-cols-2 gap-x-2 card-base p-1 shadow-soft divide-x divide-border/20 relative overflow-hidden group">
               {marketTemperature.isLowData ? (
                 <div className="col-span-2 py-2 flex flex-col items-center justify-center">
                   <p className="text-[7.5px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-0.5">
@@ -526,7 +533,7 @@ export default function Dashboard({
                               "text-[8px] font-black shrink-0 leading-none",
                               m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-muted-foreground/30"
                             )}>
-                              {m.trend === 'up' ? "↑" : m.trend === 'down' ? "↓" : "→"}
+                              {m.trend === 'up' ? <TrendingUp className="w-2.5 h-2.5" /> : m.trend === 'down' ? <TrendingDown className="w-2.5 h-2.5" /> : <MoveHorizontal className="w-3 h-3" />}
                             </span>
                           </div>
                         </div>
@@ -535,28 +542,28 @@ export default function Dashboard({
                   </div>
 
                   {/* COLD COLUMN */}
-                  <div className="text-left pl-2.5 group cursor-default">
-                    <div className="flex items-center gap-1 mb-0.5">
+                  <div className="text-right pl-2.5 group cursor-default">
+                    <div className="flex items-center justify-end gap-1 mb-0.5">
+                      <div className="h-[1px] flex-1 bg-blue-500/5" />
                       <span className="text-[7px] font-black tracking-[0.1em] text-blue-500 uppercase leading-none px-1 py-0.5 bg-blue-500/5 rounded-sm shadow-[0_0_10px_-2px_rgba(59,130,246,0.2)]">
                         COLD
                       </span>
-                      <div className="h-[1px] flex-1 bg-blue-500/5" />
                     </div>
                     <div className="space-y-0.5">
                       {marketTemperature.cold.map((m: any, idx: number) => (
                         <div key={idx} className="flex items-center justify-between gap-1.5 h-3">
                           <div className="flex items-center gap-1 min-w-0 flex-1">
                             <div className="w-0.5 h-0.5 rounded-full bg-blue-500/40 shrink-0" />
-                            <p className="text-[8px] font-bold text-foreground/80 truncate leading-none">
+                            <p className="text-[8px] font-bold text-foreground/80 truncate leading-none text-right">
                               {toTitleCase(m.name)}
                             </p>
                           </div>
-                          <div className="flex justify-end w-3">
+                          <div className="flex justify-start w-3">
                             <span className={cn(
                               "text-[8px] font-black shrink-0 leading-none",
-                              m.status === 'LOW ACTIVITY' ? "text-muted-foreground/40" : "text-muted-foreground/20"
+                              m.trend === 'up' ? "text-green-500" : m.trend === 'down' ? "text-red-500" : "text-muted-foreground/30"
                             )}>
-                              {m.status === 'LOW ACTIVITY' ? '•' : '—'}
+                              {m.trend === 'up' ? <TrendingUp className="w-2.5 h-2.5" /> : m.trend === 'down' ? <TrendingDown className="w-2.5 h-2.5" /> : <MoveHorizontal className="w-3 h-3" />}
                             </span>
                           </div>
                         </div>

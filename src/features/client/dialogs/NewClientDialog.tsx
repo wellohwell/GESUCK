@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CollectionReference, addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { CollectionReference, addDoc, collection, serverTimestamp, doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase/config';
 import { handleFirestoreError, OperationType } from '../../../lib/services';
 import { toast } from 'react-toastify';
@@ -18,6 +18,8 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
+    customerStatus: 'baru' as 'baru' | 'eks',
+    tanggal: new Date().toISOString().split('T')[0],
     nama: '',
     nomor: '',
     usaha: '',
@@ -60,6 +62,8 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
       const tenorNum = Number(form.tenor);
 
       const payload = {
+        customerStatus: form.customerStatus,
+        tanggal: Timestamp.fromDate(new Date(form.tanggal)),
         nama: form.nama,
         nomor: form.nomor,
         alamat: form.alamat,
@@ -98,7 +102,7 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
   const labelClass = "block text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5 ml-1";
 
   return (
-    <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-white dark:bg-zinc-900">
+    <div className="flex flex-col relative w-full h-full min-h-[50vh] bg-transparent">
       {/* Step Indicator Header */}
       <div className="sticky top-0 z-20 px-6 py-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-border/40 shrink-0">
         <div className="flex items-center gap-2">
@@ -114,8 +118,35 @@ export function NewClientContent({ onClose }: { onClose: () => void }) {
       <div className="p-6 pb-28">
         {step === 1 && (
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="mb-2">
-              <h2 className="text-xl font-black text-text-primary tracking-tight">Data Konsumen Baru</h2>
+            <div className="grid grid-cols-2 gap-5 items-end">
+              <div>
+                <label className={labelClass}>Status *</label>
+                <div className="flex p-1 bg-zinc-200/50 dark:bg-zinc-900 rounded-xl border border-border/50 h-[40px] items-center">
+                  {[ { id: 'baru', label: 'Baru' }, { id: 'eks', label: 'Eks' } ].map((status) => (
+                    <button
+                      key={status.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, customerStatus: status.id as 'baru' | 'eks' })}
+                      className={`flex-1 flex items-center justify-center py-2 rounded-lg text-xs font-bold transition-all h-full ${
+                        form.customerStatus === status.id
+                          ? 'bg-white dark:bg-zinc-800 text-text-primary shadow-sm'
+                          : 'text-text-muted hover:text-text-primary'
+                      }`}
+                    >
+                      {status.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Tanggal *</label>
+                <input 
+                  type="date"
+                  value={form.tanggal}
+                  onChange={e => setForm({...form, tanggal: e.target.value})}
+                  className={`${inputClass} !h-[40px]`}
+                />
+              </div>
             </div>
             <div>
               <input 

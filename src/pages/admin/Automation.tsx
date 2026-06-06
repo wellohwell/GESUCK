@@ -1016,7 +1016,7 @@ export default function AdminAutomationPage() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-5 md:p-6 rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-sm space-y-4"
+            className="p-5 md:p-6 rounded-[2rem] border border-border/40 backdrop-blur-sm space-y-4"
           >
             <div className="flex items-start justify-between">
               <div className="p-2.5 rounded-2xl bg-primary/10 w-fit">
@@ -1037,6 +1037,27 @@ export default function AdminAutomationPage() {
               <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-foreground">
                 Sistem Pusat Automasi
               </h3>
+              <p className="text-[11px] md:text-xs leading-relaxed text-muted-foreground font-medium">
+                Pusat administrasi aturan automasi, jadwal pemicu, dan manajemen notifikasi latar belakang. Fitur integrasi otomatisasi seperti WhatsApp Delivery dan webhooks API (OpenClaw) saat ini nonaktif sampai rilis versi lanjutan stabil.
+              </p>
+            </div>
+
+            {/* Info Callout for Workflow understanding */}
+            <div className="p-3.5 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl space-y-2.5 text-left">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500 block">
+                ⚡ SISTEM CRON AUTOMATOR AKTIF
+              </span>
+              <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+                Aplikasi dilengkapi **Dual-Engine Auto-Trigger**! Bila waktu lokal WIB saat ini ({currentTimeWIB}) sudah melewati **{settings.firstReminderTime}** (Pengingat #1) atau **{settings.finalReminderTime}** (Final #2), sistem secara otomatis memindai dan membuat seluruh antrean di Firestore secara instan tanpa perlu diklik manual.
+              </p>
+              <div className="text-[9.5px] text-muted-foreground font-semibold space-y-1.5 pt-1.5 border-t border-border/15">
+                <p>💡 **Panduan & Status Penggunaan:**</p>
+                <div className="pl-3.5 space-y-1.5 font-medium list-decimal list-inside">
+                  <p>1. **Auto-Trigger**: Saat Anda atau admin lain membuka dashboard, otomatisasi memeriksa jam saat ini. Jika waktu pengingat terlampaui dan belum ada antrean untuk jadwal target besok, pencarian dijalankan di latar belakang.</p>
+                  <p>2. **Force Scan Manual**: Anda juga bebas mengklik tombol <span className="text-primary font-bold">"Scan Pengingat"</span> di bagian Generator di bawah kapan saja untuk memaksa pemindaian ulang secara instan.</p>
+                  <p>3. **Kirim Antrean**: Setelah antrean terbuat, klik tombol hijau berkedip di pojok kanan tabel Queue Monitor untuk mengirimkan seluruh pesan satu demi satu.</p>
+                </div>
+              </div>
             </div>
 
             {/* Global Master Switch */}
