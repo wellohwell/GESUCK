@@ -220,6 +220,14 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
     }
+
+    match /weeklyReports/{reportId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /reportNotes/{noteId} {
+      allow read, write: if isSignedIn();
+    }
   }
 }
 

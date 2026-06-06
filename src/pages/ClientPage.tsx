@@ -3,6 +3,7 @@ import {
   useCurrentUser, 
   useUserProfile,
   subscribeClientsByStage,
+  subscribeClients,
   subscribeClientHistory
 } from '../lib/services';
 import { 
@@ -220,24 +221,22 @@ export default function ClientPage() {
   useEffect(() => {
     if (!profile?.role || !user?.uid) return;
     setLoading(true);
-    const unsub = subscribeClientsByStage(activeTab, profile.role, user.uid, (data) => {
+    const unsub = subscribeClients(profile.role, user.uid, (data) => {
       const normalizedData = data.map(getNormalizedClient);
       
       // Role queue isolation filter
       let filtered = normalizedData;
       if (activeTab === 'pipeline') {
         filtered = normalizedData.filter(c => 
-          (c.currentStep === 'survey' || c.currentStep === 'warehouse') &&
+          c.currentStep === 'survey' &&
           !['completed', 'rejected', 'pending', 'cancelled'].includes(c.orderStatus)
         );
         const userRole = profile.role.toUpperCase();
         if (userRole === 'SURVEY') {
           filtered = filtered.filter(c => c.currentStep === 'survey');
-        } else if (userRole === 'GUDANG') {
-          filtered = filtered.filter(c => c.currentStep === 'warehouse');
         }
       } else if (activeTab === 'client') {
-        filtered = normalizedData.filter(c => ['approved', 'completed'].includes(c.orderStatus));
+        filtered = normalizedData.filter(c => ['approved', 'completed', 'pending_gudang'].includes(c.orderStatus) || c.currentStep === 'warehouse');
       } else if (activeTab === 'arsip') {
         filtered = normalizedData.filter(c => ['pending', 'rejected', 'cancelled'].includes(c.orderStatus));
       }
@@ -475,21 +474,21 @@ export default function ClientPage() {
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 mb-0.5">
                                   <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                  {norm.customerStatus && (
-                                    <span className={cn(
-                                      "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                      norm.customerStatus === 'eks' 
-                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                    )}>
-                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
-                                    </span>
-                                  )}
                                 </div>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                                 <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
                               <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                                {norm.customerStatus && (
+                                  <span className={cn(
+                                    "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                    norm.customerStatus === 'eks' 
+                                      ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                      : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                  )}>
+                                    {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                  </span>
+                                )}
                                 <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
                                   {badge.label}
                                 </span>
@@ -517,21 +516,21 @@ export default function ClientPage() {
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 mb-0.5">
                                   <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                  {norm.customerStatus && (
-                                    <span className={cn(
-                                      "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                      norm.customerStatus === 'eks' 
-                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                    )}>
-                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
-                                    </span>
-                                  )}
                                 </div>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                                 <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
                               <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                                {norm.customerStatus && (
+                                  <span className={cn(
+                                    "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                    norm.customerStatus === 'eks' 
+                                      ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                      : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                  )}>
+                                    {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                  </span>
+                                )}
                                 <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
                                   {badge.label}
                                 </span>
@@ -558,21 +557,21 @@ export default function ClientPage() {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 mb-0.5">
                               <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                              {norm.customerStatus && (
-                                <span className={cn(
-                                  "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                  norm.customerStatus === 'eks' 
-                                    ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                    : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                )}>
-                                  {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
-                                </span>
-                              )}
                             </div>
                             <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
                             <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                            {norm.customerStatus && (
+                              <span className={cn(
+                                "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                norm.customerStatus === 'eks' 
+                                  ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                  : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                              )}>
+                                {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                              </span>
+                            )}
                             <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
                               {badge.label}
                             </span>

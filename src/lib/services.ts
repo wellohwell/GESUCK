@@ -186,8 +186,12 @@ export function subscribeActivities(role: string, uid: string, callback: (activi
     constraints.push(where("actorId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    constraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      constraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      constraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
 
   const q = tenantQuery(
@@ -519,8 +523,12 @@ export function subscribeClientsByStage(stage: string, role: string, uid: string
     constraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    constraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      constraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      constraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
   
   const q = query(
@@ -551,8 +559,12 @@ export function subscribeClientHistory(nomor: string, role: string, uid: string,
     constraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    constraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      constraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      constraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
   
   const q = query(collection(db, "clients"), ...constraints);
@@ -575,8 +587,12 @@ export function subscribeClients(role: string, uid: string, callback: (clients: 
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    baseConstraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      baseConstraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      baseConstraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
   
   const q = query(
@@ -610,8 +626,12 @@ export function subscribeOrders(role: string, uid: string, callback: (orders: an
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    baseConstraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      baseConstraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      baseConstraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
   
   if (stageFilter && stageFilter !== 'all') {
@@ -954,8 +974,12 @@ export function subscribeTasks(role: string, uid: string, callback: (tasks: any[
     baseConstraints.push(where("ownerId", "==", uid));
   }
 
-  if (branchId && !isManager) {
-    baseConstraints.push(where("branchId", "==", branchId));
+  if (!isManager) {
+    if (branchId) {
+      baseConstraints.push(where("branchId", "==", branchId));
+    } else if (isBranchRestricted) {
+      baseConstraints.push(where("branchId", "==", "UNASSIGNED"));
+    }
   }
   
   const q = tenantQuery(

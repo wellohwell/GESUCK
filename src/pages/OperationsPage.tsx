@@ -528,7 +528,12 @@ export default function OperationsPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <h4 className="text-[10px] font-bold text-text-primary uppercase truncate">{client.nama}</h4>
-                          {client.customerStatus && (
+                        </div>
+                        <p className="text-[10px] font-semibold text-text-primary truncate">{client.usaha || '-'}</p>
+                        <p className="text-[10px] text-text-muted truncate">{client.alamat || '-'}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
+                         {client.customerStatus && (
                             <span className={cn(
                               "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
                               client.customerStatus === 'eks' 
@@ -538,11 +543,6 @@ export default function OperationsPage() {
                               {client.customerStatus === 'eks' ? 'Eks' : 'Baru'}
                             </span>
                           )}
-                        </div>
-                        <p className="text-[10px] font-semibold text-text-primary truncate">{client.usaha || '-'}</p>
-                        <p className="text-[10px] text-text-muted truncate">{client.alamat || '-'}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
                          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 bg-amber-500/15 text-amber-500 rounded border border-amber-500/10 shrink-0">
                            Survey
                          </span>
