@@ -346,11 +346,12 @@ export default function OperationalReportPage() {
               ref={containerRef}
               id="print-container"
               className={cn(
-                "w-[480px] rounded-[24px] p-8 flex flex-col gap-6 transition-colors duration-300 relative overflow-hidden",
+                "w-[480px] rounded-[24px] p-8 flex flex-col gap-6 transition-colors duration-300 relative",
                 isLight 
                   ? "text-zinc-900 border border-zinc-200/80 shadow-2xl shadow-zinc-100/50" 
                   : "text-foreground border border-border/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
               )}
+              style={{ overflow: 'visible' }}
             >
               
               {/* Premium Gradient Backgrounds Cloned directly from Market Plans (/workspace/market-plans) */}
@@ -458,11 +459,11 @@ export default function OperationalReportPage() {
 
                 {/* TERKIRIM */}
                 <div className={cn(
-                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-emerald-50 border border-emerald-200/60"
                     : "bg-emerald-950/40 border border-emerald-800/30"
-                )}>
+                )} style={{ borderRadius: '18px' }}>
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className={cn("w-3.5 h-3.5", isLight ? "text-emerald-600" : "text-emerald-400")} />
                     <span className={cn(
@@ -481,11 +482,11 @@ export default function OperationalReportPage() {
 
                 {/* PENDING */}
                 <div className={cn(
-                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-amber-50 border border-amber-200/60"
                     : "bg-amber-950/40 border border-amber-800/30"
-                )}>
+                )} style={{ borderRadius: '18px' }}>
                   <div className="flex items-center gap-1.5">
                     <Clock className={cn("w-3.5 h-3.5", isLight ? "text-amber-600" : "text-amber-400")} />
                     <span className={cn(
@@ -504,11 +505,11 @@ export default function OperationalReportPage() {
 
                 {/* SURVEY */}
                 <div className={cn(
-                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-blue-50 border border-blue-200/60"
                     : "bg-blue-950/40 border border-blue-800/30"
-                )}>
+                )} style={{ borderRadius: '18px' }}>
                   <div className="flex items-center gap-1.5">
                     <FileText className={cn("w-3.5 h-3.5", isLight ? "text-blue-600" : "text-blue-400")} />
                     <span className={cn(
@@ -537,8 +538,8 @@ export default function OperationalReportPage() {
                   <table className="w-full text-left border-collapse table-fixed">
                      <thead>
                         <tr className={cn(
-                          "text-[9px] font-black uppercase tracking-[0.12em] border-b select-none",
-                          isLight ? "bg-zinc-50 border-zinc-100 text-zinc-400" : "bg-zinc-900/40 border-border/10 text-zinc-500"
+                          "text-[8px] font-black uppercase tracking-widest opacity-40 border-b select-none",
+                          isLight ? "border-zinc-100" : "border-border/10"
                         )}>
                            <th className="px-2.5 py-2.5 w-[25%] pl-4">NAMA</th>
                            <th className="px-2 py-2.5 w-[20%]">BARANG</th>
@@ -573,27 +574,17 @@ export default function OperationalReportPage() {
                           const status = client.status?.toLowerCase() || '';
                           
                           let statusText = 'LAINNYA';
-                          let badgeClasses = "";
+                          let colorClass = isLight ? "text-zinc-600" : "text-zinc-400";
                           
                           if (status === 'terkirim') {
                             statusText = 'TERKIRIM';
-                            badgeClasses = isLight 
-                              ? "bg-emerald-50/70 border-emerald-200/50 text-emerald-600 font-bold" 
-                              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-bold";
+                            colorClass = "text-emerald-400";
                           } else if (status === 'gudang' || status === 'pending_gudang') {
                             statusText = 'GUDANG';
-                            badgeClasses = isLight 
-                              ? "bg-amber-50/70 border-amber-200/50 text-amber-600 font-bold" 
-                              : "bg-amber-500/10 border-amber-500/20 text-amber-400 font-bold";
+                            colorClass = "text-amber-400";
                           } else if (status === 'survey') {
                             statusText = 'SURVEY';
-                            badgeClasses = isLight 
-                              ? "bg-blue-50/70 border-blue-200/50 text-blue-600 font-bold" 
-                              : "bg-blue-500/10 border-blue-500/20 text-blue-400 font-bold";
-                          } else {
-                            badgeClasses = isLight 
-                              ? "bg-zinc-50 border-zinc-200 text-zinc-600 font-bold" 
-                              : "bg-zinc-500/10 border-zinc-500/20 text-zinc-400 font-bold";
+                            colorClass = "text-blue-400";
                           }
 
                           return (
@@ -637,8 +628,8 @@ export default function OperationalReportPage() {
                               {/* Process Status Badge matches screenshots exactly */}
                               <td className="px-2 py-2 align-middle text-center w-[16%]">
                                  <span className={cn(
-                                   "text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-[0.05em] select-none inline-block font-bold whitespace-nowrap",
-                                   badgeClasses
+                                   "font-black uppercase tracking-wider text-[9px]",
+                                   colorClass
                                   )}>
                                    {statusText}
                                  </span>
