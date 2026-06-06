@@ -346,10 +346,10 @@ export default function OperationalReportPage() {
               ref={containerRef}
               id="print-container"
               className={cn(
-                "w-[480px] rounded-[40px] p-8 flex flex-col gap-6 transition-colors duration-300 relative overflow-hidden",
+                "w-[480px] rounded-[24px] p-8 flex flex-col gap-6 transition-colors duration-300 relative overflow-hidden",
                 isLight 
-                  ? "text-zinc-900 bg-zinc-50 border border-zinc-200 shadow-xl shadow-zinc-200/50" 
-                  : "text-foreground bg-zinc-950/20 border border-zinc-800 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
+                  ? "text-zinc-900 border border-zinc-200/80 shadow-2xl shadow-zinc-100/50" 
+                  : "text-foreground border border-border/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
               )}
             >
               
@@ -390,7 +390,7 @@ export default function OperationalReportPage() {
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#cbfb45] animate-pulse" />
                     <span className={cn(
-                      "text-xs font-black tracking-[0.2em] uppercase font-sans",
+                      "text-[10px] font-black tracking-[0.2em] uppercase font-sans",
                       isLight ? "text-zinc-500" : "text-zinc-400"
                     )}>
                       LAPORAN MINGGUAN
@@ -458,10 +458,10 @@ export default function OperationalReportPage() {
                 
                 {/* TEKIRIM COMPONENT MEDALLION CARD */}
                 <div className={cn(
-                  "rounded-[32px] p-2.5 h-[76px] flex flex-col justify-between transition-all overflow-hidden",
+                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
                   isLight 
-                    ? "bg-white border border-zinc-200 shadow-sm" 
-                    : "bg-zinc-900/40 border border-zinc-700 shadow-lg"
+                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
+                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-emerald-500/10"
                 )}>
                   {/* Card Icon & Header Label */}
                   <div className="flex items-center justify-between">
@@ -493,10 +493,10 @@ export default function OperationalReportPage() {
 
                 {/* PENDING COMPONENT MEDALLION CARD */}
                 <div className={cn(
-                  "rounded-[32px] p-2.5 h-[76px] flex flex-col justify-between transition-all overflow-hidden",
+                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
                   isLight 
-                    ? "bg-white border border-zinc-200 shadow-sm" 
-                    : "bg-zinc-900/40 border border-zinc-700 shadow-lg"
+                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
+                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-amber-500/10"
                 )}>
                   {/* Card Icon & Header Label */}
                   <div className="flex items-center justify-between">
@@ -528,10 +528,10 @@ export default function OperationalReportPage() {
 
                 {/* SURVEY COMPONENT MEDALLION CARD */}
                 <div className={cn(
-                  "rounded-[32px] p-2.5 h-[76px] flex flex-col justify-between transition-all overflow-hidden",
+                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
                   isLight 
-                    ? "bg-white border border-zinc-200 shadow-sm" 
-                    : "bg-zinc-900/40 border border-zinc-700 shadow-lg"
+                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
+                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-blue-500/10"
                 )}>
                   {/* Card Icon & Header Label */}
                   <div className="flex items-center justify-between">
@@ -564,10 +564,10 @@ export default function OperationalReportPage() {
 
               {/* TABLE CONTAINER */}
               <div className={cn(
-                "rounded-[36px] overflow-hidden isolate transition-all duration-300 border",
+                "rounded-[20px] transition-all duration-300 border",
                 isLight 
-                  ? "bg-white border border-zinc-200 shadow-sm" 
-                  : "bg-zinc-900/25 border border-zinc-700 backdrop-blur-md"
+                  ? "bg-white border-zinc-200/80 shadow-md shadow-zinc-100/50" 
+                  : "bg-zinc-900/25 border-zinc-850/50 backdrop-blur-md"
               )}>
                   <table className="w-full text-left border-collapse table-fixed">
                      <thead>
@@ -575,11 +575,11 @@ export default function OperationalReportPage() {
                           "text-[9px] font-black uppercase tracking-[0.12em] border-b select-none",
                           isLight ? "bg-zinc-50 border-zinc-100 text-zinc-400" : "bg-zinc-900/40 border-border/10 text-zinc-500"
                         )}>
-                           <th className="px-2.5 py-2.5 w-[25%] pl-4 rounded-tl-[28px]">NAMA</th>
+                           <th className="px-2.5 py-2.5 w-[25%] pl-4">NAMA</th>
                            <th className="px-2 py-2.5 w-[20%]">BARANG</th>
                            <th className="px-2 py-2.5 w-[25%]">OMSET</th>
                            <th className="px-2 py-2.5 w-[16%] text-center">STATUS</th>
-                           <th className="px-2 py-2.5 w-[14%] text-center rounded-tr-[28px]">KET</th>
+                           <th className="px-2 py-2.5 w-[14%] text-center">KET</th>
                         </tr>
                      </thead>
                      <tbody className="text-sm">
@@ -613,22 +613,22 @@ export default function OperationalReportPage() {
                           if (status === 'terkirim') {
                             statusText = 'TERKIRIM';
                             badgeClasses = isLight 
-                              ? "text-emerald-600" 
-                              : "text-emerald-400";
+                              ? "bg-emerald-50/70 border-emerald-200/50 text-emerald-600 font-bold" 
+                              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 font-bold";
                           } else if (status === 'gudang' || status === 'pending_gudang') {
                             statusText = 'GUDANG';
                             badgeClasses = isLight 
-                              ? "text-amber-600" 
-                              : "text-amber-400";
+                              ? "bg-amber-50/70 border-amber-200/50 text-amber-600 font-bold" 
+                              : "bg-amber-500/10 border-amber-500/20 text-amber-400 font-bold";
                           } else if (status === 'survey') {
                             statusText = 'SURVEY';
                             badgeClasses = isLight 
-                              ? "text-blue-600" 
-                              : "text-blue-400";
+                              ? "bg-blue-50/70 border-blue-200/50 text-blue-600 font-bold" 
+                              : "bg-blue-500/10 border-blue-500/20 text-blue-400 font-bold";
                           } else {
                             badgeClasses = isLight 
-                              ? "text-zinc-600" 
-                              : "text-zinc-400";
+                              ? "bg-zinc-50 border-zinc-200 text-zinc-600 font-bold" 
+                              : "bg-zinc-500/10 border-zinc-500/20 text-zinc-400 font-bold";
                           }
 
                           return (
@@ -672,7 +672,7 @@ export default function OperationalReportPage() {
                               {/* Process Status Badge matches screenshots exactly */}
                               <td className="px-2 py-2 align-middle text-center w-[16%]">
                                  <span className={cn(
-                                   "text-[10px] uppercase tracking-[0.05em] select-none inline-block font-bold whitespace-nowrap",
+                                   "text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-[0.05em] select-none inline-block font-bold whitespace-nowrap",
                                    badgeClasses
                                   )}>
                                    {statusText}
