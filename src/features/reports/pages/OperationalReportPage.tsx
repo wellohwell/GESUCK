@@ -453,113 +453,78 @@ export default function OperationalReportPage() {
                 </div>
               </div>
 
-              {/* SPECIAL COMPACT FINTECH SUMMARY CARDS (HORIZONTAL ROW STACK) */}
+              {/* SUMMARY CARDS */}
               <div className="grid grid-cols-3 gap-2 px-0.5 select-none">
-                
-                {/* TEKIRIM COMPONENT MEDALLION CARD */}
+
+                {/* TERKIRIM */}
                 <div className={cn(
-                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
-                  isLight 
-                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
-                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-emerald-500/10"
+                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  isLight
+                    ? "bg-emerald-50 border border-emerald-200/60"
+                    : "bg-emerald-950/40 border border-emerald-800/30"
                 )}>
-                  {/* Card Icon & Header Label */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className={cn("w-3.5 h-3.5", isLight ? "text-emerald-600" : "text-emerald-400")} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8.5px]",
+                      "font-black uppercase tracking-[0.15em] text-[8px]",
                       isLight ? "text-emerald-700" : "text-emerald-400"
                     )}>Terkirim</span>
-                    
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center border shrink-0 shadow-sm",
-                      isLight 
-                        ? "bg-emerald-50 border-emerald-200/60 text-emerald-600" 
-                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                    )}>
-                      <CheckCircle2 className="w-4 h-4" />
-                    </div>
                   </div>
-
-                  {/* Card Amount Text */}
-                  <div className="flex flex-col">
-                    <span className={cn(
-                      "text-[11px] sm:text-xs font-black tracking-tight whitespace-nowrap",
-                      isLight ? "text-zinc-950" : "text-white"
-                    )}>
-                      {formatCurrency(stats.terkirim)}
-                    </span>
-                  </div>
+                  <span className={cn(
+                    "font-black leading-none block",
+                    isLight ? "text-zinc-900" : "text-white",
+                    stats.terkirim >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                  )}>
+                    {formatCurrency(stats.terkirim)}
+                  </span>
                 </div>
 
-                {/* PENDING COMPONENT MEDALLION CARD */}
+                {/* PENDING */}
                 <div className={cn(
-                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
-                  isLight 
-                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
-                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-amber-500/10"
+                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  isLight
+                    ? "bg-amber-50 border border-amber-200/60"
+                    : "bg-amber-950/40 border border-amber-800/30"
                 )}>
-                  {/* Card Icon & Header Label */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className={cn("w-3.5 h-3.5", isLight ? "text-amber-600" : "text-amber-400")} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8.5px]",
+                      "font-black uppercase tracking-[0.15em] text-[8px]",
                       isLight ? "text-amber-700" : "text-amber-400"
                     )}>Pending</span>
-                    
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center border shrink-0 shadow-sm",
-                      isLight 
-                        ? "bg-amber-50 border-amber-200/60 text-amber-600" 
-                        : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                    )}>
-                      <Clock className="w-4 h-4" />
-                    </div>
                   </div>
-
-                  {/* Card Amount Text */}
-                  <div className="flex flex-col">
-                    <span className={cn(
-                      "text-[11px] sm:text-xs font-black tracking-tight whitespace-nowrap",
-                      isLight ? "text-zinc-950" : "text-white"
-                    )}>
-                      {formatCurrency(stats.pending)}
-                    </span>
-                  </div>
+                  <span className={cn(
+                    "font-black leading-none block",
+                    isLight ? "text-zinc-900" : "text-white",
+                    stats.pending >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                  )}>
+                    {formatCurrency(stats.pending)}
+                  </span>
                 </div>
 
-                {/* SURVEY COMPONENT MEDALLION CARD */}
+                {/* SURVEY */}
                 <div className={cn(
-                  "rounded-[26px] p-2.5 h-[76px] flex flex-col justify-between transition-all border",
-                  isLight 
-                    ? "bg-white/80 border-zinc-200/50 shadow-md shadow-zinc-100/30" 
-                    : "bg-zinc-900/40 border-zinc-850/50 shadow-lg hover:border-blue-500/10"
+                  "rounded-[28px] p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  isLight
+                    ? "bg-blue-50 border border-blue-200/60"
+                    : "bg-blue-950/40 border border-blue-800/30"
                 )}>
-                  {/* Card Icon & Header Label */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <FileText className={cn("w-3.5 h-3.5", isLight ? "text-blue-600" : "text-blue-400")} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8.5px]",
+                      "font-black uppercase tracking-[0.15em] text-[8px]",
                       isLight ? "text-blue-700" : "text-blue-400"
                     )}>Survey</span>
-                    
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center border shrink-0 shadow-sm",
-                      isLight 
-                        ? "bg-blue-50 border-blue-200/60 text-blue-600" 
-                        : "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                    )}>
-                      <Search className="w-4 h-4" />
-                    </div>
                   </div>
-
-                  {/* Card Amount Text */}
-                  <div className="flex flex-col">
-                    <span className={cn(
-                      "text-[11px] sm:text-xs font-black tracking-tight whitespace-nowrap",
-                      isLight ? "text-zinc-950" : "text-white"
-                    )}>
-                      {formatCurrency(stats.survey)}
-                    </span>
-                  </div>
+                  <span className={cn(
+                    "font-black leading-none block",
+                    isLight ? "text-zinc-900" : "text-white",
+                    stats.survey >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                  )}>
+                    {formatCurrency(stats.survey)}
+                  </span>
                 </div>
+
               </div>
 
               {/* TABLE CONTAINER */}
