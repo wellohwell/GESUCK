@@ -31,10 +31,13 @@ function getWeeklyRange(inputDate = new Date()) {
 }
 
 function formatDateRange(start: Date, end: Date) {
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-  const startStr = start.toLocaleDateString('id-ID', options);
-  const endStr = end.toLocaleDateString('id-ID', options);
-  return `${startStr} - ${endStr}`.toUpperCase();
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  const startDay = start.getDate();
+  const startMonth = monthNames[start.getMonth()];
+  const endDay = end.getDate();
+  const endMonth = monthNames[end.getMonth()];
+  const year = end.getFullYear();
+  return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${year}`;
 }
 
 function getFirstName(fullName: string) {
@@ -375,82 +378,71 @@ export default function OperationalReportPage() {
               )} />
               
               {/* TOP BRAND DECORATION BAR */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 
-                {/* Volt Logo container */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full overflow-hidden">
-                    <img 
-                      src="/login-illustration.png" 
-                      referrerPolicy="no-referrer" 
-                      className="w-12 h-12 object-cover" 
-                      alt="App Logo" 
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#cbfb45] animate-pulse" />
+                <div className="flex flex-col gap-1.5">
+                  {/* Laporan Mingguan Header */}
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#cbfb45] animate-pulse" />
                     <span className={cn(
-                      "text-[10px] font-black tracking-[0.2em] uppercase font-sans",
-                      isLight ? "text-zinc-500" : "text-zinc-400"
+                      "text-[15px] font-black tracking-[0.25em] uppercase font-sans",
+                      isLight ? "text-zinc-900" : "text-white"
                     )}>
                       LAPORAN MINGGUAN
                     </span>
+                  </div>
+
+                  {/* Metadata Row containing Name-Role & Calendar Pill */}
+                  <div className="pl-[22px] flex items-center gap-2.5 flex-wrap">
+                    <div className={cn(
+                      "font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-1",
+                      isLight ? "text-zinc-950" : "text-white"
+                    )}>
+                      <span>{userFirstName} -</span>
+                      {isExporting ? (
+                        <span>{roleText.trim().toUpperCase() || 'SALES'}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          className={cn(
+                            "bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[11px] font-black focus:outline-none caret-primary",
+                            isLight 
+                              ? "text-zinc-950 placeholder:text-zinc-350" 
+                              : "text-white placeholder:text-zinc-650"
+                          )}
+                          placeholder="SALES"
+                          value={roleText}
+                          onChange={e => handleRoleChange(e.target.value)}
+                          style={{ 
+                            width: `${Math.max(5, roleText.length || 5) * 9}px`,
+                            lineHeight: 'normal'
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Small Calendar Capsule */}
+                    <div className="bg-primary text-primary-foreground font-black text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider select-none">
+                      <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>{formatDateRange(monday, saturday)}</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Secure Tag Badge */}
                 <div className={cn(
-                  "px-3 py-1.5 rounded-full border text-[9px] font-black tracking-widest flex items-center gap-1.5 select-none",
+                  "px-3 py-1.5 rounded-full border text-[9px] font-black tracking-widest flex items-center gap-1.5 select-none mt-1",
                   isLight 
                     ? "bg-zinc-50 border-zinc-200 text-zinc-650" 
                     : "bg-secondary/10 border-border/30 text-zinc-350"
                 )}>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   SECURE
-                </div>
-              </div>
-
-              {/* CENTERED TITLES */}
-              <div className="text-left space-y-3">
-                {/* Calendar pill & Author name metadata row - in a clean single row */}
-                <div className="flex items-center gap-3.5 select-none flex-wrap">
-                  <div className="bg-primary text-primary-foreground font-black text-[10px] px-3.5 py-1.5 rounded-full flex items-center gap-1.5 uppercase tracking-wide select-none">
-                    <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                      <line x1="16" y1="2" x2="16" y2="6"></line>
-                      <line x1="8" y1="2" x2="8" y2="6"></line>
-                      <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span>{formatDateRange(monday, saturday)}</span>
-                  </div>
-                  
-                  <div className={cn(
-                    "font-black text-xs uppercase tracking-[0.2em] flex items-center gap-1.5",
-                    isLight ? "text-zinc-900" : "text-white"
-                  )}>
-                    <span>{userFirstName} -</span>
-                    {isExporting ? (
-                      <span>{roleText.trim().toUpperCase() || 'SALES'}</span>
-                    ) : (
-                      <input
-                        type="text"
-                        className={cn(
-                          "bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-xs font-black focus:outline-none caret-primary",
-                          isLight 
-                            ? "text-zinc-900 placeholder:text-zinc-350" 
-                            : "text-white placeholder:text-zinc-650"
-                        )}
-                        placeholder="SALES"
-                        value={roleText}
-                        onChange={e => handleRoleChange(e.target.value)}
-                        style={{ 
-                          width: `${Math.max(5, roleText.length || 5) * 10}px`,
-                          lineHeight: 'normal'
-                        }}
-                      />
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -589,16 +581,16 @@ export default function OperationalReportPage() {
 
                           return (
                             <tr key={client.id} className={cn(
-                              "border-b last:border-b-0 transition-colors",
+                              "border-b border-border/10 last:border-b-0 transition-colors",
                               isLight 
-                                ? "border-zinc-100 hover:bg-zinc-50/50 text-zinc-800" 
-                                : "border-border/10 hover:bg-[#0c0d0e]/40 text-foreground"
+                                ? "hover:bg-zinc-50/50 text-zinc-800" 
+                                : "hover:bg-[#0c0d0e]/40 text-foreground"
                             )}>
                               
                               {/* Customer Name */}
-                              <td className="px-2.5 py-2 align-middle w-[25%] pl-4">
+                              <td className="px-2.5 py-2.5 align-middle w-[25%] pl-4">
                                 <span className={cn(
-                                  "font-normal text-[10px] tracking-wide block truncate max-w-[110px]",
+                                  "font-black text-[10px] tracking-wide block truncate max-w-[110px]",
                                   isLight ? "text-zinc-900" : "text-white"
                                 )}>
                                   {getFirstName(client.nama)}
@@ -606,19 +598,16 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Product Column */}
-                              <td className="px-2 py-2 align-middle w-[20%]">
-                                <span className={cn(
-                                  "font-normal text-[10px] uppercase tracking-wide block truncate max-w-[80px]",
-                                  isLight ? "text-zinc-500" : "text-zinc-400"
-                                )}>
+                              <td className="px-2 py-2.5 align-middle w-[20%]">
+                                <span className="text-[9px] text-muted-foreground uppercase tracking-wide block truncate max-w-[80px]">
                                   {client.produk ? client.produk.trim().split(/\s+/)[0].toUpperCase() : '-'}
                                 </span>
                               </td>
 
                               {/* Omset column with Bold Typography */}
-                              <td className="px-2 py-2 align-middle w-[25%]">
+                              <td className="px-2 py-2.5 align-middle w-[25%]">
                                 <span className={cn(
-                                  "font-normal text-[10px] font-mono tracking-tight whitespace-nowrap",
+                                  "font-semibold text-[10px] font-mono tracking-tight whitespace-nowrap",
                                   isLight ? "text-zinc-950" : "text-white"
                                 )}>
                                   {formatCurrency(client.omset || 0)}
@@ -626,7 +615,7 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Process Status Badge matches screenshots exactly */}
-                              <td className="px-2 py-2 align-middle text-center w-[16%]">
+                              <td className="px-2 py-2.5 align-middle text-center w-[16%]">
                                  <span className={cn(
                                    "font-black uppercase tracking-wider text-[9px]",
                                    colorClass
@@ -636,22 +625,19 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Editable/Presentable Remarquable Notes input row */}
-                              <td className="px-2 py-2 align-middle text-center w-[14%]">
+                              <td className="px-2 py-2.5 align-middle text-center w-[14%]">
                                  {isExporting ? (
-                                   <span className={cn(
-                                     "text-[10px] font-normal block min-h-[14px] text-center truncate max-w-[65px] mx-auto",
-                                     isLight ? "text-zinc-800" : "text-zinc-300"
-                                   )}>
+                                   <span className="text-[9px] text-muted-foreground block min-h-[14px] text-center truncate max-w-[65px] mx-auto">
                                      {notes[client.id] || '-'}
                                    </span>
                                  ) : (
                                    <input 
                                      type="text"
                                      className={cn(
-                                       "w-full bg-transparent border-b border-transparent focus:border-primary/20 p-0 text-[10px] outline-none focus:ring-0 rounded-md transition-all text-center font-normal",
+                                       "w-full bg-transparent border-b border-transparent focus:border-primary/20 p-0 text-[9px] text-muted-foreground outline-none focus:ring-0 rounded-md transition-all text-center font-normal",
                                        isLight 
-                                         ? "text-zinc-800 placeholder:text-zinc-300 hover:bg-zinc-50 focus:bg-zinc-100" 
-                                         : "text-zinc-200 placeholder:text-zinc-700 hover:bg-secondary/20 focus:bg-[#0c0d0e]/90"
+                                         ? "placeholder:text-zinc-300 hover:bg-zinc-50 focus:bg-zinc-100" 
+                                         : "placeholder:text-zinc-700 hover:bg-secondary/20 focus:bg-[#0c0d0e]/90"
                                      )}
                                      placeholder="-"
                                      value={notes[client.id] || ''}
