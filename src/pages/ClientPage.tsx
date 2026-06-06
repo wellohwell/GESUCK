@@ -29,7 +29,10 @@ import {
   Wallet,
   Building2,
   ArrowLeft,
-  Trash2
+  Trash2,
+  User,
+  Store,
+  Home
 } from 'lucide-react';
 import { cn, calculateEstimasiLunas, formatWhatsApp, formatCurrency } from '../lib/utils';
 import { toast } from 'react-toastify';
@@ -470,9 +473,21 @@ export default function ClientPage() {
                           return (
                             <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                  <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                                  {norm.customerStatus && (
+                                    <span className={cn(
+                                      "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                      norm.customerStatus === 'eks' 
+                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                    )}>
+                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
                               <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
                                 <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
@@ -500,9 +515,21 @@ export default function ClientPage() {
                           return (
                             <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                  <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                                  {norm.customerStatus && (
+                                    <span className={cn(
+                                      "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                      norm.customerStatus === 'eks' 
+                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                    )}>
+                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                               </div>
                               <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
                                 <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
@@ -529,9 +556,21 @@ export default function ClientPage() {
                       return (
                         <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-xs font-bold text-text-primary uppercase truncate mb-0.5">{norm.nama}</h3>
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
+                              {norm.customerStatus && (
+                                <span className={cn(
+                                  "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                  norm.customerStatus === 'eks' 
+                                    ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                    : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                )}>
+                                  {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                            <p className="text-[9px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                            <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
                             <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
@@ -628,20 +667,25 @@ export default function ClientPage() {
                                 <X className="w-5 h-5" />
                              </button>
 
-                             <h3 className="text-sm font-semibold text-text-primary uppercase">{normalizedClient.nama}</h3>
-                             <div className="space-y-1">
-                               <div className="flex flex-col gap-1 text-xs font-semibold text-text-primary">
-                                  <div className="flex items-center gap-1.5 opacity-80">
-                                    <Building2 className="w-3 h-3 text-text-muted shrink-0" />
-                                    <span>{normalizedClient.usaha || '-'}</span>
-                                  </div>
-                               </div>
-                               <div className="flex flex-col gap-1 text-xs text-text-muted leading-tight">
-                                  <div className="flex items-center gap-1.5">
-                                    <MapPin className="w-3 h-3 text-text-muted shrink-0" />
-                                    <span className="truncate">{normalizedClient.alamat || '-'}</span>
-                                  </div>
-                               </div>
+                             <div className="flex flex-col gap-1">
+                               <p className="text-[10px] font-semibold text-text-primary uppercase flex items-center whitespace-pre-wrap">
+                                 <User className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                                 {normalizedClient.nama || '-'}
+                                 {normalizedClient.customerStatus && (
+                                   <span className={cn(
+                                     "ml-2 text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap",
+                                     normalizedClient.customerStatus === 'eks' 
+                                       ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                       : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                   )}>
+                                     {normalizedClient.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                   </span>
+                                 )}
+                               </p>
+                               {normalizedClient.usaha && (
+                                 <p className="text-[10px] font-normal text-text-secondary flex items-center whitespace-pre-wrap mt-0.5"><Store className="w-3.5 h-3.5 mr-1.5 shrink-0" />{normalizedClient.usaha}</p>
+                               )}
+                               <p className="text-[10px] font-normal text-text-muted leading-relaxed flex items-start whitespace-pre-wrap mt-1"><Home className="w-3.5 h-3.5 mr-1.5 shrink-0 mt-0.5" />{normalizedClient.alamat || '-'}</p>
                              </div>
                              <div className="flex items-center gap-2 pt-3">
                                 <a href={`https://wa.me/${formatWhatsApp(normalizedClient.nomor)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-xl font-bold text-[11px] transition-colors">
