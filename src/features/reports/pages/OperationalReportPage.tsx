@@ -378,71 +378,75 @@ export default function OperationalReportPage() {
               )} />
               
               {/* TOP BRAND DECORATION BAR */}
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between border-b border-border/10 pb-4 mb-4">
                 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1">
                   {/* Laporan Mingguan Header */}
-                  <div className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#cbfb45] animate-pulse" />
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#cbfb45] animate-pulse" />
                     <span className={cn(
-                      "text-[15px] font-black tracking-[0.25em] uppercase font-sans",
+                      "text-[16px] font-black tracking-[0.25em] uppercase font-sans leading-none",
                       isLight ? "text-zinc-900" : "text-white"
                     )}>
                       LAPORAN MINGGUAN
                     </span>
                   </div>
 
-                  {/* Metadata Row containing Name-Role & Calendar Pill */}
-                  <div className="pl-[22px] flex items-center gap-2.5 flex-wrap">
+                  {/* Metadata Row containing Name-Role */}
+                  <div className="pl-[18px]">
                     <div className={cn(
-                      "font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-1",
-                      isLight ? "text-zinc-950" : "text-white"
+                      "font-black text-[10.5px] uppercase tracking-[0.2em] flex items-center gap-1.5 leading-none",
+                      isLight ? "text-zinc-500" : "text-zinc-450"
                     )}>
-                      <span>{userFirstName} -</span>
+                      <span className={isLight ? "text-zinc-900" : "text-zinc-100"}>{userFirstName}</span>
+                      <span className={cn(isLight ? "text-zinc-300" : "text-zinc-700")}>•</span>
                       {isExporting ? (
                         <span>{roleText.trim().toUpperCase() || 'SALES'}</span>
                       ) : (
                         <input
                           type="text"
                           className={cn(
-                            "bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[11px] font-black focus:outline-none caret-primary",
+                            "bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[10.5px] font-black focus:outline-none caret-primary",
                             isLight 
-                              ? "text-zinc-950 placeholder:text-zinc-350" 
-                              : "text-white placeholder:text-zinc-650"
+                              ? "text-zinc-500 placeholder:text-zinc-300" 
+                              : "text-zinc-450 placeholder:text-zinc-650"
                           )}
                           placeholder="SALES"
                           value={roleText}
                           onChange={e => handleRoleChange(e.target.value)}
                           style={{ 
-                            width: `${Math.max(5, roleText.length || 5) * 9}px`,
+                            width: `${Math.max(5, roleText.length || 5) * 8.5}px`,
                             lineHeight: 'normal'
                           }}
                         />
                       )}
                     </div>
-
-                    {/* Small Calendar Capsule */}
-                    <div className="bg-primary text-primary-foreground font-black text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider select-none">
-                      <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      <span>{formatDateRange(monday, saturday)}</span>
-                    </div>
                   </div>
                 </div>
 
-                {/* Secure Tag Badge */}
-                <div className={cn(
-                  "px-3 py-1.5 rounded-full border text-[9px] font-black tracking-widest flex items-center gap-1.5 select-none mt-1",
-                  isLight 
-                    ? "bg-zinc-50 border-zinc-200 text-zinc-650" 
-                    : "bg-secondary/10 border-border/30 text-zinc-350"
-                )}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  SECURE
+                {/* Right side container: Secure and Calendar Pill stacked vertically */}
+                <div className="flex flex-col items-end gap-1.5 select-none text-right">
+                  {/* Secure Tag Badge */}
+                  <div className={cn(
+                    "px-2.5 py-1 rounded-full border text-[8px] font-black tracking-widest flex items-center gap-1.5 select-none leading-none",
+                    isLight 
+                      ? "bg-zinc-50 border-zinc-200 text-zinc-500" 
+                      : "bg-secondary/10 border-border/30 text-zinc-400"
+                  )}>
+                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                    SECURE
+                  </div>
+
+                  {/* Small Calendar Capsule */}
+                  <div className="bg-primary text-primary-foreground font-black text-[8px] px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider select-none leading-none">
+                    <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>{formatDateRange(monday, saturday)}</span>
+                  </div>
                 </div>
               </div>
 
