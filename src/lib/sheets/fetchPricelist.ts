@@ -110,16 +110,85 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
       throw new Error("Format data Google Sheets tidak berisi tabel yang valid. Pastikan Spreadsheet memiliki kolom dan baris yang sesuai.");
     }
 
-    const headers = jsonObject.table.cols.map((col: any) => (col.label || '').toUpperCase().trim());
-    
-    const merkIndex = headers.indexOf('MERK');
-    const typeIndex = headers.indexOf('TYPE');
-    const modelIndex = headers.indexOf('MODEL');
-    const fiturIndex = headers.indexOf('FITUR') !== -1 ? headers.indexOf('FITUR') : headers.indexOf('SPEKSIFIKASI / FITUR');
-    const hargaIndex = headers.indexOf('JUAL'); 
-    const captionIndex = headers.indexOf('CAPTION') !== -1 ? headers.indexOf('CAPTION') : headers.indexOf('KET');
+    let modelIndex = 1;
+    let typeIndex = 4;
+    let hargaIndex = 6; // Column G (0-indexed: G is 6)
+    let fiturIndex = 7; // Column H (0-indexed: H is 7)
+    let merkIndex = 8;  // Column I (0-indexed: I is 8)
+    let captionIndex = 9; // Column J (0-indexed: J is 9)
 
-    return jsonObject.table.rows.map((row: any, index: number) => {
+    const isListHarga = sheetName.toUpperCase().includes("LIST HARGA");
+
+    if (!isListHarga) {
+      const findIndexByKeywords = (keywords: string[], defaultIdx: number) => {
+        // 1. Check Row 0 cells (most reliable for "List Harga" when columns are empty in cols)
+        if (jsonObject.table.rows && jsonObject.table.rows.length > 0 && jsonObject.table.rows[0].c) {
+          for (let idx = 0; idx < jsonObject.table.rows[0].c.length; idx++) {
+            const cell = jsonObject.table.rows[0].c[idx];
+            const val = (cell?.f || cell?.v || '').toString().toUpperCase().trim();
+            if (keywords.some(k => val.includes(k))) {
+              return idx;
+            }
+          }
+        }
+        // 2. Check cols labels
+        for (let idx = 0; idx < jsonObject.table.cols.length; idx++) {
+          const val = (jsonObject.table.cols[idx].label || '').toUpperCase().trim();
+          if (keywords.some(k => val.includes(k))) {
+            return idx;
+          }
+        }
+        return defaultIdx;
+      };
+
+      modelIndex = findIndexByKeywords(['MODEL'], 1);
+      typeIndex = findIndexByKeywords(['TYPE'], 4);
+      fiturIndex = findIndexByKeywords(['FITUR', 'SPEKSIFIKASI', 'SPEC'], 7);
+      merkIndex = findIndexByKeywords(['MERK', 'BRAND'], 8);
+      
+      let detectedCaptionIndex = findIndexByKeywords(['CAPTION'], -1);
+      if (detectedCaptionIndex === -1) {
+        detectedCaptionIndex = findIndexByKeywords(['KET'], -1);
+      }
+      captionIndex = detectedCaptionIndex === -1 ? 9 : detectedCaptionIndex;
+
+      // Smartly find harga Index
+      let detectedHargaIndex = -1;
+      if (jsonObject.table.rows && jsonObject.table.rows.length > 0 && jsonObject.table.rows[0].c) {
+        for (let idx = 0; idx < jsonObject.table.rows[0].c.length; idx++) {
+          const cell = jsonObject.table.rows[0].c[idx];
+          const val = (cell?.f || cell?.v || '').toString().toUpperCase().trim();
+          if (['JUAL', 'HARGA', 'CASH', 'PRICE'].some(k => val === k)) {
+            detectedHargaIndex = idx;
+            break;
+          }
+        }
+      }
+      if (detectedHargaIndex === -1) {
+        for (let idx = 0; idx < jsonObject.table.cols.length; idx++) {
+          const val = (jsonObject.table.cols[idx].label || '').toUpperCase().trim();
+          if (['JUAL', 'HARGA', 'PRICE'].some(k => val.includes(k)) && !val.includes('FITUR') && !val.includes('SPEK')) {
+            detectedHargaIndex = idx;
+            break;
+          }
+        }
+      }
+      if (detectedHargaIndex === -1 && jsonObject.table.cols.length > 6) {
+        // Default fallback for Column G (index 6) which contains the price in your List Harga sheet
+        detectedHargaIndex = 6;
+      }
+      hargaIndex = detectedHargaIndex;
+    }
+
+    // Detect if Row 0 contains header names to skip it
+    const firstRowIsHeader = jsonObject.table.rows[0]?.c?.some((cell: any) => {
+      const val = (cell?.f || cell?.v || '').toString().toUpperCase().trim();
+      return val === 'MODEL' || val === 'TYPE' || val === 'SPEKSIFIKASI / FITUR' || val === 'KET';
+    }) || isListHarga;
+
+    const startIndex = firstRowIsHeader ? 1 : 0;
+
+    const parsedRows = jsonObject.table.rows.slice(startIndex).map((row: any, index: number) => {
       const getVal = (idx: number) => {
         if (idx === -1 || !row.c || !row.c[idx]) return '';
         return row.c[idx].v?.toString() || '';
@@ -130,23 +199,35 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
         return row.c[idx].f || row.c[idx].v?.toString() || '0';
       };
 
-      // Map to internal Product type while keeping original fields for the calculator
+      const currentModel = getVal(modelIndex);
+      const currentType = getVal(typeIndex);
+      const currentFitur = getVal(fiturIndex);
+      const currentMerk = getVal(merkIndex);
+      const currentCaption = getVal(captionIndex);
+      const currentHarga = getFormattedVal(hargaIndex);
+
+      // Clean up price string to number
+      const cleanPriceStr = getVal(hargaIndex).replace(/[^0-9]/g, '');
+      const parsedPrice = parseFloat(cleanPriceStr) || 0;
+
       return {
-        id: index.toString(),
-        merk: getVal(merkIndex),
-        type: getVal(typeIndex),
-        model: getVal(modelIndex),
-        fitur: getVal(fiturIndex),
-        jual: getFormattedVal(hargaIndex),
-        caption: getVal(captionIndex),
-        // Legacy compatibility
-        nama: `${getVal(modelIndex)} ${getVal(typeIndex)}`.trim() || "Tanpa Nama",
-        kategori: getVal(merkIndex) || "Umum",
-        harga: parseFloat(getVal(hargaIndex).replace(/[^0-9.]/g, '')) || 0,
-        marginRate: 0.3, // default
-        deskripsi: getVal(fiturIndex)
+        id: (index + startIndex).toString(),
+        merk: currentMerk,
+        type: currentType,
+        model: currentModel,
+        fitur: currentFitur,
+        jual: currentHarga,
+        caption: currentCaption,
+        nama: `${currentModel} ${currentType}`.trim() || 'Tanpa Nama',
+        kategori: currentMerk || 'Umum',
+        harga: parsedPrice,
+        marginRate: 0.3,
+        deskripsi: currentFitur
       };
     });
+
+    // Remove completely empty rows
+    return parsedRows.filter((p: any) => p.model.trim() !== '' || p.type.trim() !== '');
   } catch (error: any) {
     console.error("Gagal mengambil data pricelist:", error);
     if (error.message === "Failed to fetch") {

@@ -378,22 +378,22 @@ export default function OperationalReportPage() {
               )} />
               
               {/* TOP BRAND DECORATION BAR */}
-              <div className="flex items-start justify-between border-b border-border/10 pb-4 mb-4">
+              <div className="flex items-center justify-between border-b border-border/10 pb-4">
                 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                   {/* Laporan Mingguan Header */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2 h-2 rounded-full bg-[#cbfb45] animate-pulse" />
+                  <div className="flex items-center gap-2">
                     <span className={cn(
                       "text-[16px] font-black tracking-[0.25em] uppercase font-sans leading-none",
                       isLight ? "text-zinc-900" : "text-white"
                     )}>
                       LAPORAN MINGGUAN
                     </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#cbfb45] animate-pulse pointer-events-none select-none flex-shrink-0" />
                   </div>
 
                   {/* Metadata Row containing Name-Role */}
-                  <div className="pl-[18px]">
+                  <div className="pl-0">
                     <div className={cn(
                       "font-black text-[10.5px] uppercase tracking-[0.2em] flex items-center gap-1.5 leading-none",
                       isLight ? "text-zinc-500" : "text-zinc-450"
@@ -403,22 +403,24 @@ export default function OperationalReportPage() {
                       {isExporting ? (
                         <span>{roleText.trim().toUpperCase() || 'SALES'}</span>
                       ) : (
-                        <input
-                          type="text"
-                          className={cn(
-                            "bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[10.5px] font-black focus:outline-none caret-primary",
-                            isLight 
-                              ? "text-zinc-500 placeholder:text-zinc-300" 
-                              : "text-zinc-450 placeholder:text-zinc-650"
-                          )}
-                          placeholder="SALES"
-                          value={roleText}
-                          onChange={e => handleRoleChange(e.target.value)}
-                          style={{ 
-                            width: `${Math.max(5, roleText.length || 5) * 8.5}px`,
-                            lineHeight: 'normal'
-                          }}
-                        />
+                        <div className="relative inline-block min-w-[50px]">
+                          {/* Mirror span to calculate exact width dynamically without clipping */}
+                          <span className="invisible block whitespace-pre uppercase tracking-[0.2em] text-[10.5px] font-black pointer-events-none select-none min-h-[11px] pr-1">
+                            {roleText || 'SALES'}
+                          </span>
+                          <input
+                            type="text"
+                            className={cn(
+                              "absolute inset-0 bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[10.5px] font-black focus:outline-none caret-primary w-full h-full",
+                              isLight 
+                                ? "text-zinc-500 placeholder:text-zinc-350" 
+                                : "text-zinc-450 placeholder:text-zinc-650"
+                            )}
+                            placeholder="SALES"
+                            value={roleText}
+                            onChange={e => handleRoleChange(e.target.value)}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
