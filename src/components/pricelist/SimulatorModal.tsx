@@ -20,7 +20,8 @@ export function SimulatorModal({ isOpen, onClose, product }: Props) {
         TYPE: product.type || '',
         MODEL: product.model || product.nama || '',
         JUAL: product.jual || product.harga.toString(),
-        caption: product.caption || ''
+        caption: product.caption || '',
+        lastUpdate: product.lastUpdate || ''
       };
 
       // Open inside our beautiful new responsive global modal

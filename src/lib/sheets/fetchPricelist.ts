@@ -116,6 +116,7 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
     let fiturIndex = 7; // Column H (0-indexed: H is 7)
     let merkIndex = 8;  // Column I (0-indexed: I is 8)
     let captionIndex = 9; // Column J (0-indexed: J is 9)
+    let lastUpdateIndex = 10; // Column K (0-indexed: K is 10)
 
     const isListHarga = sheetName.toUpperCase().includes("LIST HARGA");
 
@@ -152,6 +153,9 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
       }
       captionIndex = detectedCaptionIndex === -1 ? 9 : detectedCaptionIndex;
 
+      let detectedLastUpdateIndex = findIndexByKeywords(['DATE', 'UPDATE', 'TIMESTAMP', 'TIME', 'WAKTU', 'LAST'], -1);
+      lastUpdateIndex = detectedLastUpdateIndex === -1 ? 10 : detectedLastUpdateIndex;
+
       // Smartly find harga Index
       let detectedHargaIndex = -1;
       if (jsonObject.table.rows && jsonObject.table.rows.length > 0 && jsonObject.table.rows[0].c) {
@@ -180,11 +184,31 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
       hargaIndex = detectedHargaIndex;
     }
 
+    // Scan the entire table to find any cell containing "Update" or "Last Update" pattern
+    let discoveredLastUpdate = "";
+    if (jsonObject.table && jsonObject.table.rows) {
+      for (const r of jsonObject.table.rows) {
+        if (!r.c) continue;
+        for (const cell of r.c) {
+          if (!cell) continue;
+          const valStr = (cell.f || cell.v || '').toString().trim();
+          if (/update/i.test(valStr)) {
+            const cleanStr = valStr.replace(/^(?:last\s+)?update\s*:?\s*/i, '').trim();
+            if (cleanStr && cleanStr.length > 2) {
+              discoveredLastUpdate = cleanStr;
+              break;
+            }
+          }
+        }
+        if (discoveredLastUpdate) break;
+      }
+    }
+
     // Detect if Row 0 contains header names to skip it
     const firstRowIsHeader = jsonObject.table.rows[0]?.c?.some((cell: any) => {
       const val = (cell?.f || cell?.v || '').toString().toUpperCase().trim();
       return val === 'MODEL' || val === 'TYPE' || val === 'SPEKSIFIKASI / FITUR' || val === 'KET';
-    }) || isListHarga;
+    }) ;
 
     const startIndex = firstRowIsHeader ? 1 : 0;
 
@@ -205,6 +229,7 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
       const currentMerk = getVal(merkIndex);
       const currentCaption = getVal(captionIndex);
       const currentHarga = getFormattedVal(hargaIndex);
+      const currentLastUpdate = discoveredLastUpdate || getFormattedVal(lastUpdateIndex);
 
       // Clean up price string to number
       const cleanPriceStr = getVal(hargaIndex).replace(/[^0-9]/g, '');
@@ -218,6 +243,7 @@ export async function fetchPricelist(customSpreadsheetId?: string | null, custom
         fitur: currentFitur,
         jual: currentHarga,
         caption: currentCaption,
+        lastUpdate: currentLastUpdate,
         nama: `${currentModel} ${currentType}`.trim() || 'Tanpa Nama',
         kategori: currentMerk || 'Umum',
         harga: parsedPrice,

@@ -546,6 +546,12 @@ export function subscribeClientsByStage(stage: string, role: string, uid: string
 }
 
 export function subscribeClientHistory(nomor: string, role: string, uid: string, callback: (history: any[]) => void, branchId?: string | null) {
+  const cleanNomor = (nomor || "").replace(/[^0-9]/g, "");
+  if (!cleanNomor || cleanNomor.length < 5) {
+    callback([]);
+    return () => {};
+  }
+
   const r = role?.toUpperCase();
   const isManager = r === 'MANAGER' || r === 'OWNER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';

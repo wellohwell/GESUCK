@@ -249,7 +249,8 @@ export default function ClientPage() {
 
   // Subscribe to history when client selected
   useEffect(() => {
-    if (!selectedClient?.nomor || !profile?.role) {
+    const cleanNomor = (selectedClient?.nomor || "").replace(/[^0-9]/g, "");
+    if (!selectedClient?.nomor || cleanNomor.length < 5 || !profile?.role) {
       setClientHistory([]);
       return;
     }

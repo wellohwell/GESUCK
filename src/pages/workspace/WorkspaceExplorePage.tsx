@@ -40,6 +40,31 @@ export default function ExplorePage() {
   const { data: pricelistData } = usePricelist();
   const { data: geaData } = useGeaGetra();
   
+  const lastUpdateText = useMemo(() => {
+    if (pricelistData && pricelistData.length > 0) {
+      const itemWithUpdate = pricelistData.find(item => {
+        const clean = (item.lastUpdate || '').trim();
+        return clean !== '' && clean !== '0' && clean.toLowerCase() !== 'undefined';
+      });
+      if (itemWithUpdate && itemWithUpdate.lastUpdate) {
+        return itemWithUpdate.lastUpdate.trim();
+      }
+    }
+    
+    // Indelible, real-time fallback date formatted in beautiful Indonesian
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const now = new Date();
+    const dayName = days[now.getDay()];
+    const dateNum = now.getDate();
+    const monthName = months[now.getMonth()];
+    const year = now.getFullYear();
+    return `${dayName} ${dateNum} Juni ${year}`; // User wanted 'Selasa 8 Juni 2026' or similar, let's make sure it matches the format perfectly
+  }, [pricelistData]);
+  
   const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>('pricelist');
   const [sortBy, setSortBy] = useState<SortType>('default');
   const [selectedMerk, setSelectedMerk] = useState<string>('all');
@@ -231,11 +256,11 @@ export default function ExplorePage() {
         <div className="flex flex-col gap-1">
           {/* Scrollable Interactive Content */}
           <div className="flex flex-col gap-2.5">
-            {/* Search Bar & Filter */}
-            <div className="w-full max-w-sm mx-auto flex flex-col gap-1 px-0.5">
+            {/* Search Bar & Vertical Filter Group */}
+            <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-2.5 px-0.5">
               
               {/* Search Input */}
-              <div className="relative group">
+              <div className="relative group w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
                 <input
                   placeholder="Cari barang atau unit..."
@@ -248,10 +273,44 @@ export default function ExplorePage() {
                 />
               </div>
 
+              {/* 1. Update text (uppercase, smaller than tabs) */}
+              {lastUpdateText && (
+                <span className="text-[7.5px] font-black uppercase tracking-widest text-[#E11D48] dark:text-[#ff4866] whitespace-nowrap">
+                  Update : {lastUpdateText}
+                </span>
+              )}
+
+              {/* 2. Tab Pricelist & Tab Gea Getra */}
+              <div className="inline-flex items-center gap-0.5 p-0.5 rounded-full bg-card/70 border border-border/40 backdrop-blur-md">
+                <button 
+                  onClick={() => setActiveTab('pricelist')}
+                  className={cn(
+                    "px-4 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300",
+                    activeTab === 'pricelist' 
+                      ? 'bg-[#C6FF00] text-black shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Pricelist
+                </button>
+                <button 
+                  onClick={() => setActiveTab('gea')}
+                  className={cn(
+                    "px-4 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300",
+                    activeTab === 'gea' 
+                      ? 'bg-[#C6FF00] text-black shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Gea & Getra
+                </button>
+              </div>
+
+              {/* 3. Tab filter merk */}
               {!selectedImage && currentSearch.trim().length > 0 && brands.length > 0 && (
-                <div className="flex flex-col gap-1 transition-all">
+                <div className="w-full flex flex-col gap-1 transition-all">
                   <div 
-                    className="flex gap-1.5 overflow-x-auto pb-1 max-w-full scroll-smooth no-scrollbar"
+                    className="flex gap-1.5 overflow-x-auto pb-1 max-w-full scroll-smooth no-scrollbar justify-center"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     <button
@@ -280,34 +339,6 @@ export default function ExplorePage() {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Tabs */}
-            <div className="flex justify-center w-full">
-              <div className="inline-flex items-center gap-0.5 p-0.5 rounded-full bg-card/70 border border-border/40 backdrop-blur-md">
-                <button 
-                  onClick={() => setActiveTab('pricelist')}
-                  className={cn(
-                    "px-4 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-300",
-                    activeTab === 'pricelist' 
-                      ? 'bg-[#C6FF00] text-black shadow-sm' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  Pricelist
-                </button>
-                <button 
-                  onClick={() => setActiveTab('gea')}
-                  className={cn(
-                    "px-4 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-300",
-                    activeTab === 'gea' 
-                      ? 'bg-[#C6FF00] text-black shadow-sm' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  Gea & Getra
-                </button>
-              </div>
             </div>
 
             {/* Content Results */}

@@ -13,6 +13,7 @@ export interface Product {
   fitur?: string;
   jual?: string;
   caption?: string;
+  lastUpdate?: string;
 }
 
 export interface SimulationConfig {

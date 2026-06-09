@@ -13,6 +13,7 @@ interface PricelistItem {
   MODEL: string;
   JUAL: string;
   caption?: string;
+  lastUpdate?: string;
 }
 
 const aturanMargin: Record<TipeProduk, { maksHari: number, margin: number }[]> = {
@@ -45,7 +46,7 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
   const [tenor, setTenor] = useState<Tenor | ''>('')
   const [nawar, setNawar] = useState<number | undefined>()
   
-  const [productDetails, setProductDetails] = useState({ model: '', merk: '', type: '' });
+  const [productDetails, setProductDetails] = useState({ model: '', merk: '', type: '', lastUpdate: '' });
 
   const [angsuranHarian, setAngsuranHarian] = useState<number>(0)
   const [estimasiPotongan, setEstimasiPotongan] = useState<number>(0)
@@ -81,10 +82,11 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
         setProductDetails({
             model: itemDefaults.MODEL,
             merk: itemDefaults.MERK,
-            type: itemDefaults.TYPE
+            type: itemDefaults.TYPE,
+            lastUpdate: itemDefaults.lastUpdate || ''
         });
     } else {
-        setProductDetails({ model: '', merk: '', type: '' });
+        setProductDetails({ model: '', merk: '', type: '', lastUpdate: '' });
     }
   }, [itemDefaults]);
 

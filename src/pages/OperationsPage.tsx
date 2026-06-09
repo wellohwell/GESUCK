@@ -197,7 +197,8 @@ export default function OperationsPage() {
 
   // Load selected client history
   useEffect(() => {
-    if (!selectedClient?.nomor || !profile?.role || !user?.uid) {
+    const cleanNomor = (selectedClient?.nomor || "").replace(/[^0-9]/g, "");
+    if (!selectedClient?.nomor || cleanNomor.length < 5 || !profile?.role || !user?.uid) {
       setClientHistory([]);
       return;
     }
