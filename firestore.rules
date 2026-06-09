@@ -23,8 +23,7 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email == "wahyulaksanajayakusuma@gmail.com" || 
         request.auth.token.email == "admin@gmail.com" ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() in ["MANAGER", "OWNER", "ADMIN"])
+        getUserRole() in ["MANAGER", "OWNER", "ADMIN"]
       );
     }
 
@@ -49,7 +48,10 @@ service cloud.firestore {
 
     // Role helpers using current doc lookup
     function getUserRole() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() : "MEMBER";
+      return (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.keys().hasAll(["role"]))
+             ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upperAscii()
+             : "MEMBER";
     }
 
     function getUserBranch() {
@@ -59,9 +61,7 @@ service cloud.firestore {
     }
 
     function isOwner() {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper() == "OWNER";
+      return isSignedIn() && getUserRole() == "OWNER";
     }
 
     function isStaff() {
