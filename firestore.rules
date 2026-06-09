@@ -218,6 +218,11 @@ service cloud.firestore {
       match /master_markets/{marketId} {
         allow get, list: if isSignedIn() && (isAdmin() || getUserBranch() == branchId || getUserBranch() == null);
         allow write: if isAdmin();
+        
+        match /operations/{opId} {
+          allow read: if isSignedIn() && (isAdmin() || getUserBranch() == branchId || getUserBranch() == null);
+          allow write: if isAdmin();
+        }
       }
     }
 
