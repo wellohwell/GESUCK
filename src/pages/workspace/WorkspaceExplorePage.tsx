@@ -62,7 +62,7 @@ export default function ExplorePage() {
     const dateNum = now.getDate();
     const monthName = months[now.getMonth()];
     const year = now.getFullYear();
-    return `${dayName} ${dateNum} Juni ${year}`; // User wanted 'Selasa 8 Juni 2026' or similar, let's make sure it matches the format perfectly
+    return `${dayName}, ${dateNum} ${monthName} ${year}`;
   }, [pricelistData]);
   
   const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>('pricelist');
@@ -275,8 +275,8 @@ export default function ExplorePage() {
 
               {/* 1. Update text (uppercase, smaller than tabs) */}
               {lastUpdateText && (
-                <span className="text-[7.5px] font-black uppercase tracking-widest text-[#E11D48] dark:text-[#ff4866] whitespace-nowrap">
-                  Update : {lastUpdateText}
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#C6FF00] dark:text-[#C6FF00] whitespace-nowrap">
+                  UPDATE : {lastUpdateText}
                 </span>
               )}
 
