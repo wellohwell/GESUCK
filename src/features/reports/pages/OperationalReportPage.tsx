@@ -450,14 +450,12 @@ export default function OperationalReportPage() {
                     <span>{formatDateRange(monday, saturday)}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* SUMMARY CARDS */}
-              <div className="grid grid-cols-3 gap-2 px-0.5 select-none">
+              </div>              {/* SUMMARY CARDS */}
+              <div className="grid grid-cols-3 gap-2 px-0.5 select-none font-sans">
 
                 {/* TERKIRIM */}
                 <div className={cn(
-                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-emerald-50 border border-emerald-200/60"
                     : "bg-emerald-950/40 border border-emerald-800/30"
@@ -480,7 +478,7 @@ export default function OperationalReportPage() {
 
                 {/* PENDING */}
                 <div className={cn(
-                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-amber-50 border border-amber-200/60"
                     : "bg-amber-950/40 border border-amber-800/30"
@@ -503,7 +501,7 @@ export default function OperationalReportPage() {
 
                 {/* SURVEY */}
                 <div className={cn(
-                  "p-3 h-[88px] flex flex-col justify-between overflow-hidden",
+                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
                   isLight
                     ? "bg-blue-50 border border-blue-200/60"
                     : "bg-blue-950/40 border border-blue-800/30"
@@ -536,21 +534,21 @@ export default function OperationalReportPage() {
                   <table className="w-full text-left border-collapse table-fixed">
                      <thead>
                         <tr className={cn(
-                          "text-[8px] font-black uppercase tracking-widest opacity-40 border-b select-none",
-                          isLight ? "border-zinc-100" : "border-border/10"
+                           "text-[8px] font-black uppercase tracking-widest opacity-40 border-b select-none",
+                           isLight ? "border-zinc-100" : "border-border/10"
                         )}>
-                           <th className="px-2.5 py-2.5 w-[25%] pl-4">NAMA</th>
-                           <th className="px-2 py-2.5 w-[20%]">BARANG</th>
-                           <th className="px-2 py-2.5 w-[25%]">OMSET</th>
-                           <th className="px-2 py-2.5 w-[16%] text-center">STATUS</th>
-                           <th className="px-2 py-2.5 w-[14%] text-center">KET</th>
+                           <th className="px-2.5 py-2 w-[25%] pl-4">NAMA</th>
+                           <th className="px-2 py-2 w-[20%]">BARANG</th>
+                           <th className="px-2 py-2 w-[25%]">OMSET</th>
+                           <th className="px-2 py-2 w-[16%] text-center">STATUS</th>
+                           <th className="px-2 py-2 w-[14%] text-center">KET</th>
                         </tr>
                      </thead>
                      <tbody className="text-sm">
                         {loading ? (
                           <tr>
                             <td colSpan={5} className={cn(
-                              "px-3.5 py-8 text-center font-black tracking-widest uppercase text-[10px] animate-pulse",
+                              "px-3.5 py-6 text-center font-black tracking-widest uppercase text-[10px] animate-pulse",
                               isLight ? "text-zinc-400" : "text-muted-foreground"
                             )}>
                               Memuat Data Mingguan...
@@ -559,7 +557,7 @@ export default function OperationalReportPage() {
                         ) : clients.length === 0 ? (
                           <tr>
                             <td colSpan={5} className={cn(
-                              "px-3.5 py-10 text-center select-none",
+                              "px-3.5 py-8 text-center select-none",
                               isLight ? "text-zinc-400" : "text-muted-foreground"
                             )}>
                               <div className="flex flex-col items-center gap-2">
@@ -594,7 +592,7 @@ export default function OperationalReportPage() {
                             )}>
                               
                               {/* Customer Name */}
-                              <td className="px-2.5 py-2.5 align-middle w-[25%] pl-4">
+                              <td className="px-2.5 py-2 align-middle w-[25%] pl-4">
                                 <span className={cn(
                                   "font-black text-[10px] tracking-wide block truncate max-w-[110px]",
                                   isLight ? "text-zinc-900" : "text-white"
@@ -604,14 +602,14 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Product Column */}
-                              <td className="px-2 py-2.5 align-middle w-[20%]">
+                              <td className="px-2 py-2 align-middle w-[20%]">
                                 <span className="text-[9px] text-muted-foreground uppercase tracking-wide block truncate max-w-[80px]">
                                   {client.produk ? client.produk.trim().split(/\s+/)[0].toUpperCase() : '-'}
                                 </span>
                               </td>
 
                               {/* Omset column with Bold Typography */}
-                              <td className="px-2 py-2.5 align-middle w-[25%]">
+                              <td className="px-2 py-2 align-middle w-[25%]">
                                 <span className={cn(
                                   "font-semibold text-[10px] font-mono tracking-tight whitespace-nowrap",
                                   isLight ? "text-zinc-950" : "text-white"
@@ -621,7 +619,7 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Process Status Badge matches screenshots exactly */}
-                              <td className="px-2 py-2.5 align-middle text-center w-[16%]">
+                              <td className="px-2 py-2 align-middle text-center w-[16%]">
                                  <span className={cn(
                                    "font-black uppercase tracking-wider text-[9px]",
                                    colorClass
@@ -631,7 +629,7 @@ export default function OperationalReportPage() {
                               </td>
 
                               {/* Editable/Presentable Remarquable Notes input row */}
-                              <td className="px-2 py-2.5 align-middle text-center w-[14%]">
+                              <td className="px-2 py-2 align-middle text-center w-[14%]">
                                  {isExporting ? (
                                    <span className="text-[9px] text-muted-foreground block min-h-[14px] text-center truncate max-w-[65px] mx-auto">
                                      {notes[client.id] || '-'}
