@@ -16,48 +16,50 @@ const ProductItem = React.memo(({ product, onClick }: { product: Product, onClic
   return (
     <div 
       onClick={onClick}
-      className="grid grid-cols-1 md:grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-2 md:gap-4 px-6 py-2.5 md:py-2 hover:bg-zinc-50 dark:hover:bg-card/[0.01] cursor-pointer transition-colors group"
+      className="grid grid-cols-1 md:grid-cols-[1.2fr_2fr_2fr_1.2fr] items-center gap-1 md:gap-3 px-3 py-1 md:py-1 hover:bg-zinc-150/50 dark:hover:bg-white/[0.015] cursor-pointer transition-colors border-b border-border/10 group"
     >
        {/* Mobile Layout (Table-like rows) */}
-       <div className="flex items-center justify-between md:hidden w-full gap-4">
-          <div className="flex flex-col gap-0 min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-normal">
+       <div className="flex items-center justify-between md:hidden w-full gap-2">
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-1 text-[8px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider leading-none">
               <span>{product.merk}</span>
-              <span className="text-zinc-300 dark:text-zinc-700">•</span>
+              <span className="text-zinc-650 dark:text-zinc-800">•</span>
               <span className="truncate">{product.type}</span>
             </div>
-            <span className="font-black text-[13px] text-zinc-900 dark:text-zinc-100 leading-tight truncate uppercase mt-0.5">{product.model}</span>
+            <span className="font-semibold text-[9px] text-zinc-900 dark:text-zinc-100 leading-tight uppercase">
+              {product.model}
+            </span>
             {(product.fitur || product.caption) && (
-               <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-500 truncate uppercase tracking-normal mt-0.5">
+               <span className="text-[8px] font-medium text-zinc-500 dark:text-zinc-500 max-h-3 leading-none truncate uppercase">
                  {product.fitur || product.caption}
                </span>
             )}
           </div>
 
-          <div className="flex-shrink-0 text-right">
-            <span className="font-black text-[#86b100] dark:text-primary text-[13px] tracking-normal tabular-nums">
+          <div className="flex-shrink-0 text-right self-center">
+            <span className="font-extrabold text-[#C6FF00] dark:text-primary text-[10px] tracking-tight tabular-nums">
               {product.jual || formatRp(product.harga)}
             </span>
           </div>
        </div>
        
        {/* Desktop Layout (Hidden on mobile) */}
-       <div className="hidden md:block text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+       <div className="hidden md:block text-[8px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-wider">
          {product.merk}
        </div>
-       <div className="hidden md:block text-sm font-bold text-zinc-900 dark:text-white truncate">
+       <div className="hidden md:block text-[9px] font-semibold text-zinc-900 dark:text-zinc-150 uppercase truncate">
          {product.model}
        </div>
-       <div className="hidden md:block text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate">
+       <div className="hidden md:block text-[8px] font-normal text-zinc-500 dark:text-zinc-500 uppercase truncate">
          {product.type}
        </div>
        
        {/* Price - Right Aligned on Desktop */}
-       <div className="hidden md:flex items-center justify-end pr-4 gap-3">
-         <span className="font-black text-sm text-[#86b100] dark:text-primary tabular-nums">
+       <div className="hidden md:flex items-center justify-end pr-2 gap-2">
+         <span className="font-extrabold text-[10px] text-[#C6FF00] dark:text-primary tracking-tight tabular-nums">
            {product.jual || formatRp(product.harga)}
          </span>
-         <ChevronRight className="w-3.5 h-3.5 text-zinc-300 dark:text-white/10 group-hover:text-primary transition-colors" />
+         <ChevronRight className="w-2.5 h-2.5 text-zinc-400 dark:text-zinc-650 group-hover:text-primary transition-colors flex-shrink-0" />
        </div>
     </div>
   );
@@ -150,11 +152,11 @@ export function PricelistPage({ searchQuery, sortBy, selectedMerk }: Props) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               {/* Desktop Table Header */}
-              <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1.5fr] items-center gap-4 px-6 py-2.5 bg-zinc-50/80 dark:bg-card/5">
-                 <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MERK</div>
-                 <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MODEL</div>
-                 <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">TYPE</div>
-                 <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-right pr-4">HARGA / MODAL</div>
+              <div className="hidden md:grid grid-cols-[1.2fr_2fr_2fr_1.2fr] items-center gap-3 px-4 py-1.5 bg-zinc-50/80 dark:bg-card/5 border-b border-border/10">
+                 <div className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MERK</div>
+                 <div className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">MODEL</div>
+                 <div className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">TYPE</div>
+                 <div className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest text-right pr-2">HARGA / MODAL</div>
               </div>
 
               {/* List Body */}

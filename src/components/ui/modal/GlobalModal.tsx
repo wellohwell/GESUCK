@@ -47,53 +47,97 @@ export const GlobalModal: React.FC<GlobalModalProps> = ({ modal, index }) => {
       style={{ zIndex: 999 + index }}
     >
       {/* Backdrop with elegant glass overlay blur */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={handleClose}
-        className="absolute inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-sm"
-      />
+      {isCalculatorModal ? (
+        <div
+          onClick={handleClose}
+          className="absolute inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-sm"
+        />
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+          className="absolute inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-sm"
+        />
+      )}
 
       {/* Modal Surface Box */}
-      <motion.div
-        initial={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
-        transition={{ type: "spring", damping: 28, stiffness: 350 }}
-        className={cn(
-          "relative flex flex-col bg-card border border-border/50 shadow-2xl overflow-hidden",
-          modal.size === 'sm' ? "rounded-2xl" : modal.size === 'lg' || modal.size === 'xl' || modal.size === 'full' ? "rounded-[20px]" : "rounded-[18px]",
-          "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
-          // Desktop centered size configs
-          "md:w-[85vw]", sizeClasses[modal.size || 'md'],
-          // Mobile responsive centered structure
-          "max-md:max-h-[85vh]",
-          modal.className
-        )}
-      >
-        {/* Dynamic header if specified in the call */}
-        {(modal.title || !modal.hideCloseButton) && (
-          <ModalHeader
-            title={modal.title}
-            subtitle={modal.subtitle}
-            onClose={() => closeModal(modal.id)}
-            showCloseButton={!modal.hideCloseButton}
-          />
-        )}
+      {isCalculatorModal ? (
+        <div
+          className={cn(
+            "relative flex flex-col bg-card border border-border/50 shadow-2xl overflow-hidden",
+            modal.size === 'sm' ? "rounded-2xl" : modal.size === 'lg' || modal.size === 'xl' || modal.size === 'full' ? "rounded-[20px]" : "rounded-[18px]",
+            "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
+            // Desktop centered size configs
+            "md:w-[85vw]", sizeClasses[modal.size || 'md'],
+            // Mobile responsive centered structure
+            "max-md:max-h-[85vh]",
+            modal.className
+          )}
+        >
+          {/* Dynamic header if specified in the call */}
+          {(modal.title || !modal.hideCloseButton) && (
+            <ModalHeader
+              title={modal.title}
+              subtitle={modal.subtitle}
+              onClose={() => closeModal(modal.id)}
+              showCloseButton={!modal.hideCloseButton}
+            />
+          )}
 
-        {/* Scrollable Modal Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 bg-background">
-          {modal.content}
-        </div>
-
-        {/* Footer actions if specified */}
-        {modal.footer && (
-          <div className="px-6 py-4 border-t border-border/50/50 dark:border-white/[0.05] bg-card shrink-0 flex items-center justify-end gap-3">
-            {modal.footer}
+          {/* Scrollable Modal Content */}
+          <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 bg-background">
+            {modal.content}
           </div>
-        )}
-      </motion.div>
+
+          {/* Footer actions if specified */}
+          {modal.footer && (
+            <div className="px-6 py-4 border-t border-border/50/50 dark:border-white/[0.05] bg-card shrink-0 flex items-center justify-end gap-3">
+              {modal.footer}
+            </div>
+          )}
+        </div>
+      ) : (
+        <motion.div
+          initial={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={isBelowTopBar ? { opacity: 0, scale: 0.95, y: -30 } : { opacity: 0, scale: 0.95, y: 30 }}
+          transition={{ type: "spring", damping: 28, stiffness: 350 }}
+          className={cn(
+            "relative flex flex-col bg-card border border-border/50 shadow-2xl overflow-hidden",
+            modal.size === 'sm' ? "rounded-2xl" : modal.size === 'lg' || modal.size === 'xl' || modal.size === 'full' ? "rounded-[20px]" : "rounded-[18px]",
+            "w-full min-w-[280px] max-h-[85vh] md:max-h-[88vh]",
+            // Desktop centered size configs
+            "md:w-[85vw]", sizeClasses[modal.size || 'md'],
+            // Mobile responsive centered structure
+            "max-md:max-h-[85vh]",
+            modal.className
+          )}
+        >
+          {/* Dynamic header if specified in the call */}
+          {(modal.title || !modal.hideCloseButton) && (
+            <ModalHeader
+              title={modal.title}
+              subtitle={modal.subtitle}
+              onClose={() => closeModal(modal.id)}
+              showCloseButton={!modal.hideCloseButton}
+            />
+          )}
+
+          {/* Scrollable Modal Content */}
+          <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 bg-background">
+            {modal.content}
+          </div>
+
+          {/* Footer actions if specified */}
+          {modal.footer && (
+            <div className="px-6 py-4 border-t border-border/50/50 dark:border-white/[0.05] bg-card shrink-0 flex items-center justify-end gap-3">
+              {modal.footer}
+            </div>
+          )}
+        </motion.div>
+      )}
     </div>
   );
 };

@@ -75,8 +75,18 @@ const RuntimeContext = createContext<RuntimeContextType>({
 
 export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile, loading: authLoading, isAuthenticated } = useAuth();
-  const [branch, setBranch] = useState<BranchRuntime | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [branch, setBranch] = useState<BranchRuntime | null>(() => {
+    try {
+      const cached = localStorage.getItem('vorkteam_cached_branch_runtime');
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.warn("Failed to load cached branch runtime from localStorage:", e);
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(() => !branch);
   const [error, setError] = useState<string | null>(null);
 
   const isGlobalUser = profile?.userType === 'global';
@@ -174,35 +184,47 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }
           };
 
-          setBranch({
+          const resolvedBranch: BranchRuntime = {
             id,
             name,
             code,
             active,
             runtime: runtimeConfig
-          });
+          };
+          setBranch(resolvedBranch);
+          try {
+            localStorage.setItem('vorkteam_cached_branch_runtime', JSON.stringify(resolvedBranch));
+          } catch (e) {}
         } else {
           // If branch configuration is completely missing key fallback (unconfigured)
-          setBranch({
+          const fallbackBranch: BranchRuntime = {
             id: currentActiveContext,
             name: `${currentActiveContext} Branch`,
             code: currentActiveContext,
             active: true,
             runtime: DEFAULT_RUNTIME_CONFIG
-          });
+          };
+          setBranch(fallbackBranch);
+          try {
+            localStorage.setItem('vorkteam_cached_branch_runtime', JSON.stringify(fallbackBranch));
+          } catch (e) {}
         }
         setLoading(false);
       },
       (err) => {
         console.error("Runtime configuration fetch failed:", err);
         setError("Gagal memuat konfigurasi cabang.");
-        setBranch({
+        const fallbackBranch: BranchRuntime = {
           id: currentActiveContext,
           name: `${currentActiveContext} Branch`,
           code: currentActiveContext,
           active: true,
           runtime: DEFAULT_RUNTIME_CONFIG
-        });
+        };
+        setBranch(fallbackBranch);
+        try {
+          localStorage.setItem('vorkteam_cached_branch_runtime', JSON.stringify(fallbackBranch));
+        } catch (e) {}
         setLoading(false);
       }
     );
@@ -211,10 +233,12 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [currentActiveContext, authLoading, isAuthenticated, isGlobalWorkspace]);
 
   const value = useMemo(() => {
+    // If we already have a cached branch, consider loading finished to provide an instant experience
+    const resolvedLoading = branch ? false : (authLoading || loading);
     return {
       runtime: branch?.runtime || null,
       branch,
-      loading: authLoading || loading,
+      loading: resolvedLoading,
       error,
       activeBranchContext: currentActiveContext,
       actingAs: resolvedActingAs,

@@ -51,18 +51,7 @@ export default function ExplorePage() {
       }
     }
     
-    // Indelible, real-time fallback date formatted in beautiful Indonesian
-    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-    const now = new Date();
-    const dayName = days[now.getDay()];
-    const dateNum = now.getDate();
-    const monthName = months[now.getMonth()];
-    const year = now.getFullYear();
-    return `${dayName}, ${dateNum} ${monthName} ${year}`;
+    return "";
   }, [pricelistData]);
   
   const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>('pricelist');
@@ -74,6 +63,14 @@ export default function ExplorePage() {
   // Render initialization loading spinner
   const renderedLoading = useMemo(() => {
     if (runtimeLoading) {
+      try {
+        const hasCachedBranch = !!localStorage.getItem('vorkteam_cached_branch_runtime');
+        const hasCachedPricelist = !!localStorage.getItem('vorkteam_cached_pricelist');
+        if (hasCachedBranch && hasCachedPricelist) {
+          return null; // Bypass spinner, show cached UI immediately
+        }
+      } catch (e) {}
+
       return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
           <div className="flex flex-col items-center gap-3">

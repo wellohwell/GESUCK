@@ -43,10 +43,34 @@ const parseGoogleSheetJSON = (jsonString: string): { data: GeaGetraItem[], error
   }
 };
 
+// Global memory cache to keep state alive across component re-mounts
+let cachedGeaGetra: GeaGetraItem[] | null = null;
+const GEA_STORAGE_KEY = 'vorkteam_cached_geagetra';
+
+function getInitialGeaGetra(): GeaGetraItem[] {
+  if (cachedGeaGetra) return cachedGeaGetra;
+  try {
+    const raw = localStorage.getItem(GEA_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cachedGeaGetra = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load geagetra from localStorage:', e);
+  }
+  return [];
+}
+
 export function useGeaGetra() {
   const { runtime, loading: runtimeLoading } = useRuntime();
-  const [data, setData] = useState<GeaGetraItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<GeaGetraItem[]>(getInitialGeaGetra);
+  const [loading, setLoading] = useState(() => {
+    const initial = getInitialGeaGetra();
+    return initial.length === 0;
+  });
   const [error, setError] = useState<string | null>(null);
 
   const exploreConfig = runtime?.modules?.explore;
@@ -60,8 +84,13 @@ export function useGeaGetra() {
       return;
     }
 
+    let isMounted = true;
+
     const fetchData = async () => {
-      setLoading(true);
+      const initialData = getInitialGeaGetra();
+      if (initialData.length === 0) {
+        setLoading(true);
+      }
       setError(null);
       try {
         const response = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`);
@@ -69,20 +98,37 @@ export function useGeaGetra() {
         const text = await response.text();
         const { data: parsedData, error: parseError } = parseGoogleSheetJSON(text);
 
+        if (!isMounted) return;
+
         if (parseError) {
-          setError(parseError);
+          if (data.length === 0) {
+            setError(parseError);
+          }
         } else {
-           setData(parsedData);
+          setData(parsedData);
+          cachedGeaGetra = parsedData;
+          try {
+            localStorage.setItem(GEA_STORAGE_KEY, JSON.stringify(parsedData));
+          } catch (e) {
+            console.warn('Failed to save geagetra to localStorage:', e);
+          }
         }
 
       } catch (e: any) {
-        // Suppress console.error to prevent AI Studio from treating it as a crash
-        setError("Koneksi ke Google Sheets diblokir atau bermasalah (Kemungkinan CORS atau offline).");
+        if (!isMounted) return;
+        if (data.length === 0) {
+          setError("Koneksi ke Google Sheets diblokir atau bermasalah (Kemungkinan CORS atau offline).");
+        } else {
+          console.warn('Background geagetra update failed, using stale cache:', e);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     fetchData();
+    return () => { isMounted = false; };
   }, [sheetId, sheetName, runtimeLoading]);
 
   return { data, loading, error };
