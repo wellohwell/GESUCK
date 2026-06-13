@@ -15,16 +15,76 @@ const formatIDR = (val: string | number) => {
 
 export function EditClientContent({ onClose, client }: { onClose: () => void; client: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [form, setForm] = useState({
     nama: '',
     nomor: '',
     usaha: '',
     alamat: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
     barang: '',
     angsuran: '',
     tenor: '30',
     tenorType: 'hari'
   });
+
+  const handleGetLocation = () => {
+    console.log("[EditClientDialog] handleGetLocation triggered");
+    if (!navigator.geolocation) {
+      console.warn("[EditClientDialog] Geolocation is not supported by this browser.");
+      toast.error("Browser tidak mendukung geolocation");
+      return;
+    }
+
+    setIsLocating(true);
+    console.log("[EditClientDialog] Requesting geolocation...");
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        console.log("[EditClientDialog] Geolocation success:", { latitude, longitude, accuracy });
+        
+        const formattedAddress = `📍 Lokasi Terkini\n\nLat: ${latitude}\nLng: ${longitude}\n\nhttps://maps.google.com/?q=${latitude},${longitude}`;
+        
+        setForm(prev => {
+          const updated = { 
+            ...prev, 
+            alamat: formattedAddress,
+            latitude: latitude,
+            longitude: longitude
+          };
+          console.log("[EditClientDialog] Updated form state:", updated);
+          return updated;
+        });
+        
+        toast.success("Lokasi berhasil diambil!");
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("[EditClientDialog] Geolocation error occurred:", error);
+        let errorMessage = "Gagal mendapatkan lokasi perangkat";
+        
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = "Izin lokasi ditolak, silakan aktifkan izin lokasi di browser/perangkat Anda.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = "Sinyal GPS tidak aktif atau lokasi tidak tersedia.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = "Waktu permintaan lokasi habis (timeout). Silakan coba lagi.";
+        }
+        
+        toast.error(errorMessage);
+        setIsLocating(false);
+      },
+      options
+    );
+  };
 
   useEffect(() => {
     if (client) {
@@ -33,6 +93,8 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
         nomor: client.nomor || '',
         usaha: client.usaha || '',
         alamat: client.alamat || '',
+        latitude: client.latitude || null,
+        longitude: client.longitude || null,
         barang: client.produk || '',
         angsuran: client.angsuran ? String(client.angsuran) : '',
         tenor: client.tenor ? String(client.tenor) : '30',
@@ -63,6 +125,8 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
         nomor: form.nomor,
         usaha: form.usaha || '',
         alamat: form.alamat,
+        latitude: form.latitude || null,
+        longitude: form.longitude || null,
         produk: form.barang,
         angsuran: angsuranNum,
         tenor: tenorNum,
@@ -123,13 +187,26 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
                 />
               </div>
             </div>
-            <div>
+            <div className="relative">
               <textarea 
                 placeholder="Alamat Lengkap *" 
                 value={form.alamat} 
                 onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
-                className={`${inputClass} min-h-[100px] resize-none h-auto`} 
+                className={`${inputClass} min-h-[120px] pr-14 resize-none h-auto`} 
               />
+              <button
+                type="button"
+                disabled={isLocating}
+                onClick={handleGetLocation}
+                className="absolute top-3 right-3 w-11 h-11 rounded-xl bg-white/20 dark:bg-zinc-800/40 backdrop-blur-md border border-white/30 dark:border-zinc-700/50 flex items-center justify-center shadow-lg hover:bg-white/30 dark:hover:bg-zinc-800/60 active:scale-95 transition-all text-xl z-10 disabled:opacity-50"
+                title="Ambil Lokasi Terkini"
+              >
+                {isLocating ? (
+                  <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin block" />
+                ) : (
+                  <span>📍</span>
+                )}
+              </button>
             </div>
           </div>
           

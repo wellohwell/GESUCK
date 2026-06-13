@@ -597,11 +597,7 @@ export default function ClientPage() {
         <AnimatePresence>
           {selectedClient && (
             <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center md:p-4">
-              <motion.div 
-                initial={{ x: '100%', opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: '100%', opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              <div 
                 className="w-full h-full md:max-w-2xl md:max-h-[90vh] bg-background border border-border/20 md:rounded-[20px] flex flex-col overflow-hidden shadow-2xl relative"
               >
                 {(() => {
@@ -853,7 +849,7 @@ export default function ClientPage() {
                     </>
                   );
                 })()}
-              </motion.div>
+              </div>
             </div>
           )}
         </AnimatePresence>

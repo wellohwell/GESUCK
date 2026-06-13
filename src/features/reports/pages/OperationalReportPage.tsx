@@ -166,7 +166,19 @@ export default function OperationalReportPage() {
         const isValidStatus = ["survey", "pending_gudang", "gudang", "terkirim"].includes(status);
         return d >= monday && d <= actualEnd && isValidStatus;
       });
-      setClients(filteredForWeek.sort((a, b) => a._date.getTime() - b._date.getTime()));
+      const sorted = filteredForWeek.sort((a, b) => {
+        const getCreatedTime = (client: any) => {
+          if (client.createdAt) {
+            if (client.createdAt.toDate) return client.createdAt.toDate().getTime();
+            if (client.createdAt.seconds) return client.createdAt.seconds * 1000;
+            return new Date(client.createdAt).getTime();
+          }
+          return 0;
+        };
+
+        return getCreatedTime(a) - getCreatedTime(b);
+      });
+      setClients(sorted);
       setLoading(false);
     }, profile.branchId);
     return () => unsub();
@@ -349,12 +361,12 @@ export default function OperationalReportPage() {
               ref={containerRef}
               id="print-container"
               className={cn(
-                "w-[480px] rounded-[24px] p-8 flex flex-col gap-6 transition-colors duration-300 relative",
+                "w-[480px] p-8 flex flex-col gap-6 transition-colors duration-300 relative",
                 isLight 
                   ? "text-zinc-900 border border-zinc-200/80 shadow-2xl shadow-zinc-100/50" 
                   : "text-foreground border border-border/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
               )}
-              style={{ overflow: 'visible' }}
+              style={{ overflow: 'hidden', borderRadius: '24px' }}
             >
               
               {/* Premium Gradient Backgrounds Cloned directly from Market Plans (/workspace/market-plans) */}
@@ -395,7 +407,7 @@ export default function OperationalReportPage() {
                   {/* Metadata Row containing Name-Role */}
                   <div className="pl-0">
                     <div className={cn(
-                      "font-black text-[10.5px] uppercase tracking-[0.2em] flex items-center gap-1.5 leading-none",
+                      "font-black text-[16px] uppercase tracking-[0.2em] flex items-center gap-1.5 leading-none",
                       isLight ? "text-zinc-500" : "text-zinc-450"
                     )}>
                       <span className={isLight ? "text-zinc-900" : "text-zinc-100"}>{userFirstName}</span>
@@ -403,15 +415,15 @@ export default function OperationalReportPage() {
                       {isExporting ? (
                         <span>{roleText.trim().toUpperCase() || 'SALES'}</span>
                       ) : (
-                        <div className="relative inline-block min-w-[50px]">
+                        <div className="relative inline-block min-w-[80px]">
                           {/* Mirror span to calculate exact width dynamically without clipping */}
-                          <span className="invisible block whitespace-pre uppercase tracking-[0.2em] text-[10.5px] font-black pointer-events-none select-none min-h-[11px] pr-1">
+                          <span className="invisible block whitespace-pre uppercase tracking-[0.2em] text-[16px] font-black pointer-events-none select-none min-h-[16px] pr-1">
                             {roleText || 'SALES'}
                           </span>
                           <input
                             type="text"
                             className={cn(
-                              "absolute inset-0 bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[10.5px] font-black focus:outline-none caret-primary w-full h-full",
+                              "absolute inset-0 bg-transparent border-none focus:ring-0 p-0 m-0 text-left uppercase tracking-[0.2em] text-[16px] font-black focus:outline-none caret-primary w-full h-full",
                               isLight 
                                 ? "text-zinc-500 placeholder:text-zinc-350" 
                                 : "text-zinc-450 placeholder:text-zinc-650"
@@ -451,72 +463,79 @@ export default function OperationalReportPage() {
                   </div>
                 </div>
               </div>              {/* SUMMARY CARDS */}
-              <div className="grid grid-cols-3 gap-2 px-0.5 select-none font-sans">
+              {/* FIX: wrapper dengan borderRadius + overflow hidden sendiri */}
+              <div className="grid grid-cols-3 gap-2 select-none">
 
                 {/* TERKIRIM */}
-                <div className={cn(
-                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
-                  isLight
-                    ? "bg-emerald-50 border border-emerald-200/60"
-                    : "bg-emerald-950/40 border border-emerald-800/30"
-                )} style={{ borderRadius: '18px' }}>
+                <div
+                  className={cn(
+                    'p-3 flex flex-col gap-2.5',
+                    isLight
+                      ? 'bg-emerald-50 border border-emerald-200/70'
+                      : 'bg-emerald-950/40 border border-emerald-800/30'
+                  )}
+                  style={{ borderRadius: '18px', minHeight: '76px' }}
+                >
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className={cn("w-3.5 h-3.5", isLight ? "text-emerald-600" : "text-emerald-400")} />
+                    <CheckCircle2 className={cn('w-3 h-3 shrink-0', isLight ? 'text-emerald-600' : 'text-emerald-400')} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8px]",
-                      isLight ? "text-emerald-700" : "text-emerald-400"
+                      'font-black uppercase tracking-[0.12em] text-[8px] leading-none',
+                      isLight ? 'text-emerald-700' : 'text-emerald-400'
                     )}>Terkirim</span>
                   </div>
                   <span className={cn(
-                    "font-black leading-none block",
-                    isLight ? "text-zinc-900" : "text-white",
-                    stats.terkirim >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                    'font-black leading-tight block text-sm tracking-tight',
+                    isLight ? 'text-zinc-900' : 'text-white'
                   )}>
                     {formatCurrency(stats.terkirim)}
                   </span>
                 </div>
 
                 {/* PENDING */}
-                <div className={cn(
-                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
-                  isLight
-                    ? "bg-amber-50 border border-amber-200/60"
-                    : "bg-amber-950/40 border border-amber-800/30"
-                )} style={{ borderRadius: '18px' }}>
+                <div
+                  className={cn(
+                    'p-3 flex flex-col gap-2.5',
+                    isLight
+                      ? 'bg-amber-50 border border-amber-200/70'
+                      : 'bg-amber-950/40 border border-amber-800/30'
+                  )}
+                  style={{ borderRadius: '18px', minHeight: '76px' }}
+                >
                   <div className="flex items-center gap-1.5">
-                    <Clock className={cn("w-3.5 h-3.5", isLight ? "text-amber-600" : "text-amber-400")} />
+                    <Clock className={cn('w-3 h-3 shrink-0', isLight ? 'text-amber-600' : 'text-amber-400')} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8px]",
-                      isLight ? "text-amber-700" : "text-amber-400"
+                      'font-black uppercase tracking-[0.12em] text-[8px] leading-none',
+                      isLight ? 'text-amber-700' : 'text-amber-400'
                     )}>Pending</span>
                   </div>
                   <span className={cn(
-                    "font-black leading-none block",
-                    isLight ? "text-zinc-900" : "text-white",
-                    stats.pending >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                    'font-black leading-tight block text-sm tracking-tight',
+                    isLight ? 'text-zinc-900' : 'text-white'
                   )}>
                     {formatCurrency(stats.pending)}
                   </span>
                 </div>
 
                 {/* SURVEY */}
-                <div className={cn(
-                  "px-3 py-2 h-[72px] flex flex-col justify-between overflow-hidden",
-                  isLight
-                    ? "bg-blue-50 border border-blue-200/60"
-                    : "bg-blue-950/40 border border-blue-800/30"
-                )} style={{ borderRadius: '18px' }}>
+                <div
+                  className={cn(
+                    'p-3 flex flex-col gap-2.5',
+                    isLight
+                      ? 'bg-blue-50 border border-blue-200/70'
+                      : 'bg-blue-950/40 border border-blue-800/30'
+                  )}
+                  style={{ borderRadius: '18px', minHeight: '76px' }}
+                >
                   <div className="flex items-center gap-1.5">
-                    <FileText className={cn("w-3.5 h-3.5", isLight ? "text-blue-600" : "text-blue-400")} />
+                    <FileText className={cn('w-3 h-3 shrink-0', isLight ? 'text-blue-600' : 'text-blue-400')} />
                     <span className={cn(
-                      "font-black uppercase tracking-[0.15em] text-[8px]",
-                      isLight ? "text-blue-700" : "text-blue-400"
+                      'font-black uppercase tracking-[0.12em] text-[8px] leading-none',
+                      isLight ? 'text-blue-700' : 'text-blue-400'
                     )}>Survey</span>
                   </div>
                   <span className={cn(
-                    "font-black leading-none block",
-                    isLight ? "text-zinc-900" : "text-white",
-                    stats.survey >= 10_000_000 ? "text-[12px]" : "text-[13px]"
+                    'font-black leading-tight block text-sm tracking-tight',
+                    isLight ? 'text-zinc-900' : 'text-white'
                   )}>
                     {formatCurrency(stats.survey)}
                   </span>

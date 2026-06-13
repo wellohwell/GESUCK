@@ -2,5 +2,5 @@
   "name": "Vork",
   "description": "A small tools make vork easier!",
   "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE"]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE", "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
