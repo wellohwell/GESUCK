@@ -42,6 +42,8 @@ export function RupiahInput({ id, value, onValueChange, placeholder, className, 
       <input
         id={id}
         type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         value={displayValue}
         onChange={handleChange}
         placeholder={placeholder}

@@ -45,6 +45,8 @@ import DocsPage from "./pages/admin/DocsPage";
 import OrgManagement from "./pages/admin/OrgManagement";
 import { UserLifecycleGuard } from "./components/auth/UserLifecycleGuard";
 import GlobalWorkspacePage from "./pages/GlobalWorkspacePage";
+import AdminActivityMonitorPage from "./pages/admin/ActivityMonitor";
+import AccessDeniedPage from "./pages/AccessDenied";
 
 import OwnerLayout from "./layouts/owner/OwnerLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
@@ -116,6 +118,7 @@ function AppContent() {
             }
           >
             <Route index element={<RequireAdminAccess><AdminHubPage /></RequireAdminAccess>} />
+            <Route path="activity-monitor" element={<RequireAdminAccess><AdminActivityMonitorPage /></RequireAdminAccess>} />
             <Route path="insight" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.VIEW_INSIGHT}><AdminInsightPage /></RequirePermission></RequireAdminAccess>} />
             <Route path="master" element={<RequireAdminAccess><AdminMasterPage /></RequireAdminAccess>} />
             <Route path="approvals" element={<RequireAdminAccess><RequirePermission permission={PERMISSIONS.USER_APPROVAL}><AdminUserApprovalPage /></RequirePermission></RequireAdminAccess>} />
@@ -154,6 +157,7 @@ function AppContent() {
             <Route path="docs" element={<RequireRole roles={[ROLES.OWNER]}><DocsPage /></RequireRole>} />
           </Route>
 
+          <Route path="/access-denied" element={<AccessDeniedPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <PWAInstallPrompt />

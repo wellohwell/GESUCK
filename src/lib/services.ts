@@ -16,7 +16,8 @@ import {
   Timestamp,
   limit,
   startAfter,
-  QueryConstraint
+  QueryConstraint,
+  increment
 } from "firebase/firestore";
 import { tenantQuery, tenantCollection } from "./tenantFirestore";
 import { useState, useEffect } from "react";
@@ -164,6 +165,17 @@ export async function logActivity(activity: {
       actorRole: role || "system",
       createdAt: serverTimestamp()
     });
+
+    // Sync to centralized activityLogs collection
+    try {
+      await logToActivityLogs(
+        activity.type.toUpperCase(),
+        activity.category?.toUpperCase() || "SYSTEM",
+        activity.description || activity.title
+      );
+    } catch (err) {
+      console.debug("Centralized activity log sync background failure:", err);
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, "activities");
   }
@@ -1374,6 +1386,17 @@ export async function createActivityLog(log: {
       ...log,
       createdAt: serverTimestamp()
     });
+
+    // Sync to centralized activityLogs collection
+    try {
+      await logToActivityLogs(
+        log.action.toUpperCase(),
+        log.module.toUpperCase(),
+        log.description
+      );
+    } catch (err) {
+      console.debug("Centralized activity log sync background failure:", err);
+    }
   } catch (error) {
     console.error("Failed to log activity", error);
   }
@@ -1702,5 +1725,201 @@ export async function updateBranch(branchId: string, updates: any) {
     handleFirestoreError(error, OperationType.UPDATE, `branches/${branchId}`);
   }
 }
+
+// =========================================================================
+// ENTERPRISE REGULATION: CENTRALISED LOGIN AND ACTIVITY TELEMETRY Tracking
+// =========================================================================
+
+export async function logToActivityLogs(action: string, module: string, description: string, reqPage?: string) {
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const getDevice = () => {
+      if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "Tablet";
+      if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) return "Mobile";
+      return "Desktop";
+    };
+    const getBrowser = () => {
+      if (ua.includes("Firefox")) return "Firefox";
+      if (ua.includes("SamsungBrowser")) return "Samsung Browser";
+      if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+      if (ua.includes("Trident")) return "Internet Explorer";
+      if (ua.includes("Edge") || ua.includes("Edg")) return "Edge";
+      if (ua.includes("Chrome")) return "Chrome";
+      if (ua.includes("Safari")) return "Safari";
+      return "Other";
+    };
+
+    let ipAddress = "Unknown";
+    try {
+      const cachedIp = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("client_ip_address_cache") : null;
+      if (cachedIp) {
+        ipAddress = cachedIp;
+      } else {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        if (data.ip) {
+          ipAddress = data.ip;
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem("client_ip_address_cache", data.ip);
+          }
+        }
+      }
+    } catch (e) {
+      console.debug("Failed to fetch IP address for activity monitoring:", e);
+    }
+
+    let userRole = "STAFF";
+    let userName = user.displayName || "Unknown";
+
+    try {
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if (docSnap.exists()) {
+        const d = docSnap.data();
+        if (d.role) userRole = d.role;
+        if (d.name) userName = d.name;
+      }
+    } catch (e) {
+      console.debug("Failed to retrieve user info for logToActivityLogs background thread:", e);
+    }
+
+    const payload = {
+      uid: user.uid,
+      userName,
+      email: user.email || "",
+      role: userRole,
+      action,
+      module,
+      description,
+      page: reqPage || (typeof window !== "undefined" ? window.location.pathname : "/"),
+      browser: getBrowser(),
+      device: getDevice(),
+      ipAddress,
+      createdAt: serverTimestamp()
+    };
+
+    await addDoc(collection(db, "activityLogs"), payload);
+  } catch (error) {
+    console.error("Critical error inside logToActivityLogs logger:", error);
+  }
+}
+
+export async function trackUserLogin(user: any) {
+  try {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const getDevice = () => {
+      if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "Tablet";
+      if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) return "Mobile";
+      return "Desktop";
+    };
+    const getBrowser = () => {
+      if (ua.includes("Firefox")) return "Firefox";
+      if (ua.includes("SamsungBrowser")) return "Samsung Browser";
+      if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+      if (ua.includes("Trident")) return "Internet Explorer";
+      if (ua.includes("Edge") || ua.includes("Edg")) return "Edge";
+      if (ua.includes("Chrome")) return "Chrome";
+      if (ua.includes("Safari")) return "Safari";
+      return "Other";
+    };
+
+    let ipAddress = "Unknown";
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      if (data.ip) ipAddress = data.ip;
+    } catch (e) {
+      console.debug("Failed to resolve IP in trackUserLogin:", e);
+    }
+
+    const detectedDevice = getDevice();
+    const detectedBrowser = getBrowser();
+    const currentPage = typeof window !== "undefined" ? window.location.pathname : "/";
+
+    let userRole = "STAFF";
+    let userName = user.displayName || "Unknown";
+
+    try {
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if (docSnap.exists()) {
+        const d = docSnap.data();
+        if (d.role) userRole = d.role;
+        if (d.name) userName = d.name;
+      }
+    } catch (e) {
+      console.debug("Failed to fetch role for trackUserLogin action:", e);
+    }
+
+    // 1. Update user document in collection
+    await setDoc(doc(db, "users", user.uid), {
+      lastLoginAt: serverTimestamp(),
+      lastLoginPage: currentPage,
+      lastLoginDevice: detectedDevice,
+      lastLoginBrowser: detectedBrowser,
+      lastLoginIp: ipAddress,
+      loginCount: increment(1)
+    }, { merge: true });
+
+    // 2. Add log entry into activities (for background support) plus centralized activityLogs
+    await addDoc(collection(db, "activityLogs"), {
+      uid: user.uid,
+      userName,
+      email: user.email || "",
+      role: userRole,
+      action: "LOGIN",
+      module: "AUTH",
+      description: "User berhasil login",
+      browser: detectedBrowser,
+      device: detectedDevice,
+      ipAddress,
+      page: currentPage,
+      createdAt: serverTimestamp()
+    });
+
+    // 3. Add to loginHistory
+    await addDoc(collection(db, "loginHistory"), {
+      uid: user.uid,
+      userName,
+      email: user.email || "",
+      role: userRole,
+      loginAt: serverTimestamp(),
+      browser: detectedBrowser,
+      device: detectedDevice,
+      ipAddress,
+      page: currentPage
+    });
+  } catch (error) {
+    console.error("Enterprise telemetry trackUserLogin failed:", error);
+  }
+}
+
+export function subscribeLoginHistory(callback: (history: any[]) => void) {
+  const q = query(collection(db, "loginHistory"), orderBy("loginAt", "desc"), limit(200));
+  return onSnapshot(q, (snapshot) => {
+    const list = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    callback(list);
+  }, (error) => {
+    console.error("Failed to subscribe login history:", error);
+  });
+}
+
+export function subscribeActivityLogs(callback: (logs: any[]) => void) {
+  const q = query(collection(db, "activityLogs"), orderBy("createdAt", "desc"), limit(250));
+  return onSnapshot(q, (snapshot) => {
+    const list = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    callback(list);
+  }, (error) => {
+    console.error("Failed to subscribe activity telemetry logs:", error);
+  });
+}
+
 
 

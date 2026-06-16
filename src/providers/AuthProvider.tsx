@@ -72,6 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfileLoading(true);
         
         try {
+          // Track login once per session storage lifecycle
+          const sessionKey = `tracked_login_${u.uid}`;
+          if (!sessionStorage.getItem(sessionKey)) {
+            sessionStorage.setItem(sessionKey, "true");
+            import("../lib/services").then((m) => {
+              m.trackUserLogin(u).catch(console.error);
+            });
+          }
+        } catch (e) {
+          console.debug("Failed tracking login session:", e);
+        }
+
+        try {
           // Verify profile exists in background (non-blocking)
           const rawProfile = await getUserProfile(u.uid);
           if (!rawProfile) {
@@ -110,6 +123,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profileUnsub();
     };
   }, []);
+
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    const updateHeartbeat = async () => {
+      try {
+        await setDoc(doc(db, "users", firebaseUser.uid), {
+          lastActiveAt: serverTimestamp(),
+          activePage: window.location.pathname
+        }, { merge: true });
+      } catch (err) {
+        console.debug("Failed updating heartbeat in background:", err);
+      }
+    };
+
+    updateHeartbeat();
+    const interval = setInterval(updateHeartbeat, 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [firebaseUser, window.location.pathname]);
 
   useEffect(() => {
     const unsub = subscribeBranches(async (list) => {

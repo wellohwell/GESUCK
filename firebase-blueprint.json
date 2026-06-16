@@ -220,9 +220,47 @@
         "metadata": { "type": "object" }
       },
       "required": ["type", "uid", "phone", "title", "message", "status", "priority", "retryCount", "createdAt", "updatedAt"]
+    },
+    "CentralActivityLog": {
+      "title": "Central Activity Log",
+      "description": "Global enterprise activity trace log for audit trails",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userName": { "type": "string" },
+        "email": { "type": "string" },
+        "action": { "type": "string" },
+        "module": { "type": "string" },
+        "description": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "metadata": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "LoginHistory": {
+      "title": "Login History",
+      "description": "User login session audits",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "userName": { "type": "string" },
+        "email": { "type": "string" },
+        "browser": { "type": "string" },
+        "device": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "loginAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
+    "/loginHistory/{logId}": {
+      "schema": "LoginHistory",
+      "description": "Outbound collection of login trails"
+    },
+    "/activityLogs/{logId}": {
+      "schema": "CentralActivityLog",
+      "description": "Central audit log for administrative activity"
+    },
     "/notification_queue/{queueId}": {
       "schema": "NotificationQueueItem",
       "description": "Centralized system outbound notification queue"

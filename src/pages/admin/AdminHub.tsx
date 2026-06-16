@@ -8,7 +8,8 @@ import {
   Building, 
   Sliders, 
   Compass, 
-  BookOpen 
+  BookOpen,
+  Activity
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useAuth } from "../../providers/AuthProvider";
@@ -26,6 +27,13 @@ export default function AdminHubPage() {
       description: "Analisis statistik cakupan pasar dan tren kunjungan.", 
       icon: BarChart3, 
       path: "/admin/insight",
+      requiresOwner: false
+    },
+    { 
+      title: "Activity Monitor", 
+      description: "Pusat audit trail, logging, histori login, dan live tracking user.", 
+      icon: Activity, 
+      path: "/admin/activity-monitor",
       requiresOwner: false
     },
     { 
@@ -48,20 +56,6 @@ export default function AdminHubPage() {
       icon: Database, 
       path: "/admin/master", 
       requiresOwner: false
-    },
-    { 
-      title: "Approval Aktivitas", 
-      description: "Pusat persetujuan aktivitas operasional.", 
-      icon: ShieldCheck, 
-      path: "/admin/approvals", 
-      requiresOwner: false
-    },
-    { 
-      title: "Detail & Penugasan", 
-      description: "Visualisasi aktivitas dan penugasan target user.", 
-      icon: Users, 
-      path: "/owner/user", 
-      requiresOwner: true
     },
     { 
       title: "Manajemen Cabang", 
@@ -108,7 +102,6 @@ export default function AdminHubPage() {
     if (item.path === "/admin/insight" && hasPermission(profile, PERMISSIONS.VIEW_INSIGHT)) return true;
     if (item.path === "/admin/users" && hasPermission(profile, PERMISSIONS.USER_MANAGEMENT)) return true;
     if (item.path === "/admin/master" && hasPermission(profile, PERMISSIONS.MARKET_EDIT)) return true;
-    if (item.path === "/admin/approvals" && hasPermission(profile, PERMISSIONS.USER_APPROVAL)) return true;
     
     return false;
   });

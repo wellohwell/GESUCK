@@ -191,6 +191,18 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /activityLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /loginHistory/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
     match /modules/{moduleId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();

@@ -1,28 +1,94 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Trash2, ChevronDown, Clock, MapPin, AlertCircle } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toast } from "../../hooks/use-toast";
-import { updateUser } from "../../lib/services";
+import { updateUser, subscribeUsers, subscribeMarketPlans } from "../../lib/services";
 import { toTitleCase } from "../../utils/format";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useOutletContext } from "react-router-dom";
+import { getActiveSystemDate } from "../../utils/javaneseDate";
 
 dayjs.extend(relativeTime);
 dayjs.locale("id");
 
 export default function AdminUserPage() {
-  const { users, assignments, handleSelectUser } = useOutletContext<any>();
-  
+  const context = useOutletContext<any>() || {};
+  const { users: contextUsers, assignments: contextAssignments, handleSelectUser } = context;
+
+  const [localUsers, setLocalUsers] = useState<any[]>([]);
+  const [localAssignments, setLocalAssignments] = useState<any[]>([]);
+
+  useEffect(() => {
+    // If context is already providing them, avoid local subscriptions
+    if (contextUsers && contextAssignments) return;
+
+    try {
+      const activeDate = getActiveSystemDate();
+      const unsubUsers = subscribeUsers(setLocalUsers);
+      const unsubAssignments = subscribeMarketPlans(activeDate.isoDate, setLocalAssignments);
+
+      return () => {
+        unsubUsers();
+        unsubAssignments();
+      };
+    } catch (err) {
+      console.error("Failed to subscribe in AdminUserPage fallbacks:", err);
+    }
+  }, [contextUsers, contextAssignments]);
+
+  const users = contextUsers || localUsers;
+  const assignments = contextAssignments || localAssignments;
+
   return (
       <UserManagementView 
         users={users} 
         assignments={assignments} 
-        onSelectUser={handleSelectUser} 
+        onSelectUser={handleSelectUser || (() => {})} 
       />
   );
+}
+
+export function formatLastLogin(lastLoginAt: any): string {
+  if (!lastLoginAt) return "Belum pernah login";
+  
+  let dateObj: Date;
+  if (lastLoginAt.toDate) {
+    dateObj = lastLoginAt.toDate();
+  } else if (lastLoginAt instanceof Date) {
+    dateObj = lastLoginAt;
+  } else if (typeof lastLoginAt === "object" && lastLoginAt.seconds) {
+    dateObj = new Date(lastLoginAt.seconds * 1000);
+  } else if (typeof lastLoginAt === "string" || typeof lastLoginAt === "number") {
+    dateObj = new Date(lastLoginAt);
+  } else {
+    return "Belum pernah login";
+  }
+
+  const now = dayjs();
+  const loginTime = dayjs(dateObj);
+  const diffMinutes = now.diff(loginTime, "minute");
+  const diffHours = now.diff(loginTime, "hour");
+  const diffDays = now.diff(loginTime, "day");
+
+  if (diffMinutes < 1) {
+    return "Baru saja";
+  }
+  if (diffMinutes < 60) {
+    return `${diffMinutes} menit lalu`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours} jam lalu`;
+  }
+  if (diffDays === 1) {
+    return "Kemarin";
+  }
+  if (diffDays < 7) {
+    return `${diffDays} hari lalu`;
+  }
+  return loginTime.format("DD MMM YYYY HH:mm");
 }
 
 export function UserManagementView({ users, assignments, onSelectUser }: any) {
@@ -53,21 +119,22 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-card/[0.05] text-sm  tracking-tight text-zinc-400 dark:text-white/60">
-                <th className="px-6 py-4 font-medium text-sm">User Detail</th>
-                <th className="px-6 py-4 font-medium text-sm">Aktivitas</th>
-                <th className="px-6 py-4 font-medium text-sm">Akses & Status</th>
-                <th className="px-6 py-4 font-medium text-sm w-12 text-center">Aksi</th>
+              <tr className="bg-zinc-50 dark:bg-card/[0.05] text-sm tracking-tight text-zinc-400 dark:text-white/60">
+                <th className="px-6 py-4 font-medium text-sm">Nama & Email</th>
+                <th className="px-4 py-4 font-medium text-sm">Role</th>
+                <th className="px-4 py-4 font-medium text-sm">Status</th>
+                <th className="px-4 py-4 font-medium text-sm">Last Login</th>
+                <th className="px-4 py-4 font-medium text-sm">Login Count</th>
+                <th className="px-6 py-4 font-medium text-sm text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-white/[0.05]">
               {users.map((u: any) => {
                 const userPlans = assignments.filter((a: any) => a.userId === u.id);
-                const isSelected = userPlans.length > 0;
-                const lastLoginFormatted = u.lastLogin?.toDate 
-                  ? dayjs(u.lastLogin.toDate()).format("dddd, D MMMM YYYY - HH:mm") 
-                  : "-";
-                
+                const lastLoginVal = u.lastLoginAt || u.lastLogin || null;
+                const lastLoginLabel = formatLastLogin(lastLoginVal);
+                const count = u.loginCount ?? 0;
+
                 return (
                   <tr
                     key={u.id}
@@ -87,75 +154,65 @@ export function UserManagementView({ users, assignments, onSelectUser }: any) {
                         </div>
                         <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
                           <input
-                            defaultValue={u.displayName}
+                            defaultValue={u.displayName || u.name || ""}
                             onBlur={(e) => {
                               const titleVal = toTitleCase(e.target.value);
                               e.target.value = titleVal;
                               updateUserRoleAndStatus(u.id, u.role, u.status, titleVal);
                             }}
-                            className="font-medium text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
+                            className="font-semibold text-[13px] text-zinc-900 dark:text-white bg-transparent outline-none border-b border-transparent focus:border-brand-primary/40 transition-colors w-full h-5 leading-none"
                           />
-                          <p className="text-[10px] font-bold text-zinc-400 dark:text-white/10 tracking-widest uppercase mt-0.5">{u.role || "SPV"}</p>
+                          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate mt-0.5">{u.email || "No email"}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-zinc-600 dark:text-white/60">{lastLoginFormatted}</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 mt-0.5 tracking-[0.2em] uppercase">Pasar:</span>
-                          <div className="flex flex-col gap-1">
-                            {isSelected ? (
-                              userPlans.map((plan: any) => (
-                                <span key={plan.id} className="text-xs font-medium px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">
-                                  {plan.marketName}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs font-medium px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 w-fit">
-                                BELUM
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="relative w-28">
+                        <select
+                          value={u.role || "SPV"}
+                          onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
+                          className="w-full bg-zinc-100 dark:bg-card/5 border border-border/50 dark:border-white/10 px-2 py-1.5 rounded-lg text-xs font-semibold outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
+                        >
+                          <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
+                          <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
+                          <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
                       </div>
                     </td>
-                    <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-2">
-                        <div className="relative w-28">
-                          <select
-                            value={u.role || "SPV"}
-                            onChange={(e) => updateUserRoleAndStatus(u.id, e.target.value, u.status || "active")}
-                            className="w-full bg-zinc-100 dark:bg-card/5 border border-border/50 dark:border-white/10 px-2 py-1.5 rounded-lg text-sm font-medium outline-none focus:border-brand-primary/40 text-zinc-900 dark:text-white appearance-none cursor-pointer"
-                          >
-                            <option value="MANAGER" className="bg-zinc-900 text-white">Manager</option>
-                            <option value="SPV" className="bg-zinc-900 text-white">SPV</option>
-                            <option value="Sales" className="bg-zinc-900 text-white">Sales</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-                        </div>
-                        <div className="relative w-28">
-                          <select
-                            value={u.status || "pending"}
-                            onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "SPV", e.target.value)}
-                            className={cn(
-                              "w-full px-2 py-1.5 rounded-lg text-sm font-medium border outline-none appearance-none cursor-pointer transition-all",
-                              u.status === "approved"
-                                ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                                : u.status === "rejected"
-                                  ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400"
-                                  : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
-                            )}
-                          >
-                            <option value="approved" className="bg-zinc-900 text-emerald-400">Approved</option>
-                            <option value="pending" className="bg-zinc-900 text-amber-500">Pending</option>
-                            <option value="rejected" className="bg-zinc-900 text-red-500">Rejected</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 opacity-40 pointer-events-none" />
-                        </div>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="relative w-28">
+                        <select
+                          value={u.status || "pending"}
+                          onChange={(e) => updateUserRoleAndStatus(u.id, u.role || "SPV", e.target.value)}
+                          className={cn(
+                            "w-full px-2 py-1.5 rounded-lg text-xs font-semibold border outline-none appearance-none cursor-pointer transition-all",
+                            u.status === "approved" || u.status === "active"
+                              ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                              : u.status === "rejected"
+                                ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400"
+                                : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-500",
+                          )}
+                        >
+                          <option value="approved" className="bg-zinc-900 text-emerald-400">Approved</option>
+                          <option value="pending" className="bg-zinc-900 text-amber-500">Pending</option>
+                          <option value="rejected" className="bg-zinc-900 text-red-500">Rejected</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 opacity-40 pointer-events-none" />
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={cn(
+                        "text-[11px] font-medium px-2 py-1 rounded-full",
+                        lastLoginVal ? "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/5" : "text-zinc-400 dark:text-zinc-600 italic"
+                      )}>
+                        {lastLoginLabel}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-xs font-mono font-bold bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded">
+                        {count} kali
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <button
