@@ -193,6 +193,7 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
             <div>
               <input 
                 type="text" 
+                inputMode="numeric"
                 placeholder="Angsuran (Rp) *" 
                 value={form.angsuran ? formatIDR(Number(form.angsuran)) : ''} 
                 onChange={e => setForm({...form, angsuran: e.target.value.replace(/\D/g, '')})} 

@@ -132,8 +132,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     // D. Check Custom Allowed Branches for this navigation link specifically
     if (item.allowedBranches && item.allowedBranches.length > 0) {
-      const userBranch = profile?.branchId || '';
-      if (!item.allowedBranches.includes(userBranch)) return false;
+      const userBranch = (profile?.branchId || '').toUpperCase();
+      const allowed = item.allowedBranches.map(b => b.toUpperCase());
+      if (!allowed.includes(userBranch)) return false;
     }
 
     return true;

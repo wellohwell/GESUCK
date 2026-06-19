@@ -47,11 +47,23 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
     };
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude, accuracy } = position.coords;
         console.log("[EditClientDialog] Geolocation success:", { latitude, longitude, accuracy });
         
-        const formattedAddress = `📍 Lokasi Terkini\n\nLat: ${latitude}\nLng: ${longitude}\n\nhttps://maps.google.com/?q=${latitude},${longitude}`;
+        let formattedAddress = `Lat: ${latitude}, Lng: ${longitude}`;
+
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.display_name) {
+              formattedAddress = data.display_name;
+            }
+          }
+        } catch (error) {
+          console.error("Geocoding failed", error);
+        }
         
         setForm(prev => {
           const updated = { 
@@ -191,7 +203,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               <textarea 
                 placeholder="Alamat Lengkap *" 
                 value={form.alamat} 
-                onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase())})} 
+                onChange={e => setForm({...form, alamat: e.target.value.replace(/\b\w/g, c => c.toUpperCase()), latitude: null, longitude: null})} 
                 className={`${inputClass} min-h-[120px] pr-14 resize-none h-auto`} 
               />
               <button
@@ -228,6 +240,7 @@ export function EditClientContent({ onClose, client }: { onClose: () => void; cl
               <div>
                 <input 
                   type="text" 
+                  inputMode="numeric"
                   placeholder="Angsuran (Rp) *" 
                   value={form.angsuran ? formatIDR(Number(form.angsuran)) : ''} 
                   onChange={e => setForm({...form, angsuran: e.target.value.replace(/\D/g, '')})} 

@@ -25,6 +25,7 @@ const roleMap: Record<string, Role> = {
 
 const statusMap: Record<string, UserStatus> = {
     'approved': 'approved',
+    'active': 'approved',
     'pending': 'pending',
     'rejected': 'rejected',
     'suspended': 'suspended',

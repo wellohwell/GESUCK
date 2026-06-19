@@ -47,11 +47,53 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(auth.currentUser);
-  const [isAuthChecking, setIsAuthChecking] = useState(() => !auth.currentUser);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [branchesList, setBranchesList] = useState<any[]>([]);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('pwa_offline_auth_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved) as User;
+      } catch (e) {
+        return null;
+      }
+    }
+    return auth.currentUser;
+  });
+
+  const [isAuthChecking, setIsAuthChecking] = useState(() => {
+    const saved = localStorage.getItem('pwa_offline_auth_user');
+    if (saved) return false;
+    return !auth.currentUser;
+  });
+
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('pwa_offline_auth_profile');
+    if (saved) {
+      try {
+        return JSON.parse(saved) as UserProfile;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [profileLoading, setProfileLoading] = useState(() => {
+    const saved = localStorage.getItem('pwa_offline_auth_profile');
+    if (saved) return false;
+    return true;
+  });
+
+  const [branchesList, setBranchesList] = useState<any[]>(() => {
+    const saved = localStorage.getItem('pwa_offline_branches');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
   const [branchesLoading, setBranchesLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +111,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthChecking(false);
       
       if (u) {
+        // Cache user info locally
+        try {
+          const minimalUser = {
+            uid: u.uid,
+            email: u.email,
+            displayName: u.displayName,
+            photoURL: u.photoURL,
+            emailVerified: u.emailVerified
+          };
+          localStorage.setItem('pwa_offline_auth_user', JSON.stringify(minimalUser));
+        } catch (e) {
+          console.debug("Failed to cache raw user offline:", e);
+        }
+
         setProfileLoading(true);
         
         try {
@@ -104,6 +160,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (snapshot.exists()) {
             const p = normalizeUserProfile(u.uid, snapshot.data());
             setProfile(p);
+            // Cache profile locally
+            try {
+              localStorage.setItem('pwa_offline_auth_profile', JSON.stringify(p));
+              localStorage.setItem('pwa_offline_last_sync_time', new Date().toISOString());
+              window.dispatchEvent(new Event('pwa_last_sync_update'));
+            } catch (e) {
+              console.debug("Failed to cache profile offline:", e);
+            }
           }
           setProfileLoading(false);
         }, (error) => {
@@ -114,6 +178,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(null);
         setProfileLoading(false);
         profileUnsub();
+        // Clear cached auth info on sign out
+        try {
+          localStorage.removeItem('pwa_offline_auth_user');
+          localStorage.removeItem('pwa_offline_auth_profile');
+          localStorage.removeItem('pwa_offline_last_route');
+          localStorage.removeItem('pwa_offline_last_sync_time');
+        } catch (e) {
+          console.debug("Failed to clear cached auth info:", e);
+        }
       }
     });
 
@@ -125,6 +198,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    // Save last active route locally!
+    const currentPath = window.location.pathname;
+    if (currentPath && !['/login', '/signin', '/auth', '/', '/onboarding', '/pending', '/blocked'].includes(currentPath)) {
+      try {
+        localStorage.setItem('pwa_offline_last_route', currentPath);
+      } catch (e) {
+        console.debug("Failed to cache offline route:", e);
+      }
+    }
+
     if (!firebaseUser) return;
 
     const updateHeartbeat = async () => {
@@ -186,6 +269,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setBranchesList(list);
         setBranchesLoading(false);
+        try {
+          localStorage.setItem('pwa_offline_branches', JSON.stringify(list));
+        } catch (e) {
+          console.debug("Failed to cache branches offline:", e);
+        }
       }
     });
     return () => unsub();

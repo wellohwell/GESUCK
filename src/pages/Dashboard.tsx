@@ -142,7 +142,7 @@ const PlanItem = React.memo(({
         <p className="text-[8px] text-zinc-300 dark:text-white/20 font-medium tracking-tight whitespace-nowrap tabular-nums font-mono">
           {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
         </p>
-        {(iscurrentUser || isManager) && (
+        {iscurrentUser && (
           <button
             onClick={(e) => onDelete(e, plan.id)}
             className="p-1 rounded-md text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"

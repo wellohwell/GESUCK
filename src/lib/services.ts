@@ -182,7 +182,7 @@ export async function logActivity(activity: {
 }
 
 export function subscribeActivities(role: string, uid: string, callback: (activities: any[]) => void, limitCount = 50, branchId?: string | null) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const constraints: any[] = [];
 
   const isManager = r === 'OWNER' || r === 'MANAGER';
@@ -452,12 +452,12 @@ export const ROLE_PERMISSIONS = {
 };
 
 export function canAccessAll(role?: string) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   return r === 'OWNER' || r === 'MANAGER' || r === 'STAFF';
 }
 
 export function canAccessTeam(role?: string) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   return r === 'OWNER' || r === 'MANAGER' || r === 'SPV' || r === 'STAFF';
 }
 
@@ -525,7 +525,7 @@ export function subscribeMarketPlansByMonth(month: string, callback: (plans: any
 
 // Client Service
 export function subscribeClientsByStage(stage: string, role: string, uid: string, callback: (clients: any[]) => void, branchId?: string | null) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const constraints: any[] = [where("stage", "==", stage)];
   
   const isManager = r === 'OWNER' || r === 'MANAGER';
@@ -564,7 +564,7 @@ export function subscribeClientHistory(nomor: string, role: string, uid: string,
     return () => {};
   }
 
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const isManager = r === 'MANAGER' || r === 'OWNER';
   const isBranchRestricted = r === 'SPV' || r === 'STAFF' || r === 'SURVEY' || r === 'GUDANG';
 
@@ -595,7 +595,7 @@ export function subscribeClientHistory(nomor: string, role: string, uid: string,
 }
 
 export function subscribeClients(role: string, uid: string, callback: (clients: any[]) => void, branchId?: string | null) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const baseConstraints: any[] = [];
   
   const isManager = r === 'OWNER' || r === 'MANAGER';
@@ -634,7 +634,7 @@ export function subscribeClients(role: string, uid: string, callback: (clients: 
 
 // Order Service
 export function subscribeOrders(role: string, uid: string, callback: (orders: any[]) => void, stageFilter?: string, branchId?: string | null) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const baseConstraints: any[] = [];
   
   const isManager = r === 'OWNER' || r === 'MANAGER';
@@ -976,7 +976,7 @@ async function createAutoTask(taskData: any) {
 }
 
 export function subscribeTasks(role: string, uid: string, callback: (tasks: any[]) => void, branchId?: string | null) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   const baseConstraints: any[] = [];
   
   const isManager = r === 'OWNER' || r === 'MANAGER';
@@ -1242,7 +1242,7 @@ export async function createRepeatOrder(clientId: string, data: {
 }
 
 export function subscribeClientOrders(clientId: string, callback: (orders: any[]) => void, role?: string, uid?: string) {
-  const r = role?.toUpperCase();
+  const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
   let q;
   
   if (r === 'OWNER' || r === 'MANAGER' || r === 'SPV' || r === 'STAFF') {
@@ -1404,7 +1404,7 @@ export async function createActivityLog(log: {
 
 export function subscribeNotifications(role: string, uid: string, callback: (notifs: any[]) => void, branchId?: string | null) {
   if (!uid || !role) return () => {};
-  const r = role.toUpperCase();
+  const r = role.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role.toUpperCase();
   
   // Track listeners and state
   const listeners: any[] = [];
@@ -1491,7 +1491,7 @@ export async function getClientsPaginated(options: {
 }) {
   try {
     const { role, uid, branchId, limitCount = 20, startAfterDoc } = options;
-    const r = role?.toUpperCase();
+    const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
     const constraints: any[] = [];
 
     if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV' && r !== 'STAFF') {
@@ -1531,7 +1531,7 @@ export async function getOrdersPaginated(options: {
 }) {
   try {
     const { role, uid, branchId, stageFilter, limitCount = 20, startAfterDoc } = options;
-    const r = role?.toUpperCase();
+    const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
     const constraints: any[] = [];
 
     if (r !== 'OWNER' && r !== 'ADMIN' && r !== 'SPV' && r !== 'STAFF') {
@@ -1579,7 +1579,7 @@ export async function getActivitiesPaginated(options: {
 }) {
   try {
     const { role, uid, branchId, categoryFilter, limitCount = 20, startAfterDoc } = options;
-    const r = role?.toUpperCase();
+    const r = role?.toUpperCase() === 'SUPERVISOR' ? 'SPV' : role?.toUpperCase();
     const constraints: any[] = [];
 
     if (r === "SURVEY") {

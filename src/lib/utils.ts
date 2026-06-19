@@ -50,6 +50,31 @@ export function formatWhatsApp(number: string) {
   return cleaned;
 }
 
+export function getMapLink(alamat: string, usaha: string = "", lat: number | null = null, lng: number | null = null): string {
+  if (lat !== null && lng !== null) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+
+  if (!alamat) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(usaha)}`;
+  
+  // Try to find coordinate pattern, e.g., -7.7875533, 110.3883559 or Lat: -7.7875533 Lng: 110.3883559
+  const coordRegex = /(-?\d+\.\d+)\s*[,|\s]\s*(?:Lng:\s*)?(-?\d+\.\d+)/i;
+  const match = alamat.match(coordRegex);
+  
+  if (match) {
+    const lat = match[1];
+    const lng = match[2];
+    // Check if they are valid lat/lng
+    if (Math.abs(Number(lat)) <= 90 && Math.abs(Number(lng)) <= 180) {
+      return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    }
+  }
+  
+  // Fallback to text search
+  const query = alamat.trim();
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 const FIXED_HOLIDAYS = [
   '01-01', // Tahun Baru Masehi
   '05-01', // Hari Buruh

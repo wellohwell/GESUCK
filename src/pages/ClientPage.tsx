@@ -35,7 +35,7 @@ import {
   Store,
   Home
 } from 'lucide-react';
-import { cn, calculateEstimasiLunas, formatWhatsApp, formatCurrency } from '../lib/utils';
+import { cn, calculateEstimasiLunas, formatWhatsApp, formatCurrency, getMapLink } from '../lib/utils';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'motion/react';
 import { NewClientContent } from '../features/client/dialogs/NewClientDialog';
@@ -118,8 +118,26 @@ function getRelativeTime(timestamp: any) {
   }
 }
 
-function canDeleteClient(client: any, profile: any) {
+function canDeleteClient(client: any, profile: any, uid: string) {
   if (!client || !profile) return false;
+  if (client.ownerId === uid || client.createdBy === uid) return true;
+  const role = profile.role?.toUpperCase();
+  if (role === 'OWNER' || role === 'MANAGER' || role === 'ADMIN' || role === 'STAFF') {
+    return true;
+  }
+  const norm = getNormalizedClient(client);
+  if (role === 'SURVEY' && norm.currentStep === 'survey' && norm.stage === 'pipeline') {
+    return true;
+  }
+  if (role === 'GUDANG' && norm.currentStep === 'warehouse' && norm.stage === 'pipeline') {
+    return true;
+  }
+  return false;
+}
+
+function canEditClient(client: any, profile: any, uid: string) {
+  if (!client || !profile) return false;
+  if (client.ownerId === uid || client.createdBy === uid) return true;
   const role = profile.role?.toUpperCase();
   if (role === 'OWNER' || role === 'MANAGER' || role === 'ADMIN' || role === 'STAFF') {
     return true;
@@ -193,6 +211,7 @@ export default function ClientPage() {
   // Selection and Detail View
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [clientToDelete, setClientToDelete] = useState<any>(null);
+  const [isDeletingClient, setIsDeletingClient] = useState(false);
   const [clientHistory, setClientHistory] = useState<any[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
@@ -471,34 +490,50 @@ export default function ClientPage() {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                            <div className="flex items-center justify-between gap-3 bg-card/60 hover:bg-card p-3 rounded-lg border border-border/10 cursor-pointer hover:shadow-sm transition-all duration-300" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                  <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                </div>
-                                <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <h3 className="text-[10px] font-bold text-text-primary uppercase tracking-wider truncate mb-0.5">{norm.nama}</h3>
+                                <p className="text-[10px] font-medium text-text-primary/95 truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[10px] text-text-muted/85 truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
-                                {norm.customerStatus && (
-                                  <span className={cn(
-                                    "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                    norm.customerStatus === 'eks' 
-                                      ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                      : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                  )}>
-                                    {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                              <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                                <div className="flex items-center gap-1 justify-end">
+                                  {norm.customerStatus && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                      norm.customerStatus === 'eks' 
+                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                    )}>
+                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                    </span>
+                                  )}
+                                  <span className={cn("text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                                    {badge.label}
                                   </span>
-                                )}
-                                <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
-                                  {badge.label}
-                                </span>
-                                <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
-                                {canDeleteClient(client, profile) && (
-                                  <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                )}
+                                  <span className="text-[8px] text-text-muted/70 font-bold font-mono uppercase tracking-tight whitespace-nowrap bg-secondary/30 px-1.5 py-0.5 rounded">
+                                    {getRelativeTime(client.updatedAt || client.createdAt)}
+                                  </span>
+                                </div>
+                                <div className="flex gap-1 justify-end">
+                                  {canEditClient(client, profile, user?.uid || '') && (
+                                    <button onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      const modalId = openModal({ 
+                                        title: 'Edit Data Konsumen', 
+                                        content: <EditClientContent client={client} onClose={() => closeModal(modalId)} />, 
+                                        size: 'xl' 
+                                      }); 
+                                    }} className="p-1 rounded hover:bg-primary/10 text-text-muted hover:text-primary transition-colors">
+                                      <Edit className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  {canDeleteClient(client, profile, user?.uid || '') && (
+                                    <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -513,34 +548,50 @@ export default function ClientPage() {
                           const norm = getNormalizedClient(client);
                           const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                           return (
-                            <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                            <div className="flex items-center justify-between gap-3 bg-card/60 hover:bg-card p-3 rounded-lg border border-border/10 cursor-pointer hover:shadow-sm transition-all duration-300" key={client.id} onClick={() => setSelectedClient(client)}>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                  <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                                </div>
-                                <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                                <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                                <h3 className="text-[10px] font-bold text-text-primary uppercase tracking-wider truncate mb-0.5">{norm.nama}</h3>
+                                <p className="text-[10px] font-medium text-text-primary/95 truncate">{norm.usaha || '-'}</p>
+                                <p className="text-[10px] text-text-muted/85 truncate">{norm.alamat || '-'}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
-                                {norm.customerStatus && (
-                                  <span className={cn(
-                                    "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                    norm.customerStatus === 'eks' 
-                                      ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                      : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                  )}>
-                                    {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                              <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                                <div className="flex items-center gap-1 justify-end">
+                                  {norm.customerStatus && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                      norm.customerStatus === 'eks' 
+                                        ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                        : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                    )}>
+                                      {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                    </span>
+                                  )}
+                                  <span className={cn("text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                                    {badge.label}
                                   </span>
-                                )}
-                                <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
-                                  {badge.label}
-                                </span>
-                                <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
-                                {canDeleteClient(client, profile) && (
-                                  <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                )}
+                                  <span className="text-[8px] text-text-muted/70 font-bold font-mono uppercase tracking-tight whitespace-nowrap bg-secondary/30 px-1.5 py-0.5 rounded">
+                                    {getRelativeTime(client.updatedAt || client.createdAt)}
+                                  </span>
+                                </div>
+                                <div className="flex gap-1 justify-end">
+                                  {canEditClient(client, profile, user?.uid || '') && (
+                                    <button onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      const modalId = openModal({ 
+                                        title: 'Edit Data Konsumen', 
+                                        content: <EditClientContent client={client} onClose={() => closeModal(modalId)} />, 
+                                        size: 'xl' 
+                                      }); 
+                                    }} className="p-1 rounded hover:bg-primary/10 text-text-muted hover:text-primary transition-colors">
+                                      <Edit className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  {canDeleteClient(client, profile, user?.uid || '') && (
+                                    <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -554,34 +605,50 @@ export default function ClientPage() {
                       const norm = getNormalizedClient(client);
                       const badge = getStatusBadgeProps(norm.orderStatus, norm.currentStep);
                       return (
-                        <div className="flex justify-between items-center bg-card p-2.5 rounded-lg border border-border/10 cursor-pointer hover:bg-card/85 transition-colors" key={client.id} onClick={() => setSelectedClient(client)}>
+                        <div className="flex items-center justify-between gap-3 bg-card/60 hover:bg-card p-3 rounded-lg border border-border/10 cursor-pointer hover:shadow-sm transition-all duration-300" key={client.id} onClick={() => setSelectedClient(client)}>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <h3 className="text-[10px] font-bold text-text-primary uppercase truncate">{norm.nama}</h3>
-                            </div>
-                            <p className="text-[10px] font-semibold text-text-primary truncate">{norm.usaha || '-'}</p>
-                            <p className="text-[10px] text-text-muted truncate">{norm.alamat || '-'}</p>
+                            <h3 className="text-[10px] font-bold text-text-primary uppercase tracking-wider truncate mb-0.5">{norm.nama}</h3>
+                            <p className="text-[10px] font-medium text-text-primary/95 truncate">{norm.usaha || '-'}</p>
+                            <p className="text-[10px] text-text-muted/85 truncate">{norm.alamat || '-'}</p>
                           </div>
-                          <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 text-right">
-                            {norm.customerStatus && (
-                              <span className={cn(
-                                "text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
-                                norm.customerStatus === 'eks' 
-                                  ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
-                                  : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                              )}>
-                                {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                          <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                            <div className="flex items-center gap-1 justify-end">
+                              {norm.customerStatus && (
+                                <span className={cn(
+                                  "text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider whitespace-nowrap shrink-0",
+                                  norm.customerStatus === 'eks' 
+                                    ? "bg-sky-500/10 text-sky-500 border border-sky-500/20" 
+                                    : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                )}>
+                                  {norm.customerStatus === 'eks' ? 'Eks' : 'Baru'}
+                                </span>
+                              )}
+                              <span className={cn("text-[8px] px-1 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
+                                {badge.label}
                               </span>
-                            )}
-                            <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0", badge.color)}>
-                              {badge.label}
-                            </span>
-                            <span className="text-[9px] text-text-muted font-bold font-mono uppercase">{getRelativeTime(client.updatedAt || client.createdAt)}</span>
-                            {canDeleteClient(client, profile) && (
-                              <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded-full hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            )}
+                              <span className="text-[8px] text-text-muted/70 font-bold font-mono uppercase tracking-tight whitespace-nowrap bg-secondary/30 px-1.5 py-0.5 rounded">
+                                {getRelativeTime(client.updatedAt || client.createdAt)}
+                              </span>
+                            </div>
+                            <div className="flex gap-1 justify-end">
+                              {canEditClient(client, profile, user?.uid || '') && (
+                                <button onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  const modalId = openModal({ 
+                                    title: 'Edit Data Konsumen', 
+                                    content: <EditClientContent client={client} onClose={() => closeModal(modalId)} />, 
+                                    size: 'xl' 
+                                  }); 
+                                }} className="p-1 rounded hover:bg-primary/10 text-text-muted hover:text-primary transition-colors">
+                                  <Edit className="w-3 h-3" />
+                                </button>
+                              )}
+                              {canDeleteClient(client, profile, user?.uid || '') && (
+                                <button onClick={(e) => { e.stopPropagation(); setClientToDelete(client); }} className="p-1 rounded hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
@@ -628,7 +695,7 @@ export default function ClientPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          {canDeleteClient(selectedClient, profile) && (
+                          {canDeleteClient(selectedClient, profile, user?.uid || '') && (
                             <button 
                               onClick={() => setClientToDelete(selectedClient)}
                               className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors shrink-0"
@@ -637,15 +704,17 @@ export default function ClientPage() {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                          <button onClick={() => { 
-                            const id = openModal({ 
-                              title: 'Edit Data Konsumen', 
-                              content: <EditClientContent client={selectedClient} onClose={() => closeModal(id)} />, 
-                              size: 'xl' 
-                            }); 
-                          }} className="p-2 rounded-full hover:bg-primary/10 text-primary transition-colors">
-                            <Edit className="w-4 h-4" />
-                          </button>
+                          {canEditClient(selectedClient, profile, user?.uid || '') && (
+                            <button onClick={() => { 
+                              const id = openModal({ 
+                                title: 'Edit Data Konsumen', 
+                                content: <EditClientContent client={selectedClient} onClose={() => closeModal(id)} />, 
+                                size: 'xl' 
+                              }); 
+                            }} className="p-2 rounded-full hover:bg-primary/10 text-primary transition-colors">
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -688,7 +757,7 @@ export default function ClientPage() {
                                    <MessageCircle className="w-3.5 h-3.5" />
                                    WhatsApp
                                 </a>
-                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${normalizedClient.usaha || ''} ${normalizedClient.alamat || ''}`)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 rounded-xl font-bold text-[11px] transition-colors">
+                                <a href={getMapLink(normalizedClient.alamat || '', normalizedClient.usaha || '', normalizedClient.latitude, normalizedClient.longitude)} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 rounded-xl font-bold text-[11px] transition-colors">
                                    <MapPin className="w-3.5 h-3.5" />
                                    Maps
                                 </a>
@@ -925,13 +994,17 @@ export default function ClientPage() {
 
                 <div className="flex gap-2 relative z-10">
                   <button 
-                    onClick={() => setClientToDelete(null)} 
-                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-xl text-xs font-bold text-text-primary transition-colors active:scale-95"
+                    onClick={(e) => { e.stopPropagation(); setClientToDelete(null); }} 
+                    disabled={isDeletingClient}
+                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 rounded-xl text-xs font-bold text-text-primary transition-colors active:scale-95 disabled:opacity-50"
                   >
                     Batal
                   </button>
                   <button 
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (isDeletingClient) return;
+                      setIsDeletingClient(true);
                       try {
                         await deleteDoc(doc(db, "clients", clientToDelete.id));
                         toast.success("Berhasil menghapus data");
@@ -939,14 +1012,24 @@ export default function ClientPage() {
                         if (selectedClient?.id === clientToDelete.id) {
                           setSelectedClient(null);
                         }
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error(err);
-                        toast.error("Gagal menghapus data");
+                        toast.error(err?.message || "Gagal menghapus data");
+                      } finally {
+                        setIsDeletingClient(false);
                       }
                     }} 
-                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                    disabled={isDeletingClient}
+                    className="flex-1 py-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    Hapus
+                    {isDeletingClient ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Menghapus...
+                      </>
+                    ) : (
+                      "Hapus"
+                    )}
                   </button>
                 </div>
               </motion.div>

@@ -31,7 +31,7 @@ import {
   Store,
   Home
 } from 'lucide-react';
-import { cn, formatCurrency, formatWhatsApp } from '../lib/utils';
+import { cn, formatCurrency, formatWhatsApp, getMapLink } from '../lib/utils';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../firebase/config';
@@ -679,7 +679,7 @@ export default function OperationsPage() {
                       <MessageCircle className="w-3.5 h-3.5" />
                       WhatsApp
                     </a>
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((normalizedClient.usaha ? normalizedClient.usaha + ' ' : '') + (normalizedClient.alamat || ''))}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 rounded-xl font-bold text-[11px] transition-colors">
+                    <a href={getMapLink(normalizedClient.alamat || '', normalizedClient.usaha || '', normalizedClient.latitude, normalizedClient.longitude)} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 flex-1 h-9 bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 rounded-xl font-bold text-[11px] transition-colors">
                       <MapPin className="w-3.5 h-3.5" />
                       Maps
                     </a>

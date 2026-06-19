@@ -161,8 +161,9 @@ export const ModuleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // 4. Branch Specific Isolation check (beta features trial, rollout, etc)
     if (mod.allowedBranches && mod.allowedBranches.length > 0) {
-      const userBranch = activeBranchContext || profile?.branchId;
-      if (!userBranch || !mod.allowedBranches.includes(userBranch)) {
+      const userBranch = (activeBranchContext || profile?.branchId || '').toUpperCase();
+      const allowed = mod.allowedBranches.map(b => b.toUpperCase());
+      if (!userBranch || !allowed.includes(userBranch)) {
         return { allowed: false, reason: 'branch' as AccessReason };
       }
     }

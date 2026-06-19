@@ -176,7 +176,7 @@ export default function HomePage() {
     roleLabel === 'OWNER' ? 'Owner Command Space' :
     roleLabel === 'ADMIN' ? 'Global Admin Workspace' :
     roleLabel === 'STAFF' ? 'Branch Command Space' :
-    roleLabel === 'SPV' ? 'Supervisor Control Desk' : 'Operator Control Center';
+    (roleLabel === 'SPV' || roleLabel === 'SUPERVISOR') ? 'Supervisor Control Desk' : 'Operator Control Center';
 
   return (
     <div className="min-h-screen bg-background text-foreground pt-6 pb-32 px-4">
@@ -243,7 +243,7 @@ export default function HomePage() {
         </div>
 
         {/* OWNER / ADMIN EXCLUSIVE ACTIVE OMSET CARD */}
-        {(roleLabel === 'OWNER' || roleLabel === 'ADMIN' || roleLabel === 'STAFF') && (
+        {(roleLabel === 'OWNER' || roleLabel === 'ADMIN' || roleLabel === 'STAFF' || roleLabel === 'SPV' || roleLabel === 'SUPERVISOR') && (
           <SummaryCard
             title="Potensi Omset Aktif"
             value={formatCurrency(stats.estimateActiveOmset)}
@@ -515,7 +515,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-text-muted uppercase">Cicilan Harian (Rp)</label>
-                    <input placeholder="15000" value={newOrderForm.angsuran} onChange={(e) => setNewOrderForm({ ...newOrderForm, angsuran: e.target.value.replace(/\D/g, '') })} className="w-full bg-card border border-border/50 rounded-[1.25rem] px-4 py-3 text-xs font-bold text-text-primary outline-none focus:border-primary/50" />
+                    <input inputMode="numeric" placeholder="15000" value={newOrderForm.angsuran ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(newOrderForm.angsuran)) : ''} onChange={(e) => setNewOrderForm({ ...newOrderForm, angsuran: e.target.value.replace(/\D/g, '') })} className="w-full bg-card border border-border/50 rounded-[1.25rem] px-4 py-3 text-xs font-bold text-text-primary outline-none focus:border-primary/50" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-text-muted uppercase">Tenor Hari</label>

@@ -23,7 +23,17 @@ export const DEFAULT_WORKSPACES: Record<string, string> = {
   sales: "/workspace/explore",
   survey: "/workspace/operations",
   gudang: "/workspace/operations",
-  spv: "/workspace/explore"
+  spv: "/workspace/explore",
+  
+  // Uppercase role mappings
+  OWNER: "/owner",
+  MANAGER: "/admin",
+  STAFF: "/workspace/operations",
+  SALES: "/workspace/explore",
+  SURVEY: "/workspace/operations",
+  GUDANG: "/workspace/operations",
+  SUPERVISOR: "/workspace/explore",
+  SPV: "/workspace/explore"
 };
 
 // Ultimate fallback route if a user has no eligible workspaces or experiences any dead-end

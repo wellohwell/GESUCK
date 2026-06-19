@@ -146,7 +146,7 @@ export const PlanItem = React.memo(({
         )}>
           {plan.createdAt?.toDate ? dayjs(plan.createdAt.toDate()).format("HH:mm") : "-"}
         </p>
-        {!hideDeleteButton && (iscurrentUser || isManager) && (
+        {!hideDeleteButton && iscurrentUser && (
           <button
             data-html2canvas-ignore="true"
             onClick={(e) => onDelete(e, plan.id)}

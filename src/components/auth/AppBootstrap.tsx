@@ -57,6 +57,10 @@ export const AppBootstrap: React.FC<AppBootstrapProps> = ({ children }) => {
       // If user is on landing/login pages, instantly redirect to their respective landing workspace
       const isAuthPath = ['/', '/login', '/signin', '/auth'].includes(path);
       if (isAuthPath) {
+        const savedLastRoute = localStorage.getItem('pwa_offline_last_route');
+        if (savedLastRoute && savedLastRoute !== '/' && savedLastRoute !== '/login') {
+          return <Navigate to={savedLastRoute} replace={true} />;
+        }
         if (profile.userType === 'global') {
           return <Navigate to="/global" replace={true} />;
         }

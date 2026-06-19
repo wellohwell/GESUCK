@@ -12,8 +12,13 @@ export const isOwner = (profile: UserProfile | null) => {
 export const hasRole = (profile: UserProfile | null, role: string) => {
     if (isOwner(profile)) return true;
     const pRole = profile?.role?.toUpperCase() || null;
-    const nRole = pRole === "ADMIN" ? ROLES.MANAGER : pRole;
-    return nRole === role.toUpperCase();
+    let nRole = pRole === "ADMIN" ? ROLES.MANAGER : pRole;
+    if (nRole === "SPV") nRole = "SUPERVISOR";
+    
+    let targetRole = role.toUpperCase();
+    if (targetRole === "SPV") targetRole = "SUPERVISOR";
+    
+    return nRole === targetRole;
 }
 
 export const hasPermission = (profile: UserProfile | null, permission: Permission) => {
@@ -28,9 +33,15 @@ export const canAccessModule = (profile: UserProfile | null, module: ModuleConfi
     if (isOwner(profile)) return true;
     
     const pRole = profile?.role?.toUpperCase() || "";
-    const role = pRole === "ADMIN" ? ROLES.MANAGER : pRole;
+    let role = pRole === "ADMIN" ? ROLES.MANAGER : pRole;
+    if (role === "SPV") role = "SUPERVISOR";
 
-    if (module.allowedRoles.includes(role)) return true;
+    const allowed = (module.allowedRoles || []).map(r => {
+        const u = r.toUpperCase();
+        return u === "SPV" ? "SUPERVISOR" : u;
+    });
+
+    if (allowed.includes(role)) return true;
 
     if (module.requiredPermissions && module.requiredPermissions.length > 0) {
         return module.requiredPermissions.some(perm => hasPermission(profile, perm as Permission));

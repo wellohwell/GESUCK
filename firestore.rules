@@ -21,8 +21,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == "wahyulaksanajayakusuma@gmail.com" || 
-        request.auth.token.email == "admin@gmail.com" ||
+        (request.auth.token.keys().hasAll(["email"]) && (request.auth.token.email == "wahyulaksanajayakusuma@gmail.com" || request.auth.token.email == "admin@gmail.com")) ||
         getUserRole() in ["MANAGER", "OWNER", "ADMIN"]
       );
     }
@@ -50,7 +49,7 @@ service cloud.firestore {
     function getUserRole() {
       return (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.keys().hasAll(["role"]))
-             ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upperAscii()
+             ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.upper()
              : "MEMBER";
     }
 
@@ -73,7 +72,7 @@ service cloud.firestore {
     }
 
     function isSPV() {
-      return isSignedIn() && getUserRole() == "SPV";
+      return isSignedIn() && (getUserRole() == "SPV" || getUserRole() == "SUPERVISOR");
     }
 
     function isSurvey() {
@@ -115,57 +114,95 @@ service cloud.firestore {
     }
 
     match /clients/{clientId} {
-      allow get: if isSignedIn() && hasBranchAccess(existing());
-      allow list: if isSignedIn() && hasBranchAccess(resource.data) && (
-        isAdmin() || isSPV() || isStaff() || isSurvey() || isGudang() || resource.data.ownerId == request.auth.uid
+      allow get: if isSignedIn() && (isAdmin() || hasBranchAccess(existing()));
+      allow list: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(resource.data) && (
+            isSPV() || isStaff() || isSurvey() || isGudang() || resource.data.ownerId == request.auth.uid
+          )
+        )
       );
-      allow create: if isSignedIn() && hasBranchAccess(incoming()) && incoming().ownerId == request.auth.uid;
-      allow update: if isSignedIn() && hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
-        isAdmin() || isOwner() || isStaff() ||
-        (isSurvey() && existing().stage == "pipeline") ||
-        (isGudang() && existing().stage == "client") ||
-        existing().ownerId == request.auth.uid
+      allow create: if isSignedIn() && (isAdmin() || (hasBranchAccess(incoming()) && incoming().keys().hasAll(['ownerId']) && incoming().ownerId == request.auth.uid));
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
+            isOwner() || isStaff() || isSPV() ||
+            (isSurvey() && existing().keys().hasAll(['stage']) && existing().stage == "pipeline") ||
+            (isGudang() && existing().keys().hasAll(['stage']) && existing().stage == "client") ||
+            (existing().keys().hasAll(['ownerId']) && existing().ownerId == request.auth.uid) ||
+            (existing().keys().hasAll(['createdBy']) && existing().createdBy == request.auth.uid)
+          )
+        )
       );
-      allow delete: if isAdmin() && hasBranchAccess(existing());
+      allow delete: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(existing()) && (
+            isOwner() || isStaff() || isSPV() ||
+            (isSurvey() && existing().keys().hasAll(['stage']) && existing().stage == "pipeline") ||
+            (isGudang() && existing().keys().hasAll(['stage']) && existing().stage == "pipeline") ||
+            (existing().keys().hasAll(['ownerId']) && existing().ownerId == request.auth.uid) ||
+            (existing().keys().hasAll(['createdBy']) && existing().createdBy == request.auth.uid)
+          )
+        )
+      );
     }
 
     match /orders/{orderId} {
-      allow get: if isSignedIn() && hasBranchAccess(existing());
-      allow list: if isSignedIn() && hasBranchAccess(resource.data) && (isAdmin() || isSPV() || resource.data.ownerId == request.auth.uid);
-      allow create: if isSignedIn() && hasBranchAccess(incoming()) && (incoming().ownerId == request.auth.uid || isAdmin());
-      allow update: if isSignedIn() && hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (isAdmin() || isSPV() || existing().ownerId == request.auth.uid);
-      allow delete: if isAdmin() && hasBranchAccess(existing());
+      allow get: if isSignedIn() && (isAdmin() || hasBranchAccess(existing()));
+      allow list: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(resource.data) && (isSPV() || resource.data.ownerId == request.auth.uid)
+        )
+      );
+      allow create: if isSignedIn() && (isAdmin() || (hasBranchAccess(incoming()) && incoming().ownerId == request.auth.uid));
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
+            isSPV() || existing().ownerId == request.auth.uid
+          )
+        )
+      );
+      allow delete: if isAdmin();
     }
 
     match /tasks/{taskId} {
-      allow get: if isSignedIn() && hasBranchAccess(existing());
-      allow list: if isSignedIn() && hasBranchAccess(resource.data) && (
-        isAdmin() || 
-        isSPV() || 
-        isStaff() || 
-        (isSurvey() && resource.data.type == "survey") ||
-        (isGudang() && resource.data.type == "delivery") ||
-        resource.data.ownerId == request.auth.uid
+      allow get: if isSignedIn() && (isAdmin() || hasBranchAccess(existing()));
+      allow list: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(resource.data) && (
+            isSPV() || 
+            isStaff() || 
+            (isSurvey() && resource.data.type == "survey") ||
+            (isGudang() && resource.data.type == "delivery") ||
+            resource.data.ownerId == request.auth.uid
+          )
+        )
       );
-      allow create: if isSignedIn() && hasBranchAccess(incoming()) && (incoming().ownerId == request.auth.uid || isAdmin());
-      allow update: if isSignedIn() && hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
-        isAdmin() || 
-        isSPV() || 
-        (isSurvey() && existing().type == "survey") ||
-        (isGudang() && existing().type == "delivery") ||
-        existing().ownerId == request.auth.uid
+      allow create: if isSignedIn() && (isAdmin() || (hasBranchAccess(incoming()) && incoming().ownerId == request.auth.uid));
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(existing()) && hasBranchAccess(incoming()) && (
+            isSPV() || 
+            (isSurvey() && existing().type == "survey") ||
+            (isGudang() && existing().type == "delivery") ||
+            existing().ownerId == request.auth.uid
+          )
+        )
       );
-      allow delete: if isAdmin() && hasBranchAccess(existing());
+      allow delete: if isAdmin();
     }
 
     match /notifications/{notificationId} {
-      allow read: if isSignedIn() && hasBranchAccess(resource.data) && (
-        isAdmin() ||
-        resource.data.userId == request.auth.uid || 
-        resource.data.roleTarget == getUserRole() ||
-        resource.data.roleTarget == "ALL"
+      allow read: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(resource.data) && (
+            resource.data.userId == request.auth.uid || 
+            resource.data.roleTarget == getUserRole() ||
+            resource.data.roleTarget == "ALL"
+          )
+        )
       );
-      allow create: if isSignedIn() && hasBranchAccess(incoming());
+      allow create: if isSignedIn() && (isAdmin() || hasBranchAccess(incoming()));
       allow update, delete: if isSignedIn() && (
         isAdmin() ||
         existing().userId == request.auth.uid
@@ -173,21 +210,24 @@ service cloud.firestore {
     }
 
     match /activities/{activityId} {
-      allow read: if isSignedIn() && hasBranchAccess(resource.data) && (
-        isAdmin() || 
-        isSPV() || 
-        isStaff() || 
-        (isSurvey() && resource.data.category in ["task", "workflow", "system"]) ||
-        (isGudang() && resource.data.category in ["task", "workflow", "order"]) ||
-        resource.data.actorId == request.auth.uid
+      allow read: if isSignedIn() && (
+        isAdmin() || (
+          hasBranchAccess(resource.data) && (
+            isSPV() || 
+            isStaff() || 
+            (isSurvey() && resource.data.category in ["task", "workflow", "system"]) ||
+            (isGudang() && resource.data.category in ["task", "workflow", "order"]) ||
+            resource.data.actorId == request.auth.uid
+          )
+        )
       );
-      allow create: if isSignedIn() && (hasBranchAccess(incoming()) || isStaff());
-      allow update, delete: if isAdmin() && hasBranchAccess(existing());
+      allow create: if isSignedIn() && (isAdmin() || hasBranchAccess(incoming()) || isStaff());
+      allow update, delete: if isAdmin();
     }
 
     match /activity_logs/{logId} {
-      allow read: if isSignedIn() && hasBranchAccess(resource.data) && (isAdmin() || isSPV());
-      allow create: if isSignedIn() && hasBranchAccess(incoming());
+      allow read: if isSignedIn() && (isAdmin() || (hasBranchAccess(resource.data) && isSPV()));
+      allow create: if isSignedIn() && (isAdmin() || hasBranchAccess(incoming()));
       allow update, delete: if isAdmin();
     }
 
