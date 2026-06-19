@@ -54,29 +54,45 @@ export function usePricelist() {
       setLoading(true);
     }
 
-    fetchPricelist(sheetId, sheetName).then(res => {
-      if (isMounted) {
-        setData(res);
-        setLoading(false);
-        cachedPricelist = res;
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
-        } catch (e) {
-          console.warn('Failed to save pricelist to localStorage:', e);
+    const loadData = () => {
+      fetchPricelist(sheetId, sheetName).then(res => {
+        if (isMounted) {
+          setData(res);
+          setLoading(false);
+          cachedPricelist = res;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
+          } catch (e) {
+            console.warn('Failed to save pricelist to localStorage:', e);
+          }
         }
-      }
-    }).catch(err => {
-      if (isMounted) {
-        // If we already have cached data in state, do not override with a hard blocking error
-        if (data.length === 0) {
-          setError(err.message);
-        } else {
-          console.warn('Background pricelist update failed, using stale cache:', err);
+      }).catch(err => {
+        if (isMounted) {
+          // If we already have cached data in state, do not override with a hard blocking error
+          if (data.length === 0) {
+            setError(err.message);
+          } else {
+            console.warn('Background pricelist update failed, using stale cache:', err);
+          }
+          setLoading(false);
         }
-        setLoading(false);
-      }
-    });
-    return () => { isMounted = false; };
+      });
+    };
+
+    loadData();
+
+    // Listen to background sync / app resume events
+    const handleResumeSync = () => {
+      console.log("[usePricelist] App resume detected! Triggering background update...");
+      loadData();
+    };
+
+    window.addEventListener("pwa_app_resume", handleResumeSync);
+
+    return () => { 
+      isMounted = false; 
+      window.removeEventListener("pwa_app_resume", handleResumeSync);
+    };
   }, [sheetId, sheetName, runtimeLoading]);
 
   const categories = useMemo(() => {

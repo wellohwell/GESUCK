@@ -38,6 +38,7 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     try {
+      localStorage.setItem('pwa_offline_manually_logged_out', 'true');
       await signOut(auth);
       navigate('/login');
     } catch (error) {

@@ -9,6 +9,7 @@ export default function Blocked() {
   useEffect(() => {
     // Auto sign out if they land here while authenticated (e.g. suspended while online)
     if (auth.currentUser) {
+      localStorage.setItem('pwa_offline_manually_logged_out', 'true');
       auth.signOut().catch(console.error);
     }
   }, []);
@@ -29,6 +30,7 @@ export default function Blocked() {
 
       <button
         onClick={() => {
+          localStorage.setItem('pwa_offline_manually_logged_out', 'true');
           auth.signOut();
           navigate("/");
         }}

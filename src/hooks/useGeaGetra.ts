@@ -128,7 +128,19 @@ export function useGeaGetra() {
       }
     };
     fetchData();
-    return () => { isMounted = false; };
+
+    // Listen to background sync / app resume events
+    const handleResumeSync = () => {
+      console.log("[useGeaGetra] App resume detected! Triggering background update...");
+      fetchData();
+    };
+
+    window.addEventListener("pwa_app_resume", handleResumeSync);
+
+    return () => { 
+      isMounted = false; 
+      window.removeEventListener("pwa_app_resume", handleResumeSync);
+    };
   }, [sheetId, sheetName, runtimeLoading]);
 
   return { data, loading, error };

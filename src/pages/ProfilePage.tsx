@@ -36,6 +36,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
+      localStorage.setItem('pwa_offline_manually_logged_out', 'true');
       await signOut(auth);
       toast('Berhasil keluar');
     } catch (e) {

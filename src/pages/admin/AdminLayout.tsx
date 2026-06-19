@@ -291,6 +291,7 @@ export default function AdminLayout({ onBack }: AdminProps) {
                   <button
                     onClick={async () => {
                       if (window.confirm("Apakah Anda yakin ingin keluar dari Vork?")) {
+                        localStorage.setItem('pwa_offline_manually_logged_out', 'true');
                         await auth.signOut();
                       }
                     }}

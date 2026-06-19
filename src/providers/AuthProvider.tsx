@@ -48,6 +48,38 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(() => {
+    if (localStorage.getItem('pwa_offline_manually_logged_out') === 'true') {
+      return null;
+    }
+    const savedSession = localStorage.getItem('pwa_offline_local_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session && session.uid) {
+          const lastLoginDate = new Date(session.lastLogin);
+          const now = new Date();
+          const diffDays = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays <= 30) {
+            return {
+              uid: session.uid,
+              email: session.email,
+              displayName: session.displayName,
+              photoURL: localStorage.getItem('pwa_offline_auth_user') 
+                ? JSON.parse(localStorage.getItem('pwa_offline_auth_user') || '{}').photoURL || '' 
+                : '',
+              emailVerified: true
+            } as unknown as User;
+          } else {
+            // Local Session Expired!
+            localStorage.removeItem('pwa_offline_local_session');
+            localStorage.removeItem('pwa_offline_auth_profile');
+            localStorage.removeItem('pwa_offline_auth_user');
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to parse offline session:", e);
+      }
+    }
     const saved = localStorage.getItem('pwa_offline_auth_user');
     if (saved) {
       try {
@@ -60,12 +92,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isAuthChecking, setIsAuthChecking] = useState(() => {
+    if (localStorage.getItem('pwa_offline_manually_logged_out') === 'true') {
+      return !auth.currentUser;
+    }
+    const savedSession = localStorage.getItem('pwa_offline_local_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session && session.uid) {
+          const lastLoginDate = new Date(session.lastLogin);
+          const now = new Date();
+          const diffDays = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays <= 30) {
+            return false; // Active local session first! Render instantly.
+          }
+        }
+      } catch (e) {}
+    }
     const saved = localStorage.getItem('pwa_offline_auth_user');
     if (saved) return false;
     return !auth.currentUser;
   });
 
   const [profile, setProfile] = useState<UserProfile | null>(() => {
+    if (localStorage.getItem('pwa_offline_manually_logged_out') === 'true') {
+      return null;
+    }
+    const savedSession = localStorage.getItem('pwa_offline_local_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session && session.uid) {
+          const lastLoginDate = new Date(session.lastLogin);
+          const now = new Date();
+          const diffDays = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays <= 30) {
+            // Reconstruct minimal approved profile to boot workspace instantly
+            return {
+              uid: session.uid,
+              email: session.email,
+              name: session.displayName,
+              role: session.role,
+              permissions: session.permissions || [],
+              status: 'approved',
+              userType: session.role === 'global' ? 'global' : 'regional',
+              branchId: localStorage.getItem('pwa_offline_auth_profile') 
+                ? JSON.parse(localStorage.getItem('pwa_offline_auth_profile') || '{}').branchId || null 
+                : null,
+            } as unknown as UserProfile;
+          }
+        }
+      } catch (e) {}
+    }
     const saved = localStorage.getItem('pwa_offline_auth_profile');
     if (saved) {
       try {
@@ -78,6 +156,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [profileLoading, setProfileLoading] = useState(() => {
+    if (localStorage.getItem('pwa_offline_manually_logged_out') === 'true') {
+      return true;
+    }
+    const savedSession = localStorage.getItem('pwa_offline_local_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session && session.uid) {
+          const lastLoginDate = new Date(session.lastLogin);
+          const now = new Date();
+          const diffDays = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays <= 30) {
+            return false; // Render immediately
+          }
+        }
+      } catch (e) {}
+    }
     const saved = localStorage.getItem('pwa_offline_auth_profile');
     if (saved) return false;
     return true;
@@ -107,10 +202,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const authUnsub = onAuthStateChanged(auth, async (u) => {
       clearTimeout(timeoutId);
-      setFirebaseUser(u);
-      setIsAuthChecking(false);
       
       if (u) {
+        localStorage.removeItem('pwa_offline_manually_logged_out');
+        setFirebaseUser(u);
+        setIsAuthChecking(false);
+        
         // Cache user info locally
         try {
           const minimalUser = {
@@ -125,8 +222,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.debug("Failed to cache raw user offline:", e);
         }
 
-        setProfileLoading(true);
-        
         try {
           // Track login once per session storage lifecycle
           const sessionKey = `tracked_login_${u.uid}`;
@@ -160,11 +255,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (snapshot.exists()) {
             const p = normalizeUserProfile(u.uid, snapshot.data());
             setProfile(p);
-            // Cache profile locally
+            // Cache profile and set local session!
             try {
               localStorage.setItem('pwa_offline_auth_profile', JSON.stringify(p));
               localStorage.setItem('pwa_offline_last_sync_time', new Date().toISOString());
               window.dispatchEvent(new Event('pwa_last_sync_update'));
+
+              const lastRoute = localStorage.getItem('pwa_offline_last_route') || '';
+              const localSession = {
+                uid: u.uid,
+                email: u.email || p.email || '',
+                role: p.role || 'sales',
+                displayName: p.name || u.displayName || '',
+                permissions: p.permissions || [],
+                lastLogin: new Date().toISOString(),
+                lastRoute
+              };
+              localStorage.setItem('pwa_offline_local_session', JSON.stringify(localSession));
             } catch (e) {
               console.debug("Failed to cache profile offline:", e);
             }
@@ -175,17 +282,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfileLoading(false);
         });
       } else {
-        setProfile(null);
-        setProfileLoading(false);
-        profileUnsub();
-        // Clear cached auth info on sign out
-        try {
-          localStorage.removeItem('pwa_offline_auth_user');
-          localStorage.removeItem('pwa_offline_auth_profile');
-          localStorage.removeItem('pwa_offline_last_route');
-          localStorage.removeItem('pwa_offline_last_sync_time');
-        } catch (e) {
-          console.debug("Failed to clear cached auth info:", e);
+        const manuallyLoggedOut = localStorage.getItem('pwa_offline_manually_logged_out') === 'true';
+        
+        // Only clear the offline session if the user explicitly clicked logout
+        // OR if they are online and firebase auth genuinely is unauthenticated
+        if (manuallyLoggedOut || navigator.onLine) {
+          setFirebaseUser(null);
+          setProfile(null);
+          setProfileLoading(false);
+          setIsAuthChecking(false);
+          profileUnsub();
+          // Clear cached auth info on sign out
+          try {
+            localStorage.removeItem('pwa_offline_auth_user');
+            localStorage.removeItem('pwa_offline_auth_profile');
+            localStorage.removeItem('pwa_offline_local_session');
+            localStorage.removeItem('pwa_offline_last_route');
+            localStorage.removeItem('pwa_offline_last_sync_time');
+            localStorage.removeItem('pwa_offline_manually_logged_out');
+          } catch (e) {
+            console.debug("Failed to clear cached auth info on signout:", e);
+          }
+        } else {
+          // Device is offline or validation failed, but NOT signed out manually. Keep offline workspace active.
+          console.log("[AuthProvider] Keep current local session active (offline startup/session guard)");
+          setProfileLoading(false);
+          setIsAuthChecking(false);
         }
       }
     });
@@ -203,6 +325,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentPath && !['/login', '/signin', '/auth', '/', '/onboarding', '/pending', '/blocked'].includes(currentPath)) {
       try {
         localStorage.setItem('pwa_offline_last_route', currentPath);
+
+        const savedSession = localStorage.getItem('pwa_offline_local_session');
+        if (savedSession) {
+          const session = JSON.parse(savedSession);
+          session.lastRoute = currentPath;
+          localStorage.setItem('pwa_offline_local_session', JSON.stringify(session));
+        }
       } catch (e) {
         console.debug("Failed to cache offline route:", e);
       }

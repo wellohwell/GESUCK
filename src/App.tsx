@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import MarketPlansPage from "./pages/workspace/market-plans/page";
@@ -53,6 +54,35 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { WorkspaceLayout } from "./domains/workspace/WorkspaceLayout";
 
 function AppContent() {
+  useEffect(() => {
+    let lastResumeTime = 0;
+    const handleResume = () => {
+      const now = Date.now();
+      // Debounce trigger within 3 seconds to avoid double trigger
+      if (now - lastResumeTime > 3000) {
+        lastResumeTime = now;
+        console.log("[App Resume] App focus/resume detected! Dispatching refresh event.");
+        window.dispatchEvent(new Event("pwa_app_resume"));
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleResume();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleResume);
+    window.addEventListener("pageshow", handleResume);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleResume);
+      window.removeEventListener("pageshow", handleResume);
+    };
+  }, []);
+
   return (
     <AppBootstrap>
       <UserLifecycleGuard>

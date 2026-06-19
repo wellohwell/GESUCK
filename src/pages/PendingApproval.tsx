@@ -37,7 +37,10 @@ export default function PendingApproval() {
 
         {/* Logout Button */}
         <button
-          onClick={() => auth.signOut()}
+          onClick={() => {
+            localStorage.setItem('pwa_offline_manually_logged_out', 'true');
+            auth.signOut();
+          }}
           className="w-full py-4 bg-transparent border border-border hover:border-primary/50 rounded-3xl flex items-center justify-center gap-3 text-foreground font-semibold transition-all active:scale-[0.98]"
         >
           <LogOut className="w-4 h-4" />
