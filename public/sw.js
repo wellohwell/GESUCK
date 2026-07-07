@@ -2,7 +2,7 @@ const CACHE_NAME = 'vork-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/manifest.json',
+  '/site.webmanifest',
   '/favicon.ico',
   '/favicon.svg',
   '/web-app-manifest-192x192.png',

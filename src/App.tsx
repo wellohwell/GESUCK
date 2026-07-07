@@ -52,37 +52,9 @@ import AccessDeniedPage from "./pages/AccessDenied";
 import OwnerLayout from "./layouts/owner/OwnerLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { WorkspaceLayout } from "./domains/workspace/WorkspaceLayout";
+import { ConnectivityGuard } from "./components/auth/ConnectivityGuard";
 
 function AppContent() {
-  useEffect(() => {
-    let lastResumeTime = 0;
-    const handleResume = () => {
-      const now = Date.now();
-      // Debounce trigger within 3 seconds to avoid double trigger
-      if (now - lastResumeTime > 3000) {
-        lastResumeTime = now;
-        console.log("[App Resume] App focus/resume detected! Dispatching refresh event.");
-        window.dispatchEvent(new Event("pwa_app_resume"));
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        handleResume();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("focus", handleResume);
-    window.addEventListener("pageshow", handleResume);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("focus", handleResume);
-      window.removeEventListener("pageshow", handleResume);
-    };
-  }, []);
-
   return (
     <AppBootstrap>
       <UserLifecycleGuard>
@@ -206,7 +178,9 @@ export default function App() {
               <RuntimeProvider>
                 <ModuleProvider>
                   <NavigationProvider>
-                    <AppContent />
+                    <ConnectivityGuard>
+                      <AppContent />
+                    </ConnectivityGuard>
                   </NavigationProvider>
                 </ModuleProvider>
               </RuntimeProvider>

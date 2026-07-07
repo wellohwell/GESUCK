@@ -81,9 +81,23 @@ export function RepeatOrderContent({ onClose }: { onClose: () => void }) {
 
       toast.success("Repeat Order Berhasil Disimpan");
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Firestore error (RO):", err);
-      // Removed the addDoc and instead used clientService.createRepeatOrder which handle logic
+      let errorMsg = "Gagal menyimpan repeat order.";
+      if (err instanceof Error) {
+        try {
+          // If the message is a JSON string from handleFirestoreError
+          const parsed = JSON.parse(err.message);
+          if (parsed && parsed.error) {
+            errorMsg += ` Detail: ${parsed.error}`;
+          } else {
+            errorMsg += ` Detail: ${err.message}`;
+          }
+        } catch {
+          errorMsg += ` Detail: ${err.message}`;
+        }
+      }
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

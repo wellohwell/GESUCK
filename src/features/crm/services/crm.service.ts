@@ -102,13 +102,38 @@ export const crmService = {
       else if (newOrderCount > 0) customerType = 'active';
 
       // 1. Update customer
+      const angsuranNum = Number(orderData.installment || orderData.angsuran || 0);
+      const tenorNum = Number(orderData.tenor || 0);
+
       await updateDoc(doc(db, "clients", customerId), {
         orderCount: newOrderCount,
         totalOrders: newOrderCount,
         lastOrderAt: now,
         latestOrderAt: now,
         customerType,
-        status: customerType,
+        status: 'survey', // reset to active pipeline status
+        stage: 'pipeline', // reset to active pipeline stage
+        currentStep: 'survey', // reset to survey stage
+        orderStatus: 'submitted', // reset order status to submitted
+        barang: orderData.itemName || orderData.barang || "",
+        produk: orderData.itemName || orderData.barang || "",
+        angsuran: angsuranNum,
+        tenor: tenorNum,
+        tenorType: orderData.tenorType || 'bulan',
+        omset: angsuranNum * tenorNum,
+        survey: {
+          status: 'submitted',
+          note: '',
+          updatedAt: now,
+          updatedBy: uid
+        },
+        warehouse: {
+          status: 'pending',
+          updatedAt: now,
+          updatedBy: ''
+        },
+        archiveReason: '',
+        createdAt: now, // update createdAt so it is sorted at the top of active queues
         updatedAt: now
       });
 
@@ -125,19 +150,19 @@ export const crmService = {
         customerId: customerId,
         ownerId: uid, // legacy support
         createdBy: uid,
-        nama: clientData.nama || clientData.name,
-        nomor: clientData.nomor || clientData.phone,
-        usaha: clientData.usaha || clientData.businessName,
-        alamat: clientData.alamat || clientData.address,
-        barang: orderData.itemName || orderData.barang,
-        angsuran: orderData.installment || orderData.angsuran,
-        tenor: orderData.tenor,
+        nama: clientData.nama || clientData.name || "",
+        nomor: clientData.nomor || clientData.phone || "",
+        usaha: clientData.usaha || clientData.businessName || "",
+        alamat: clientData.alamat || clientData.address || "",
+        barang: orderData.itemName || orderData.barang || "",
+        angsuran: orderData.installment || orderData.angsuran || 0,
+        tenor: orderData.tenor || 0,
         tenorType: orderData.tenorType || 'bulan',
         stage: 'survey',
         status: 'survey',
         createdAt: now,
         updatedAt: now,
-        branchId: resolvedBranchId
+        branchId: resolvedBranchId || null
       };
 
       const orderRef = await addDoc(collection(db, "orders"), orderPayload);

@@ -9,9 +9,9 @@ export const BootstrapSplash: React.FC = () => {
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none animate-pulse">
       <div className="relative flex justify-center items-center">
         {/* Subtle glowing pulsing ring */}
-        <div className="absolute w-12 h-12 rounded-full border border-brand-primary/20 animate-ping"></div>
+        <div className="absolute w-12 h-12 rounded-full border border-primary/20 animate-ping"></div>
         {/* Inner spin circle */}
-        <div className="w-8 h-8 border-2 border-brand-primary/10 border-t-brand-primary rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
       </div>
     </div>
   );
@@ -57,10 +57,6 @@ export const AppBootstrap: React.FC<AppBootstrapProps> = ({ children }) => {
       // If user is on landing/login pages, instantly redirect to their respective landing workspace
       const isAuthPath = ['/', '/login', '/signin', '/auth'].includes(path);
       if (isAuthPath) {
-        const savedLastRoute = localStorage.getItem('pwa_offline_last_route');
-        if (savedLastRoute && savedLastRoute !== '/' && savedLastRoute !== '/login') {
-          return <Navigate to={savedLastRoute} replace={true} />;
-        }
         if (profile.userType === 'global') {
           return <Navigate to="/global" replace={true} />;
         }

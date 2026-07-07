@@ -203,42 +203,10 @@ function getTimelineEvents(client: any) {
 export default function ClientPage() {
   const user = useCurrentUser();
   const { profile } = useUserProfile();
-  const [activeTab, setActiveTab] = useState<Stage>(() => {
-    return (localStorage.getItem('pwa_client_active_tab') as Stage) || 'pipeline';
-  });
+  const [activeTab, setActiveTab] = useState<Stage>('pipeline');
   const [clients, setClients] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState(() => {
-    return localStorage.getItem('pwa_client_search_query') || '';
-  });
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-
-  // Sync state changes to local storage
-  useEffect(() => {
-    localStorage.setItem('pwa_client_active_tab', activeTab);
-  }, [activeTab]);
-
-  useEffect(() => {
-    localStorage.setItem('pwa_client_search_query', searchQuery);
-  }, [searchQuery]);
-
-  // Restore/save scroll position
-  useEffect(() => {
-    const savedScrollPos = localStorage.getItem('pwa_scroll_pos_/workspace/client');
-    if (savedScrollPos) {
-      setTimeout(() => {
-        window.scrollTo({ top: parseInt(savedScrollPos, 10), behavior: 'instant' as ScrollBehavior });
-      }, 150);
-    }
-
-    const handleScroll = () => {
-      localStorage.setItem('pwa_scroll_pos_/workspace/client', window.scrollY.toString());
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
   
   // Selection and Detail View
   const [selectedClient, setSelectedClient] = useState<any>(null);

@@ -84,11 +84,37 @@ export async function createRepeatOrder(uid: string, clientId: string, data: {
     if (orderCount >= 5) customerType = 'loyal';
     else if (orderCount >= 2) customerType = 'repeat';
 
-    // 1. Update Client (History & Meta)
+    const angsuranNum = Number(data.angsuran || 0);
+    const tenorNum = Number(data.tenor || 0);
+
+    // 1. Update Client (History & Meta & Reset Workflow)
     await updateDoc(doc(db, "clients", clientId), {
       orderCount,
       lastOrderAt: now,
       customerType,
+      status: 'survey', // reset to active pipeline status
+      stage: 'pipeline', // reset to active pipeline stage
+      currentStep: 'survey', // reset to survey stage
+      orderStatus: 'submitted', // reset order status to submitted
+      barang: data.barang || "",
+      produk: data.barang || "",
+      angsuran: angsuranNum,
+      tenor: tenorNum,
+      tenorType: data.tenorType || 'bulan',
+      omset: angsuranNum * tenorNum,
+      survey: {
+        status: 'submitted',
+        note: '',
+        updatedAt: now,
+        updatedBy: uid
+      },
+      warehouse: {
+        status: 'pending',
+        updatedAt: now,
+        updatedBy: ''
+      },
+      archiveReason: '',
+      createdAt: now, // update createdAt so it is sorted at the top of active queues
       updatedAt: now
     });
 

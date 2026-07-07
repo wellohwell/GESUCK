@@ -15,22 +15,15 @@ export const AuthRedirectGate: React.FC<AuthRedirectGateProps> = ({ children }) 
       <div className="min-h-screen bg-transparent dark:bg-zinc-950 flex flex-col items-center justify-center p-6 text-center select-none animate-pulse">
         <div className="relative flex justify-center items-center">
           {/* Subtle glowing pulsing ring */}
-          <div className="absolute w-12 h-12 rounded-full border border-brand-primary/20 animate-ping"></div>
+          <div className="absolute w-12 h-12 rounded-full border border-primary/20 animate-ping"></div>
           {/* Inner spin circle */}
-          <div className="w-8 h-8 border-2 border-brand-primary/10 border-t-brand-primary rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   if (isAuthenticated) {
-    // Check if there is a saved last route in local storage
-    const savedLastRoute = localStorage.getItem('pwa_offline_last_route');
-    if (savedLastRoute && savedLastRoute !== '/' && savedLastRoute !== '/login' && savedLastRoute !== '/signin' && savedLastRoute !== '/auth') {
-      console.log(`[AuthRedirectGate] Authenticated last route restored: "${savedLastRoute}"`);
-      return <Navigate to={savedLastRoute} replace={true} />;
-    }
-
     // Determine target route based on role
     // We normalize role (e.g. "sales" or "SPV") to pass to the helper
     const userRole = profile?.role || role || 'sales';
