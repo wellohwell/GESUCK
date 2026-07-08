@@ -12,24 +12,10 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Improved Firestore initialization with settings for better connectivity and offline persistence
+// Improved Firestore initialization with settings for better connectivity
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 }, firebaseConfig.firestoreDatabaseId);
-
-import { enableIndexedDbPersistence } from "firebase/firestore";
-
-if (typeof window !== "undefined") {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === "failed-precondition") {
-      console.warn("Firestore offline persistence failed: Multiple tabs open.");
-    } else if (err.code === "unimplemented") {
-      console.warn("Firestore offline persistence failed: Browser not supported.");
-    } else {
-      console.warn("Firestore offline persistence error:", err);
-    }
-  });
-}
 
 // Test connection as per guidelines (exported to be called on demand)
 export async function testConnection() {

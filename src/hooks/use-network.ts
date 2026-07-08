@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
 
 export interface NetworkState {
   isOnline: boolean;
@@ -21,29 +19,25 @@ export function useNetwork(): NetworkState {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Monitor Firebase connectivity / round-trip latency
-    let unsubscribe: (() => void) | undefined;
-    
-    if (navigator.onLine) {
-      // Connect to Firestore special connection metadata collection
-      // .info/connected is a virtual node containing current status
-      try {
-        const connectedRef = doc(db, '.info/connected');
-        unsubscribe = onSnapshot(connectedRef, (snap) => {
-          const isConnected = snap.data()?.connected ?? true;
-          setIsOnline(isConnected);
-        }, (err) => {
-          // If virtual node fails, rely on browser status or latency checks
-        });
-      } catch (e) {
-        // Fallback
+    // Monitor connection quality using Network Information API if available
+    const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    const updateConnectionStatus = () => {
+      if (conn) {
+        setIsSlow(conn.saveData || ['slow-2g', '2g', '3g'].includes(conn.effectiveType));
       }
+    };
+
+    if (conn) {
+      conn.addEventListener('change', updateConnectionStatus);
+      updateConnectionStatus();
     }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      if (unsubscribe) unsubscribe();
+      if (conn) {
+        conn.removeEventListener('change', updateConnectionStatus);
+      }
     };
   }, []);
 

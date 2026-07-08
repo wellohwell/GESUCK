@@ -21,7 +21,8 @@ const aturanMargin: Record<TipeProduk, { maksHari: number, margin: number }[]> =
     { maksHari: 60, margin: 0.26 }, 
     { maksHari: 90, margin: 0.31 }, 
     { maksHari: 120, margin: 0.41 }, 
-    { maksHari: 150, margin: 0.46 } 
+    { maksHari: 150, margin: 0.46 },
+    { maksHari: 180, margin: 0.51 }
   ],
   Royal: [ { maksHari: 90, margin: 0.36 }, { maksHari: 180, margin: 0.51 } ],
   Furniture: [ { maksHari: 90, margin: 0.36 }, { maksHari: 180, margin: 0.51 } ],
@@ -57,7 +58,7 @@ export function InstallmentCalculator({ itemDefaults }: { itemDefaults?: Priceli
   const [estimasiPotongan, setEstimasiPotongan] = useState<number>(0)
 
   useEffect(() => {
-    if (tipe === 'HP' && typeof tenor === 'number' && tenor > 150) {
+    if (tipe === 'HP' && typeof tenor === 'number' && tenor > 180) {
       setTenor('');
     }
   }, [tipe, tenor]);
@@ -245,7 +246,7 @@ ${potonganText ? `${potonganText}\n` : ''}-----------------
                 >
                   <option value="">Pilih Tenor</option>
                   {[30, 60, 90, 120, 150, 180]
-                    .filter(hari => tipe !== 'HP' || hari <= 150)
+                    .filter(hari => tipe !== 'HP' || hari <= 180)
                     .map((hari) => (
                     <option key={hari} value={hari}>{hari} Hari</option>
                   ))}
