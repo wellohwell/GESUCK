@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import MarketPlansPage from "./pages/workspace/market-plans/page";
 import CreateMarketPlanPage from "./pages/workspace/market-plans/create/page";
@@ -54,10 +54,30 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { WorkspaceLayout } from "./domains/workspace/WorkspaceLayout";
 import { ConnectivityGuard } from "./components/auth/ConnectivityGuard";
 
+let isColdStart = true;
+
+function ColdStartGuard() {
+  const location = useLocation();
+
+  if (isColdStart) {
+    isColdStart = false;
+    const isPublicOrAuth = ['/', '/login', '/signin', '/auth', '/onboarding', '/pending', '/blocked'].includes(location.pathname);
+    // If we are not on a public/auth route, force navigate to /workspace
+    // to clear any nested route, search parameters, or UI state.
+    if (!isPublicOrAuth && location.pathname !== '/workspace') {
+      console.log('[ColdStartGuard] Fresh reload detected. Redirecting to /workspace to ensure clean state.');
+      return <Navigate to="/workspace" replace={true} />;
+    }
+  }
+
+  return null;
+}
+
 function AppContent() {
   return (
     <AppBootstrap>
       <UserLifecycleGuard>
+        <ColdStartGuard />
         <Routes>
           {/* Public / Landing & Auth Routes with Redirect Gate */}
           <Route path="/" element={<AuthRedirectGate><Login /></AuthRedirectGate>} />

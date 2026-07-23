@@ -36,7 +36,7 @@ export const AppBootstrap: React.FC<AppBootstrapProps> = ({ children }) => {
   }
 
   // 3. Once auth & profile are resolved:
-  if (isAuthenticated && profile) {
+  if (isAuthenticated) {
     const accessState = resolveUserAccessState(profile);
     const path = location.pathname;
 
@@ -57,10 +57,10 @@ export const AppBootstrap: React.FC<AppBootstrapProps> = ({ children }) => {
       // If user is on landing/login pages, instantly redirect to their respective landing workspace
       const isAuthPath = ['/', '/login', '/signin', '/auth'].includes(path);
       if (isAuthPath) {
-        if (profile.userType === 'global') {
+        if (profile?.userType === 'global') {
           return <Navigate to="/global" replace={true} />;
         }
-        const userRole = profile.role || 'sales';
+        const userRole = profile?.role || 'sales';
         const landingRoute = getDefaultRouteByRole(userRole);
         return <Navigate to={landingRoute} replace={true} />;
       }

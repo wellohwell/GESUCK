@@ -54,63 +54,12 @@ export default function ExplorePage() {
     return "";
   }, [pricelistData]);
   
-  const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>(() => {
-    return (localStorage.getItem('pwa_explore_active_tab') as 'pricelist' | 'gea') || 'pricelist';
-  });
-  const [sortBy, setSortBy] = useState<SortType>(() => {
-    return (localStorage.getItem('pwa_explore_sort_by') as SortType) || 'default';
-  });
-  const [selectedMerk, setSelectedMerk] = useState<string>(() => {
-    return localStorage.getItem('pwa_explore_selected_merk') || 'all';
-  });
+  const [activeTab, setActiveTab] = useState<'pricelist' | 'gea'>('pricelist');
+  const [sortBy, setSortBy] = useState<SortType>('default');
+  const [selectedMerk, setSelectedMerk] = useState<string>('all');
 
   const exploreConfig = runtime?.modules?.explore;
 
-  // Restore scroll position
-  React.useEffect(() => {
-    const savedScrollPos = localStorage.getItem('pwa_scroll_pos_/workspace/explore');
-    if (savedScrollPos) {
-      setTimeout(() => {
-        window.scrollTo({ top: parseInt(savedScrollPos, 10), behavior: 'instant' as ScrollBehavior });
-      }, 150);
-    }
-
-    const handleScroll = () => {
-      localStorage.setItem('pwa_scroll_pos_/workspace/explore', window.scrollY.toString());
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // Restore search parameter on mount
-  React.useEffect(() => {
-    const savedSearch = localStorage.getItem('pwa_explore_search') || '';
-    if (savedSearch && !searchParams.get('search')) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('search', savedSearch);
-      setSearchParams(params, { replace: true });
-    }
-  }, []);
-
-  // Sync state changes to local storage
-  React.useEffect(() => {
-    localStorage.setItem('pwa_explore_active_tab', activeTab);
-  }, [activeTab]);
-
-  React.useEffect(() => {
-    localStorage.setItem('pwa_explore_sort_by', sortBy);
-  }, [sortBy]);
-
-  React.useEffect(() => {
-    localStorage.setItem('pwa_explore_selected_merk', selectedMerk);
-  }, [selectedMerk]);
-
-  React.useEffect(() => {
-    localStorage.setItem('pwa_explore_search', currentSearch);
-  }, [currentSearch]);
 
   // Render initialization loading spinner
   const renderedLoading = useMemo(() => {

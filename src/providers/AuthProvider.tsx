@@ -60,7 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const authUnsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
         setFirebaseUser(u);
-        setIsAuthChecking(false);
 
         try {
           // Track login once per session storage lifecycle
@@ -76,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         try {
-          // Verify profile exists in background (non-blocking)
+          // Verify profile exists in background (blocking auth check until complete)
           const rawProfile = await getUserProfile(u.uid);
           if (!rawProfile) {
             await createUserProfile(u.uid, { 
@@ -89,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.debug("Optional profile existence check failed/bypassed:", e);
         }
 
-        // Setup real-time listener for profile (deep reactive, non-blocking)
+        // Setup real-time listener for profile (deep reactive)
         const profileDocRef = doc(db, 'users', u.uid);
         profileUnsub = onSnapshot(profileDocRef, (snapshot) => {
           if (snapshot.exists()) {
@@ -97,9 +96,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(p);
           }
           setProfileLoading(false);
+          setIsAuthChecking(false);
         }, (error) => {
           console.error("Profile real-time subscription error:", error);
           setProfileLoading(false);
+          setIsAuthChecking(false);
         });
       } else {
         setFirebaseUser(null);
